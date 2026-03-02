@@ -1,0 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/notification_service.dart';
+
+final notificationServiceProvider = Provider<NotificationService>((ref) => NotificationService());
+
+final notificationHistoryProvider = FutureProvider<List<Map<String, dynamic>>>((ref) {
+  return ref.watch(notificationServiceProvider).getNotificationHistory();
+});
