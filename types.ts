@@ -1,7 +1,7 @@
 export type UserRole = 'student' | 'admin' | 'mentor';
 export type StudentCategory = 'Favourite' | 'Regular' | 'Sankalpa' | 'Guest' | 'Volunteer' | 'Advanced seeker';
 export type SessionStatus = 'Upcoming' | 'Ongoing' | 'Completed';
-export type ResourceType = 'book' | 'photo' | 'video' | 'lecture';
+export type ResourceType = 'book' | 'photo' | 'video' | 'lecture' | 'audio';
 export type MentorshipStatus = 'Pending' | 'Accepted' | 'Rejected';
 
 export enum InitiationStatus {
