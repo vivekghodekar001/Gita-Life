@@ -36,13 +36,16 @@ dependencies:
   youtube_player_flutter: ^9.0.1
   # Utils
   connectivity_plus: ^5.0.2
-  path_provider: ^2.1.2
+  path_provider: ^2.1.5
   permission_handler: ^11.3.0
   vibration: ^1.8.4
   image_picker: ^1.0.7
   share_plus: ^7.2.1
   csv: ^5.0.2
   flutter_local_notifications: ^17.0.0
+  intl: ^0.20.2
+  sqflite_common_ffi: ^2.4.0+2
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

@@ -123,7 +123,7 @@ class DashboardScreen extends ConsumerWidget {
                         todayJapa.when(
                           data: (log) => Center(
                             child: Text(
-                              '${log?.rounds ?? 0} Rounds / ${log?.count ?? 0} Mantras',
+                              '${log?.totalMalas ?? 0} Rounds / ${log?.totalBeads ?? 0} Mantras',
                               style: const TextStyle(fontSize: 20, color: Colors.orange),
                             ),
                           ),

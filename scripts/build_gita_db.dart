@@ -1,104 +1,147 @@
-// Bhagavad Gita Database Builder Script
-//
-// This script fetches all 700 verses from the Bhagavad Gita API and creates
-// a SQLite database at assets/db/gita.db ready for use in the Flutter app.
-//
-// HOW TO RUN:
-//   1. Make sure you have Dart SDK installed
-//   2. From the project root, run:
-//      dart run scripts/build_gita_db.dart
-//   3. The script will create/overwrite assets/db/gita.db
-//   4. After running, rebuild Flutter app to bundle the new database
-
 import 'dart:convert';
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-const String apiBaseUrl = 'https://bhagavadgitaapi.in/slok';
-const String dbPath = 'assets/db/gita.db';
+Future<void> main() async {
+  print('Initializing sqflite_ffi...');
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
 
-// Chapter verse counts for Bhagavad Gita
-const List<int> chapterVerseCounts = [
-  47, 72, 43, 42, 29, 47, 30, 28, 34, 42,
-  55, 20, 35, 27, 20, 24, 28, 78,
-];
-
-void main() async {
-  print('=== Bhagavad Gita Database Builder ===');
-  print('Fetching verses from API...\n');
-
-  // TODO: Install sqflite_common_ffi package for desktop SQLite support
-  // Run: dart pub add sqflite_common_ffi
-  // Then uncomment and implement the database creation logic below
-
-  final verses = <Map<String, dynamic>>[];
-  int totalFetched = 0;
-
-  for (int chapter = 1; chapter <= 18; chapter++) {
-    final verseCount = chapterVerseCounts[chapter - 1];
-    print('Fetching Chapter $chapter ($verseCount verses)...');
-
-    for (int verse = 1; verse <= verseCount; verse++) {
-      try {
-        final url = '$apiBaseUrl/$chapter/$verse/';
-        final request = await HttpClient().getUrl(Uri.parse(url));
-        final response = await request.close();
-        final body = await response.transform(utf8.decoder).join();
-        final data = jsonDecode(body) as Map<String, dynamic>;
-
-        verses.add({
-          'chapter_number': chapter,
-          'verse_number': verse,
-          'text_devanagari': data['slok'] ?? '',
-          'text_transliteration': data['transliteration'] ?? '',
-          'text_english': data['tej']?['ht'] ?? data['tej']?['et'] ?? '',
-          'purport': data['purohit']?['et'] ?? data['san']?['et'] ?? '',
-          'is_bookmarked': 0,
-        });
-
-        totalFetched++;
-        if (verse % 10 == 0) {
-          stdout.write('  Progress: $verse/$verseCount verses\r');
-        }
-      } catch (e) {
-        print('  ERROR fetching $chapter.$verse: $e');
-      }
+  final dbPath = 'assets/db/gita.db';
+  final dbFile = File(dbPath);
+  
+  if (dbFile.existsSync()) {
+    print('Deleting existing database at \$dbPath...');
+    dbFile.deleteSync();
+  } else {
+    // Ensure dir exists
+    if (!dbFile.parent.existsSync()) {
+      dbFile.parent.createSync(recursive: true);
     }
-    print('  ✓ Chapter $chapter complete');
   }
 
-  print('\nTotal verses fetched: $totalFetched');
-  print('\nCreating SQLite database at $dbPath...');
+  print('Creating new database at \$dbPath...');
+  final db = await databaseFactory.openDatabase(dbPath);
 
-  // TODO: Replace with actual SQLite write using sqflite_common_ffi
-  // Example implementation:
-  //
-  // import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-  //
-  // sqfliteFfiInit();
-  // final db = await databaseFactoryFfi.openDatabase(dbPath);
-  // await db.execute('''
-  //   CREATE TABLE IF NOT EXISTS verses (
-  //     id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //     chapter_number INTEGER NOT NULL,
-  //     verse_number INTEGER NOT NULL,
-  //     text_devanagari TEXT NOT NULL,
-  //     text_transliteration TEXT NOT NULL,
-  //     text_english TEXT NOT NULL,
-  //     purport TEXT NOT NULL,
-  //     is_bookmarked INTEGER DEFAULT 0
-  //   )
-  // ''');
-  // final batch = db.batch();
-  // for (final verse in verses) {
-  //   batch.insert('verses', verse);
-  // }
-  // await batch.commit(noResult: true);
-  // await db.close();
+  // Create table schema
+  await db.execute('''
+    CREATE TABLE verses (
+      id INTEGER PRIMARY KEY,
+      chapter_number INTEGER NOT NULL,
+      verse_number INTEGER NOT NULL,
+      text_devanagari TEXT,
+      text_transliteration TEXT,
+      text_english TEXT,
+      purport TEXT,
+      is_bookmarked INTEGER DEFAULT 0
+    )
+  ''');
 
-  print('Done! Database saved to $dbPath');
-  print('\nNext steps:');
-  print('  1. Add sqflite_common_ffi to dev_dependencies');
-  print('  2. Uncomment SQLite write code in this script');
-  print('  3. Run: dart run scripts/build_gita_db.dart');
-  print('  4. Rebuild Flutter app: flutter build apk');
+  print('Table "verses" created.');
+  print('Fetching 18 chapters and their verses...');
+
+  // The Gita has 18 chapters. We'll fetch each chapter and then its verses
+  // Using bhagavadgitaapi.in API if available
+  // Wait, let's fetch chapters first:
+  try {
+    // Note: Due to rate limits or API structure, we loop from Chapter 1 to 18
+    for (int chapterNum = 1; chapterNum <= 18; chapterNum++) {
+      print('Fetching verses for Chapter \$chapterNum...');
+      final chapterUrl = Uri.parse('https://bhagavadgitaapi.in/chapter/\$chapterNum');
+      final chapterRes = await http.get(chapterUrl);
+      if (chapterRes.statusCode != 200) {
+        throw Exception('Failed to load chapter \$chapterNum');
+      }
+
+      final chapterData = jsonDecode(chapterRes.body);
+      final versesCount = chapterData['verses_count'] as int;
+
+      for (int verseNum = 1; verseNum <= versesCount; verseNum++) {
+        final verseUrl = Uri.parse('https://bhagavadgitaapi.in/slok/\$chapterNum/\$verseNum');
+        // Let's retry safely
+        int retries = 3;
+        dynamic verseData;
+        while (retries > 0) {
+           final verseRes = await http.get(verseUrl);
+           if (verseRes.statusCode == 200) {
+              verseData = jsonDecode(verseRes.body);
+              break;
+           } else {
+              retries--;
+              print('Retrying verse \$chapterNum:\$verseNum...');
+              await Future.delayed(Duration(seconds: 1));
+           }
+        }
+        
+        if (verseData == null) {
+           print('Failed to pull chapter \$chapterNum verse \$verseNum. Inserting empty placeholders...');
+           verseData = {
+              'slok': 'Sloka text failed to load',
+              'transliteration': '',
+              'tej': {'ht': ''}, 
+              'siva': {'et': '', 'ec': ''} 
+           };
+        }
+
+        // Mapping to schema depending on API payload format
+        // Expected payload format for bhagavadgitaapi.in parsing logic:
+        final devanagari = verseData['slok'] ?? '';
+        final transliteration = verseData['transliteration'] ?? '';
+        
+        // Sometimes English translation is inside siva / purohit / chinmay
+        // We'll try to extract primary ones.
+        final siva = verseData['siva'];
+        final englishText = siva != null ? (siva['et'] ?? '') : '';
+        final purportText = siva != null ? (siva['ec'] ?? '') : '';
+
+        // Generate a localized ID matching standard format like 101, 102 ... 1878
+        final id = (chapterNum * 1000) + verseNum;
+
+        await db.insert('verses', {
+           'id': id,
+           'chapter_number': chapterNum,
+           'verse_number': verseNum,
+           'text_devanagari': devanagari,
+           'text_transliteration': transliteration,
+           'text_english': englishText,
+           'purport': purportText,
+           'is_bookmarked': 0
+        });
+      }
+      print('Completed Chapter \$chapterNum (\$versesCount verses).');
+    }
+
+    print('Building FTS Virtual table for search queries...');
+    await db.execute('''
+      CREATE VIRTUAL TABLE verses_fts USING fts5(
+        text_devanagari,
+        text_transliteration,
+        text_english,
+        purport,
+        content='verses',
+        content_rowid='id'
+      )
+    ''');
+    
+    // Create trigger to sync FTS table
+    await db.execute('''
+      CREATE TRIGGER verses_ai AFTER INSERT ON verses BEGIN
+        INSERT INTO verses_fts(rowid, text_devanagari, text_transliteration, text_english, purport)
+        VALUES (new.id, new.text_devanagari, new.text_transliteration, new.text_english, new.purport);
+      END;
+    ''');
+
+    // Manually populate FTS with inserted data
+    await db.execute('''
+        INSERT INTO verses_fts(rowid, text_devanagari, text_transliteration, text_english, purport)
+        SELECT id, text_devanagari, text_transliteration, text_english, purport FROM verses;
+    ''');
+
+    print('FTS table configured. Db is successfully initialized.');
+  } catch (e) {
+    print('Db build failed: \$e');
+  } finally {
+    await db.close();
+  }
 }

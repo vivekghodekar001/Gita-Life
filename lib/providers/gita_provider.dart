@@ -12,6 +12,11 @@ final versesByChapterProvider = FutureProvider.family<List<VerseModel>, int>((re
   return ref.watch(gitaServiceProvider).getVersesByChapter(chapterNumber);
 });
 
+final gitaSearchProvider = FutureProvider.family<List<VerseModel>, String>((ref, query) {
+  if (query.isEmpty) return [];
+  return ref.watch(gitaServiceProvider).searchVerses(query);
+});
+
 final bookmarkedVersesProvider = FutureProvider<List<VerseModel>>((ref) {
   return ref.watch(gitaServiceProvider).getBookmarkedVerses();
 });
