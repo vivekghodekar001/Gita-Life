@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
     ShieldCheck, LayoutDashboard, Calendar, UserPlus,
-    BrainCircuit, FileText, Library, Users2, LogOut, Menu, X
+    BrainCircuit, FileText, Library, Users2, LogOut, Menu, X, Music
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
@@ -31,6 +31,7 @@ const AdminLayout: React.FC = () => {
         {
             section: 'Resources', items: [
                 { to: '/admin/resources', icon: Library, label: 'Library' },
+                { to: '/admin/kirtan', icon: Music, label: 'Kirtan Player' },
                 { to: '/admin/mentorship', icon: Users2, label: 'Mentors' },
             ]
         },
