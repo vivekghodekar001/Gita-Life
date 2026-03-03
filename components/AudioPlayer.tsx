@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume1, Volume2, VolumeX, Music } from 'lucide-react';
 
 interface Track {
     title: string;
@@ -22,6 +22,7 @@ const AudioPlayer: React.FC<Props> = ({ tracks }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
+    const [volume, setVolume] = useState(1);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const shouldPlayRef = useRef(false);
@@ -96,6 +97,23 @@ const AudioPlayer: React.FC<Props> = ({ tracks }) => {
         setIsMuted(!isMuted);
     };
 
+    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const audio = audioRef.current;
+        if (!audio) return;
+        const v = Number(e.target.value);
+        audio.volume = v;
+        setVolume(v);
+        if (v === 0) {
+            setIsMuted(true);
+            audio.muted = true;
+        } else if (isMuted) {
+            setIsMuted(false);
+            audio.muted = false;
+        }
+    };
+
+    const VolumeIcon = isMuted || volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
+
     const selectTrack = (index: number) => {
         if (index === currentIndex) {
             togglePlay();
@@ -139,9 +157,20 @@ const AudioPlayer: React.FC<Props> = ({ tracks }) => {
 
                 {/* Buttons */}
                 <div className="flex items-center justify-center gap-4">
-                    <button onClick={toggleMute} className="p-2 text-slate-400 hover:text-purple-600 transition-colors">
-                        {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                        <button onClick={toggleMute} className="p-2 text-slate-400 hover:text-purple-600 transition-colors">
+                            <VolumeIcon size={18} />
+                        </button>
+                        <input
+                            type="range"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={isMuted ? 0 : volume}
+                            onChange={handleVolumeChange}
+                            className="w-16 h-1 appearance-none rounded-full bg-purple-100 accent-purple-600 cursor-pointer"
+                        />
+                    </div>
                     <button onClick={skipBack} className="p-2 text-slate-600 hover:text-purple-600 transition-colors">
                         <SkipBack size={22} />
                     </button>
@@ -154,7 +183,6 @@ const AudioPlayer: React.FC<Props> = ({ tracks }) => {
                     <button onClick={skipForward} className="p-2 text-slate-600 hover:text-purple-600 transition-colors">
                         <SkipForward size={22} />
                     </button>
-                    <div className="w-8" />
                 </div>
             </div>
 

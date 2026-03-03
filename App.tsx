@@ -128,6 +128,7 @@ const AppContent: React.FC = () => {
             <Route path="quizzes" element={<AdminQuizManager />} />
             <Route path="homework" element={<HomeworkManagement mode="admin" />} />
             <Route path="resources" element={<ResourcesGallery mode="admin" />} />
+            <Route path="kirtan" element={<KirtanPlayer />} />
             <Route path="mentorship" element={<MentorshipProgram mode="admin" />} />
           </Route>
         </Route>

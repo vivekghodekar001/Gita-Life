@@ -127,7 +127,7 @@ const ResourcesGallery: React.FC<Props> = ({ mode }) => {
                                         </div>
                                     </div>
                                 )}
-                                <span className={`absolute top-3 left-3 badge ${r.type === 'book' ? 'badge-saffron' : r.type === 'video' ? 'badge-red' : r.type === 'lecture' ? 'badge-purple' : 'badge-blue'
+                                <span className={`absolute top-3 left-3 badge ${r.type === 'book' ? 'badge-saffron' : r.type === 'video' ? 'badge-red' : r.type === 'lecture' ? 'badge-purple' : r.type === 'audio' ? 'badge-green' : 'badge-blue'
                                     } text-[10px]`}>{r.type}</span>
                             </div>
                             <div className="p-4">
