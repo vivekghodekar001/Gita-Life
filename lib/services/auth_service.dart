@@ -14,45 +14,114 @@ class AuthService {
     String password,
     Map<String, dynamic> userData,
   ) async {
-    // TODO: Create user with email/password, save userData to /users/{uid}
-    throw UnimplementedError();
+    try {
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (credential.user != null) {
+        userData['uid'] = credential.user!.uid;
+        userData['createdAt'] = FieldValue.serverTimestamp();
+        userData['updatedAt'] = FieldValue.serverTimestamp();
+        
+        await _firestore
+            .collection('users')
+            .doc(credential.user!.uid)
+            .set(userData);
+      }
+      return credential;
+    } catch (e, stack) {
+      print('AuthService.registerWithEmail error: $e\n$stack');
+      rethrow;
+    }
   }
 
   Future<void> loginWithEmail(String email, String password) async {
-    // TODO: Sign in with email/password
-    throw UnimplementedError();
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } catch (e, stack) {
+      print('AuthService.loginWithEmail error: $e\n$stack');
+      rethrow;
+    }
   }
 
-  Future<void> sendPhoneOtp(String phoneNumber) async {
-    // TODO: Firebase Phone Auth - send OTP
-    throw UnimplementedError();
+  Future<void> sendPhoneOtp({
+    required String phoneNumber,
+    required Function(PhoneAuthCredential) verificationCompleted,
+    required Function(FirebaseAuthException) verificationFailed,
+    required Function(String, int?) codeSent,
+    required Function(String) codeAutoRetrievalTimeout,
+  }) async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      timeout: const Duration(seconds: 60),
+      verificationCompleted: verificationCompleted,
+      verificationFailed: verificationFailed,
+      codeSent: codeSent,
+      codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
+    );
   }
 
   Future<UserCredential> verifyPhoneOtp(
     String verificationId,
     String smsCode,
   ) async {
-    // TODO: Verify phone OTP
-    throw UnimplementedError();
+    try {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+      return await _auth.signInWithCredential(credential);
+    } catch (e, stack) {
+      print('AuthService.verifyPhoneOtp error: $e\n$stack');
+      rethrow;
+    }
   }
 
   Future<void> resetPassword(String email) async {
-    // TODO: Send password reset email
-    throw UnimplementedError();
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } catch (e, stack) {
+      print('AuthService.resetPassword error: $e\n$stack');
+      rethrow;
+    }
   }
 
   Future<void> updateFcmToken(String uid, String token) async {
-    // TODO: Update FCM token in /users/{uid}
-    throw UnimplementedError();
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'fcmToken': token,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      // Ignore if document not found
+    }
   }
 
   Future<UserModel?> getUserProfile(String uid) async {
-    // TODO: Fetch user document from /users/{uid}
-    throw UnimplementedError();
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return UserModel.fromFirestore(doc);
+      }
+      return null;
+    } catch (e, stack) {
+      print('AuthService.getUserProfile error: $e\n$stack');
+      rethrow;
+    }
   }
 
   Future<void> logout() async {
-    // TODO: Sign out
-    throw UnimplementedError();
+    try {
+      await _auth.signOut();
+      // Additional local data clearing should be handled by providers
+    } catch (e, stack) {
+      print('AuthService.logout error: $e\n$stack');
+      rethrow;
+    }
   }
 }

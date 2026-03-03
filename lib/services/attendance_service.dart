@@ -1,46 +1,138 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/attendance_session.dart';
 import '../models/attendance_record.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AttendanceService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<AttendanceSession> createSession(Map<String, dynamic> sessionData) async {
-    // TODO: Create a new attendance session document in /attendance_sessions
-    throw UnimplementedError();
+    final docRef = _firestore.collection('attendance_sessions').doc();
+    
+    final session = AttendanceSession(
+      sessionId: docRef.id,
+      title: sessionData['title'] ?? 'New Session',
+      topic: sessionData['topic'] ?? '',
+      lectureDate: sessionData['date'] ?? DateTime.now(),
+      createdBy: FirebaseAuth.instance.currentUser?.uid ?? 'unknown',
+      isLocked: false,
+      totalStudents: 0,
+      presentCount: 0,
+      absentCount: 0,
+      lateCount: 0,
+      createdAt: DateTime.now(),
+    );
+
+    await docRef.set(session.toFirestore());
+    return session;
   }
 
   Future<void> markAttendance(
     String sessionId,
     String studentUid,
     String status,
+    {String? studentName, String? rollNumber}
   ) async {
-    // TODO: Create/update attendance record in /attendance_records
-    throw UnimplementedError();
+    // Determine a record ID based on sessionId and studentUid to ensure one record per student per session
+    final recordId = '${sessionId}_$studentUid';
+    final docRef = _firestore.collection('attendance_records').doc(recordId);
+    
+    final record = AttendanceRecord(
+      recordId: recordId,
+      sessionId: sessionId,
+      studentUid: studentUid,
+      studentName: studentName ?? 'Unknown',
+      rollNumber: rollNumber ?? 'N/A',
+      status: status,
+      markedBy: FirebaseAuth.instance.currentUser?.uid ?? 'unknown',
+      markedAt: DateTime.now(),
+    );
+
+    await docRef.set(record.toFirestore(), SetOptions(merge: true));
   }
 
   Future<void> submitSession(String sessionId) async {
-    // TODO: Lock the session (isLocked = true) and update counts
-    throw UnimplementedError();
+    final recordsQuery = await _firestore
+        .collection('attendance_records')
+        .where('sessionId', isEqualTo: sessionId)
+        .get();
+
+    int present = 0;
+    int absent = 0;
+    int late = 0;
+
+    for (var doc in recordsQuery.docs) {
+      final status = doc.data()['status'] as String?;
+      if (status == 'present') present++;
+      if (status == 'absent') absent++;
+      if (status == 'late') late++;
+    }
+
+    await _firestore.collection('attendance_sessions').doc(sessionId).update({
+      'isLocked': true,
+      'presentCount': present,
+      'absentCount': absent,
+      'lateCount': late,
+      'totalStudents': present + absent + late,
+    });
   }
 
   Future<List<AttendanceRecord>> getStudentAttendance(String studentUid) async {
-    // TODO: Fetch all attendance records for a student
-    throw UnimplementedError();
+    final querySnapshot = await _firestore
+        .collection('attendance_records')
+        .where('studentUid', isEqualTo: studentUid)
+        .orderBy('markedAt', descending: true)
+        .get();
+
+    return querySnapshot.docs.map((doc) => AttendanceRecord.fromFirestore(doc)).toList();
   }
 
   Future<double> getAttendancePercentage(String studentUid) async {
-    // TODO: Calculate attendance percentage for a student
-    throw UnimplementedError();
+    final records = await getStudentAttendance(studentUid);
+    if (records.isEmpty) return 0.0;
+
+    int attended = 0;
+    for (var record in records) {
+      if (record.status == 'present' || record.status == 'late') {
+        attended++;
+      }
+    }
+    return (attended / records.length) * 100;
   }
 
   Future<String> exportSessionCsv(String sessionId) async {
-    // TODO: Generate CSV string from attendance records for a session
-    throw UnimplementedError();
+    final sessionDoc = await _firestore.collection('attendance_sessions').doc(sessionId).get();
+    if (!sessionDoc.exists) return '';
+    
+    final session = AttendanceSession.fromFirestore(sessionDoc);
+    
+    final recordsQuery = await _firestore
+        .collection('attendance_records')
+        .where('sessionId', isEqualTo: sessionId)
+        .get();
+
+    final buffer = StringBuffer();
+    buffer.writeln('Session: ${session.title}');
+    buffer.writeln('Topic: ${session.topic}');
+    buffer.writeln('Date: ${session.lectureDate.toIso8601String()}');
+    buffer.writeln('');
+    buffer.writeln('Roll Number,Student Name,Status,Marked At');
+
+    for (var doc in recordsQuery.docs) {
+      final record = AttendanceRecord.fromFirestore(doc);
+      final formattedTime = record.markedAt.toIso8601String();
+      buffer.writeln('${record.rollNumber},${record.studentName},${record.status},$formattedTime');
+    }
+
+    return buffer.toString();
   }
 
   Future<List<AttendanceSession>> getSessionList() async {
-    // TODO: Fetch all attendance sessions, ordered by date
-    throw UnimplementedError();
+    final querySnapshot = await _firestore
+        .collection('attendance_sessions')
+        .orderBy('lectureDate', descending: true)
+        .get();
+
+    return querySnapshot.docs.map((doc) => AttendanceSession.fromFirestore(doc)).toList();
   }
 }

@@ -12,8 +12,8 @@ final ThemeData gitaLifeTheme = ThemeData(
     seedColor: saffron,
     primary: saffron,
     secondary: gold,
-    background: cream,
-    onBackground: navy,
+    surface: cream,
+    onSurface: navy,
   ),
   scaffoldBackgroundColor: cream,
   textTheme: GoogleFonts.poppinsTextTheme().apply(
@@ -30,7 +30,7 @@ final ThemeData gitaLifeTheme = ThemeData(
     ),
     elevation: 0,
   ),
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     elevation: 4,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12),

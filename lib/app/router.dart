@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../models/user_model.dart';
 import '../providers/auth_provider.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/otp_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
+import '../screens/auth/pending_screen.dart';
+import '../screens/auth/suspended_screen.dart';
 import '../screens/home/dashboard_screen.dart';
 import '../screens/gita/chapter_list_screen.dart';
 import '../screens/gita/verse_list_screen.dart';
@@ -29,20 +33,60 @@ import '../screens/admin/manage_audio_screen.dart';
 import '../screens/admin/manage_students_screen.dart';
 import '../screens/admin/send_notification_screen.dart';
 
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    _ref.listen<AsyncValue<User?>>(
+      authStateProvider,
+      (_, __) => notifyListeners(),
+    );
+    _ref.listen<AsyncValue<UserModel?>>(
+      userProfileProvider,
+      (_, __) => notifyListeners(),
+    );
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final notifier = RouterNotifier(ref);
 
   return GoRouter(
     initialLocation: '/login',
+    refreshListenable: notifier,
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
+      final userProfile = ref.read(userProfileProvider);
+
       final isAuthenticated = authState.valueOrNull != null;
       final isAuthRoute = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/otp' ||
           state.matchedLocation == '/forgot-password';
 
+      print('ROUTER REDIRECT: matchedLocation=${state.matchedLocation}, isAuth=$isAuthenticated, userProfile=${userProfile.valueOrNull?.status}, isLoading=${userProfile.isLoading}');
+
       if (!isAuthenticated && !isAuthRoute) return '/login';
-      if (isAuthenticated && isAuthRoute) return '/home';
+      
+      if (isAuthenticated) {
+        final profile = userProfile.valueOrNull;
+        
+        // Wait for profile to load before making further redirect decisions
+        if (userProfile.isLoading) return null;
+        
+        if (profile != null) {
+          if (profile.status == 'pending' && state.matchedLocation != '/pending') {
+            return '/pending';
+          }
+          if (profile.status == 'suspended' && state.matchedLocation != '/suspended') {
+            return '/suspended';
+          }
+          if (profile.status == 'active' && 
+              (isAuthRoute || state.matchedLocation == '/pending' || state.matchedLocation == '/suspended')) {
+            return '/home';
+          }
+        }
+      }
       return null;
     },
     routes: [
@@ -51,6 +95,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
       GoRoute(path: '/otp', builder: (context, state) => const OtpScreen()),
       GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
+      GoRoute(path: '/pending', builder: (context, state) => const PendingScreen()),
+      GoRoute(path: '/suspended', builder: (context, state) => const SuspendedScreen()),
 
       // Home
       GoRoute(path: '/home', builder: (context, state) => const DashboardScreen()),
