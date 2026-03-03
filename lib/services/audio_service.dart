@@ -1,34 +1,84 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
-import '../models/audio_track_model.dart';
+import '../models/audio_track.dart';
 
 class AudioService {
-  Future<List<AudioTrackModel>> getAudioTracks({String? category}) async {
-    // TODO: Fetch audio tracks from Firestore, optionally filtered by category
-    throw UnimplementedError();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final Box<AudioTrackModel> _downloadsBox = Hive.box<AudioTrackModel>('downloads');
+  final Dio _dio = Dio();
+
+  Future<List<AudioTrackModel>> getAudioTracks([String? category]) async {
+    Query query = _firestore.collection('audio_tracks').where('isActive', isEqualTo: true);
+    if (category != null && category.isNotEmpty && category != 'All') {
+      query = query.where('category', isEqualTo: category.toLowerCase());
+    }
+    
+    final snapshot = await query.get();
+    
+    final tracks = snapshot.docs.map((doc) => AudioTrackModel.fromFirestore(doc)).toList();
+    tracks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return tracks;
   }
 
   Future<String> buildStreamUrl(AudioTrackModel track) async {
-    // TODO: Build streaming URL based on sourceType (google_drive or firebase_storage)
-    throw UnimplementedError();
+    if (track.sourceType == 'google_drive' && track.driveFileId != null) {
+      return 'https://drive.google.com/uc?export=download&id=\${track.driveFileId}';
+    } else if (track.sourceType == 'firebase_storage' && track.storageRef != null) {
+      return await _storage.ref(track.storageRef).getDownloadURL();
+    } else if (track.streamUrl != null) {
+      return track.streamUrl!;
+    }
+    throw Exception('Unknown source type or missing ID for track: \${track.title}');
   }
 
-  Future<void> downloadTrack(AudioTrackModel track) async {
-    // TODO: Download audio file to local storage, save metadata to Hive
-    throw UnimplementedError();
+  Future<void> downloadTrack(AudioTrackModel track, Function(double) onProgress) async {
+    if (_downloadsBox.containsKey(track.trackId)) return;
+
+    final url = await buildStreamUrl(track);
+    final dir = await getApplicationDocumentsDirectory();
+    final filePath = '\${dir.path}/audio_\${track.trackId}.mp3';
+
+    await _dio.download(
+      url,
+      filePath,
+      onReceiveProgress: (received, total) {
+        if (total != -1) {
+          onProgress(received / total);
+        }
+      },
+    );
+
+    final downloadedTrack = track.copyWith(localFilePath: filePath);
+    await _downloadsBox.put(track.trackId, downloadedTrack);
   }
 
-  Future<List<AudioTrackModel>> getDownloadedTracks() async {
-    // TODO: Return list of locally downloaded tracks from Hive
-    throw UnimplementedError();
+  List<AudioTrackModel> getDownloadedTracks() {
+    return _downloadsBox.values.toList();
   }
 
   Future<void> deleteDownload(String trackId) async {
-    // TODO: Delete downloaded audio file and remove from Hive
-    throw UnimplementedError();
+    final track = _downloadsBox.get(trackId);
+    if (track != null && track.localFilePath != null) {
+      final file = File(track.localFilePath!);
+      if (await file.exists()) {
+        await file.delete();
+      }
+      await _downloadsBox.delete(trackId);
+    }
   }
 
   Future<void> incrementPlayCount(String trackId) async {
-    // TODO: Increment playCount field in Firestore for given trackId
-    throw UnimplementedError();
+    try {
+      await _firestore.collection('audio_tracks').doc(trackId).update({
+        'playCount': FieldValue.increment(1),
+      });
+    } catch(e) {
+      // Ignored for permissions
+    }
   }
 }
