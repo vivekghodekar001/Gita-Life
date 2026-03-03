@@ -20,6 +20,7 @@ const ChantingCounter = lazy(() => import('./components/ChantingCounter'));
 const AdminQuizManager = lazy(() => import('./components/quiz/AdminQuizManager'));
 const UserQuizTaker = lazy(() => import('./components/quiz/UserQuizTaker'));
 const UserQuizList = lazy(() => import('./components/quiz/UserQuizList'));
+const KirtanPlayer = lazy(() => import('./components/KirtanPlayer'));
 const Onboarding = lazy(() => import('./components/Onboarding'));
 const MyProfile = lazy(() => import('./components/MyProfile'));
 
@@ -141,6 +142,7 @@ const AppContent: React.FC = () => {
             <Route path="resources" element={<ResourcesGallery mode="student" />} />
             <Route path="mentorship" element={<MentorshipProgram mode="student" />} />
             <Route path="gita" element={<GitaInsights />} />
+            <Route path="kirtan" element={<KirtanPlayer />} />
             <Route path="quiz" element={<UserQuizTaker />} />
             <Route path="my-quizzes" element={<UserQuizList />} />
             <Route path="profile" element={<MyProfile />} />

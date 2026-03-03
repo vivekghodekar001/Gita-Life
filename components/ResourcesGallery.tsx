@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Library, Plus, X, Search, ExternalLink, Trash2, BookOpen, VideoIcon, Image, Mic } from 'lucide-react';
+import { Library, Plus, X, Search, ExternalLink, Trash2, BookOpen, VideoIcon, Image, Mic, Music } from 'lucide-react';
 import { storageService } from '../services/storageService';
 import { Resource, ResourceType } from '../types';
 
@@ -10,6 +10,7 @@ const TYPES: { value: ResourceType; label: string; icon: any }[] = [
     { value: 'video', label: 'Videos', icon: VideoIcon },
     { value: 'lecture', label: 'Lectures', icon: Mic },
     { value: 'photo', label: 'Photos', icon: Image },
+    { value: 'audio', label: 'Audio', icon: Music },
 ];
 
 const ResourcesGallery: React.FC<Props> = ({ mode }) => {
@@ -60,6 +61,7 @@ const ResourcesGallery: React.FC<Props> = ({ mode }) => {
             case 'video': return <VideoIcon size={16} />;
             case 'lecture': return <Mic size={16} />;
             case 'photo': return <Image size={16} />;
+            case 'audio': return <Music size={16} />;
             default: return <Library size={16} />;
         }
     };
@@ -70,6 +72,7 @@ const ResourcesGallery: React.FC<Props> = ({ mode }) => {
             case 'video': return 'bg-red-50 text-red-600';
             case 'lecture': return 'bg-purple-50 text-purple-600';
             case 'photo': return 'bg-blue-50 text-blue-600';
+            case 'audio': return 'bg-green-50 text-green-600';
             default: return 'bg-slate-50 text-slate-600';
         }
     };
