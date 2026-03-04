@@ -1,9 +1,20 @@
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import '../models/japa_log.dart';
 
 class JapaService {
+  void _ensureFirebase() {
+    if (Firebase.apps.isEmpty) {
+      throw Exception('[JapaService] Firebase not initialized. Ensure Firebase.initializeApp() is called and verified before accessing this service.');
+    }
+  }
+
+  FirebaseFirestore get _firestore {
+    _ensureFirebase();
+    return FirebaseFirestore.instanceFor(app: Firebase.app());
+  }
   final Box<JapaLog> _japaBox = Hive.box<JapaLog>('japa_logs');
   final Box _settingsBox = Hive.box('settings');
 
@@ -103,7 +114,7 @@ class JapaService {
   Future<void> syncToFirestore(String userId) async {
     if (userId.isEmpty) return;
     
-    final firestore = FirebaseFirestore.instance;
+    final firestore = _firestore;
     final batch = firestore.batch();
     
     final collection = firestore.collection('japa_logs').doc(userId).collection('logs');

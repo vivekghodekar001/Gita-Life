@@ -17,7 +17,7 @@ class AudioMiniPlayer extends ConsumerWidget {
     final isPlaying = isPlayingAsync.value ?? false;
 
     return GestureDetector(
-      onTap: () => context.push('/audio/player/\${activeTrack.trackId}'),
+      onTap: () => context.push('/audio/player/${activeTrack.trackId}'),
       child: Container(
         height: 70,
         decoration: BoxDecoration(

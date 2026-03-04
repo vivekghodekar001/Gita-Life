@@ -1,10 +1,26 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import '../models/user_model.dart';
+import 'dart:io';
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  void _ensureFirebase() {
+    if (Firebase.apps.isEmpty) {
+      throw Exception('[AuthService] Firebase not initialized. Ensure Firebase.initializeApp() is called and verified before accessing this service.');
+    }
+  }
+
+  FirebaseAuth get _auth {
+    _ensureFirebase();
+    return FirebaseAuth.instanceFor(app: Firebase.app());
+  }
+
+  FirebaseFirestore get _firestore {
+    _ensureFirebase();
+    return FirebaseFirestore.instanceFor(app: Firebase.app());
+  }
 
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -21,14 +37,17 @@ class AuthService {
       );
 
       if (credential.user != null) {
-        userData['uid'] = credential.user!.uid;
-        userData['createdAt'] = FieldValue.serverTimestamp();
-        userData['updatedAt'] = FieldValue.serverTimestamp();
-        
+        final Map<String, dynamic> firestoreData = {
+          ...userData,
+          'uid': credential.user!.uid,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
+
         await _firestore
             .collection('users')
             .doc(credential.user!.uid)
-            .set(userData);
+            .set(firestoreData);
       }
       return credential;
     } catch (e, stack) {
@@ -123,5 +142,16 @@ class AuthService {
       print('AuthService.logout error: $e\n$stack');
       rethrow;
     }
+  }
+
+  Future<void> updateProfile(String uid, Map<String, dynamic> data) async {
+    await _firestore.collection('users').doc(uid).update(data);
+  }
+
+  Future<String> uploadProfilePhoto(String uid, File file) async {
+    _ensureFirebase();
+    final refStorage = FirebaseStorage.instanceFor(app: Firebase.app()).ref().child('profile_photos/$uid.jpg');
+    await refStorage.putFile(file);
+    return await refStorage.getDownloadURL();
   }
 }

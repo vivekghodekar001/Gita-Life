@@ -4,15 +4,30 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../providers/audio_provider.dart';
+import '../../models/audio_track.dart';
 
-class AudioPlayerScreen extends ConsumerWidget {
+class AudioPlayerScreen extends ConsumerStatefulWidget {
   final String trackId;
 
   const AudioPlayerScreen({super.key, required this.trackId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AudioPlayerScreen> createState() => _AudioPlayerScreenState();
+}
+
+class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen> {
+  YoutubePlayerController? _ytController;
+
+  @override
+  void dispose() {
+    _ytController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final activeTrack = ref.watch(activeTrackProvider);
     final isPlayingAsync = ref.watch(isPlayingProvider);
     final positionAsync = ref.watch(positionProvider);
@@ -37,6 +52,15 @@ class AudioPlayerScreen extends ConsumerWidget {
     final loopMode = loopAsync.value ?? LoopMode.off;
     final isDownloaded = downloads.any((d) => d.trackId == activeTrack.trackId);
 
+    final isYouTube = activeTrack.sourceType == 'youtube';
+    
+    if (isYouTube && _ytController == null) {
+      _ytController = YoutubePlayerController(
+        initialVideoId: activeTrack.streamUrl ?? '',
+        flags: const YoutubePlayerFlags(autoPlay: true, mute: false),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F0),
       appBar: AppBar(
@@ -49,18 +73,18 @@ class AudioPlayerScreen extends ConsumerWidget {
         actions: [
            if (isDownloaded)
              const Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.offline_pin, color: Colors.green))
-           else
+           else if (!isYouTube)
              IconButton(
                icon: const Icon(Icons.download, color: Colors.blueGrey),
                onPressed: () {
-                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Downloading \${activeTrack.title}...')));
+                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Downloading ${activeTrack.title}...')));
                  ref.read(downloadedTracksProvider.notifier).downloadTrack(activeTrack);
                },
              ),
            IconButton(
              icon: const Icon(Icons.share, color: Colors.blueGrey),
              onPressed: () {
-               Share.share('Check out \${activeTrack.title} on GitaLife!');
+               Share.share('Check out ${activeTrack.title} on GitaLife!');
              },
            )
         ],
@@ -69,9 +93,9 @@ class AudioPlayerScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         child: Column(
           children: [
-            // Cover Art
+            // Cover Art / Video
             Container(
-              height: 300,
+              height: isYouTube ? 220 : 300,
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
@@ -79,21 +103,30 @@ class AudioPlayerScreen extends ConsumerWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: activeTrack.coverImageUrl != null
+                child: isYouTube && _ytController != null
+                  ? YoutubePlayer(
+                      controller: _ytController!,
+                      showVideoProgressIndicator: true,
+                      onReady: () {
+                        // Pause just_audio if it was playing
+                        ref.read(audioPlayerControllerProvider).stop();
+                      },
+                    )
+                  : (activeTrack.coverImageUrl != null
                     ? CachedNetworkImage(
                         imageUrl: activeTrack.coverImageUrl!,
                         fit: BoxFit.cover,
                         errorWidget: (context, url, err) => _placeholderImage(),
                       )
-                    : _placeholderImage(),
+                    : _placeholderImage()),
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 30),
             
             // Info
             Text(
               activeTrack.title,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blueGrey),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -101,97 +134,102 @@ class AudioPlayerScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               activeTrack.artist,
-              style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: isYouTube ? 20 : 30),
 
-            // Progress Slider
-            SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                activeTrackColor: const Color(0xFFFF6600),
-                inactiveTrackColor: Colors.orange.shade100,
-                thumbColor: const Color(0xFFFF6600),
-                trackHeight: 6,
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+            if (!isYouTube) ...[
+              // Progress Slider
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: const Color(0xFFFF6600),
+                  inactiveTrackColor: Colors.orange.shade100,
+                  thumbColor: const Color(0xFFFF6600),
+                  trackHeight: 6,
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                ),
+                child: Slider(
+                  min: 0,
+                  max: duration.inMilliseconds > 0 ? duration.inMilliseconds.toDouble() : 1,
+                  value: position.inMilliseconds.toDouble().clamp(0, duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1),
+                  onChanged: (val) {
+                    ref.read(audioPlayerControllerProvider).seek(Duration(milliseconds: val.toInt()));
+                  },
+                ),
               ),
-              child: Slider(
-                min: 0,
-                max: duration.inMilliseconds > 0 ? duration.inMilliseconds.toDouble() : 1,
-                value: position.inMilliseconds.toDouble().clamp(0, duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1),
-                onChanged: (val) {
-                  ref.read(audioPlayerControllerProvider).seek(Duration(milliseconds: val.toInt()));
-                },
+              // Time Labels
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(_formatDuration(position), style: TextStyle(color: Colors.grey.shade600)),
+                    Text(_formatDuration(duration), style: TextStyle(color: Colors.grey.shade600)),
+                  ],
+                ),
               ),
-            ),
-            // Time Labels
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              const SizedBox(height: 20),
+
+              // Controls
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text(_formatDuration(position), style: TextStyle(color: Colors.grey.shade600)),
-                  Text(_formatDuration(duration), style: TextStyle(color: Colors.grey.shade600)),
+                  IconButton(
+                    icon: Icon(Icons.shuffle, color: isShuffle ? const Color(0xFFFF6600) : Colors.blueGrey),
+                    onPressed: () => ref.read(audioPlayerControllerProvider).toggleShuffle(),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.skip_previous, size: 40, color: Colors.blueGrey),
+                    onPressed: () => ref.read(audioPlayerControllerProvider).previous(),
+                  ),
+                  GestureDetector(
+                    onTap: () => ref.read(audioPlayerControllerProvider).togglePlay(),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFF6600),
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Icon(isPlaying ? Icons.pause : Icons.play_arrow, size: 48, color: Colors.white),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.skip_next, size: 40, color: Colors.blueGrey),
+                    onPressed: () => ref.read(audioPlayerControllerProvider).next(),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      loopMode == LoopMode.one ? Icons.repeat_one : Icons.repeat,
+                      color: loopMode != LoopMode.off ? const Color(0xFFFF6600) : Colors.blueGrey,
+                    ),
+                    onPressed: () => ref.read(audioPlayerControllerProvider).toggleLoop(),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(height: 20),
-
-            // Controls
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.shuffle, color: isShuffle ? const Color(0xFFFF6600) : Colors.blueGrey),
-                  onPressed: () => ref.read(audioPlayerControllerProvider).toggleShuffle(),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.skip_previous, size: 40, color: Colors.blueGrey),
-                  onPressed: () => ref.read(audioPlayerControllerProvider).previous(),
-                ),
-                GestureDetector(
-                  onTap: () => ref.read(audioPlayerControllerProvider).togglePlay(),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFF6600),
-                      shape: BoxShape.circle,
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    child: Icon(isPlaying ? Icons.pause : Icons.play_arrow, size: 48, color: Colors.white),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.skip_next, size: 40, color: Colors.blueGrey),
-                  onPressed: () => ref.read(audioPlayerControllerProvider).next(),
-                ),
-                IconButton(
-                  icon: Icon(
-                    loopMode == LoopMode.one ? Icons.repeat_one : Icons.repeat,
-                    color: loopMode != LoopMode.off ? const Color(0xFFFF6600) : Colors.blueGrey,
-                  ),
-                  onPressed: () => ref.read(audioPlayerControllerProvider).toggleLoop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-            
-            // Speed & Volume row (Volume might not be supported natively on all mobile without system overrides, exposing internal stream volume if necessary, otherwise skipping native volume since OS manages it)
-            // We will expose Speed.
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.speed, color: Colors.blueGrey),
-                const SizedBox(width: 10),
-                DropdownButton<double>(
-                  value: speed,
-                  items: [0.75, 1.0, 1.25, 1.5, 2.0].map((s) => DropdownMenuItem(value: s, child: Text('\${s}x'))).toList(),
-                  onChanged: (val) {
-                    if (val != null) ref.read(audioPlayerControllerProvider).setSpeed(val);
-                  },
-                )
-              ],
-            )
+              const SizedBox(height: 30),
+              
+              // Speed
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.speed, color: Colors.blueGrey),
+                  const SizedBox(width: 10),
+                  DropdownButton<double>(
+                    value: speed,
+                    items: [0.75, 1.0, 1.25, 1.5, 2.0].map((s) => DropdownMenuItem(value: s, child: Text('${s}x'))).toList(),
+                    onChanged: (val) {
+                      if (val != null) ref.read(audioPlayerControllerProvider).setSpeed(val);
+                    },
+                  )
+                ],
+              )
+            ] else 
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Text('Playback controlled via YouTube player above', style: TextStyle(color: Colors.grey, fontSize: 13, fontStyle: FontStyle.italic)),
+              ),
           ],
         ),
       ),
@@ -202,7 +240,7 @@ class AudioPlayerScreen extends ConsumerWidget {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(d.inMinutes.remainder(60));
     final seconds = twoDigits(d.inSeconds.remainder(60));
-    return '\$minutes:\$seconds';
+    return '$minutes:$seconds';
   }
 
   Widget _placeholderImage() {

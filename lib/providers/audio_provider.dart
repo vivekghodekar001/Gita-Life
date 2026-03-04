@@ -50,7 +50,7 @@ class AudioPlayerController {
   final Ref ref;
   
   AudioPlayerController(this.ref) {
-    audioHandler.player.currentIndexStream.listen((index) {
+    audioHandler?.player.currentIndexStream.listen((index) {
        if (index != null) {
          final tracks = ref.read(currentPlaylistProvider);
          if (index >= 0 && index < tracks.length) {
@@ -86,39 +86,52 @@ class AudioPlayerController {
     }
     
     final playlist = ConcatenatingAudioSource(children: audioSources);
-    await audioHandler.player.setAudioSource(playlist, initialIndex: initialIndex);
-    audioHandler.play();
+    await audioHandler?.player.setAudioSource(playlist, initialIndex: initialIndex);
+    audioHandler?.play();
   }
 
   void togglePlay() {
-    if (audioHandler.player.playing) {
-      audioHandler.pause();
+    if (audioHandler?.player.playing == true) {
+      audioHandler?.pause();
     } else {
-      audioHandler.play();
+      audioHandler?.play();
     }
   }
 
-  void stop() => audioHandler.stop();
-  Future<void> next() => audioHandler.skipToNext();
-  Future<void> previous() => audioHandler.skipToPrevious();
-  void seek(Duration pos) => audioHandler.seek(pos);
-  void setSpeed(double speed) => audioHandler.setSpeed(speed);
+  void stop() => audioHandler?.stop();
+  Future<void> next() => audioHandler?.skipToNext() ?? Future.value();
+  Future<void> previous() => audioHandler?.skipToPrevious() ?? Future.value();
+  void seek(Duration pos) => audioHandler?.seek(pos);
+  void setSpeed(double speed) => audioHandler?.setSpeed(speed);
   void toggleShuffle() {
-    audioHandler.player.setShuffleModeEnabled(!audioHandler.player.shuffleModeEnabled);
+    final player = audioHandler?.player;
+    if (player != null) {
+      player.setShuffleModeEnabled(!player.shuffleModeEnabled);
+    }
   }
   void toggleLoop() {
-    final mode = audioHandler.player.loopMode;
-    if (mode == LoopMode.off) audioHandler.player.setLoopMode(LoopMode.one);
-    else if (mode == LoopMode.one) audioHandler.player.setLoopMode(LoopMode.all);
-    else audioHandler.player.setLoopMode(LoopMode.off);
+    final player = audioHandler?.player;
+    if (player == null) return;
+    final mode = player.loopMode;
+    if (mode == LoopMode.off) player.setLoopMode(LoopMode.one);
+    else if (mode == LoopMode.one) player.setLoopMode(LoopMode.all);
+    else player.setLoopMode(LoopMode.off);
   }
 }
 
-final playbackStateProvider = StreamProvider<ProcessingState>((ref) => audioHandler.player.processingStateStream);
-final isPlayingProvider = StreamProvider<bool>((ref) => audioHandler.player.playingStream);
-final positionProvider = StreamProvider<Duration>((ref) => audioHandler.player.positionStream);
-final bufferedPositionProvider = StreamProvider<Duration>((ref) => audioHandler.player.bufferedPositionStream);
-final durationProvider = StreamProvider<Duration?>((ref) => audioHandler.player.durationStream);
-final speedProvider = StreamProvider<double>((ref) => audioHandler.player.speedStream);
-final loopModeProvider = StreamProvider<LoopMode>((ref) => audioHandler.player.loopModeStream);
-final shuffleModeProvider = StreamProvider<bool>((ref) => audioHandler.player.shuffleModeEnabledStream);
+final playbackStateProvider = StreamProvider<ProcessingState>((ref) =>
+    audioHandler?.player.processingStateStream ?? const Stream.empty());
+final isPlayingProvider = StreamProvider<bool>((ref) =>
+    audioHandler?.player.playingStream ?? const Stream.empty());
+final positionProvider = StreamProvider<Duration>((ref) =>
+    audioHandler?.player.positionStream ?? const Stream.empty());
+final bufferedPositionProvider = StreamProvider<Duration>((ref) =>
+    audioHandler?.player.bufferedPositionStream ?? const Stream.empty());
+final durationProvider = StreamProvider<Duration?>((ref) =>
+    audioHandler?.player.durationStream ?? const Stream.empty());
+final speedProvider = StreamProvider<double>((ref) =>
+    audioHandler?.player.speedStream ?? const Stream.empty());
+final loopModeProvider = StreamProvider<LoopMode>((ref) =>
+    audioHandler?.player.loopModeStream ?? const Stream.empty());
+final shuffleModeProvider = StreamProvider<bool>((ref) =>
+    audioHandler?.player.shuffleModeEnabledStream ?? const Stream.empty());

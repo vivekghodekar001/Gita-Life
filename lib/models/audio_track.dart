@@ -18,7 +18,7 @@ class AudioTrackModel extends HiveObject {
   final String category; // bhajan, kirtan, lecture_audio, other
 
   @HiveField(4)
-  final String sourceType; // google_drive, firebase_storage, direct_url
+  final String sourceType; // google_drive, firebase_storage, direct_url, youtube
 
   @HiveField(5)
   final String? driveFileId;
@@ -112,6 +112,25 @@ class AudioTrackModel extends HiveObject {
       'playCount': playCount,
       'addedBy': addedBy,
       'createdAt': createdAt,
+    };
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'title': title,
+      'artist': artist,
+      'category': category,
+      'sourceType': sourceType,
+      'driveFileId': driveFileId,
+      'storageRef': storageRef,
+      'streamUrl': streamUrl,
+      'durationSeconds': durationSeconds,
+      'fileSizeBytes': fileSizeBytes,
+      'coverImageUrl': coverImageUrl,
+      'isActive': isActive,
+      'playCount': playCount,
+      'addedBy': addedBy,
+      'createdAt': FieldValue.serverTimestamp(),
     };
   }
 

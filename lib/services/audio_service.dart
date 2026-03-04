@@ -1,14 +1,29 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/audio_track.dart';
 
 class AudioService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  void _ensureFirebase() {
+    if (Firebase.apps.isEmpty) {
+      throw Exception('[AudioService] Firebase not initialized. Ensure Firebase.initializeApp() is called and verified before accessing this service.');
+    }
+  }
+
+  FirebaseFirestore get _firestore {
+    _ensureFirebase();
+    return FirebaseFirestore.instanceFor(app: Firebase.app());
+  }
+
+  FirebaseStorage get _storage {
+    _ensureFirebase();
+    return FirebaseStorage.instanceFor(app: Firebase.app());
+  }
   final Box<AudioTrackModel> _downloadsBox = Hive.box<AudioTrackModel>('downloads');
   final Dio _dio = Dio();
 
@@ -30,6 +45,8 @@ class AudioService {
       return 'https://drive.google.com/uc?export=download&id=\${track.driveFileId}';
     } else if (track.sourceType == 'firebase_storage' && track.storageRef != null) {
       return await _storage.ref(track.storageRef).getDownloadURL();
+    } else if (track.sourceType == 'youtube') {
+      return track.streamUrl ?? ''; // For YouTube, we store the ID or full URL in streamUrl
     } else if (track.streamUrl != null) {
       return track.streamUrl!;
     }
@@ -81,4 +98,30 @@ class AudioService {
       // Ignored for permissions
     }
   }
+
+  // Admin Methods
+  Stream<List<AudioTrackModel>> watchAllAudioAdmin() {
+    return _firestore.collection('audio_tracks')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => AudioTrackModel.fromFirestore(doc)).toList());
+  }
+
+  Future<void> addAudioTrack(AudioTrackModel track) async {
+    await _firestore.collection('audio_tracks').doc(track.trackId).set(track.toFirestore());
+  }
+
+  Future<void> updateAudioTrack(String trackId, Map<String, dynamic> data) async {
+    await _firestore.collection('audio_tracks').doc(trackId).update(data);
+  }
+
+  Future<void> toggleAudioActiveStatus(String trackId, bool isActive) async {
+    await _firestore.collection('audio_tracks').doc(trackId).update({'isActive': isActive});
+  }
 }
+
+final audioServiceProvider = Provider<AudioService>((ref) => AudioService());
+
+final adminAudioProvider = StreamProvider<List<AudioTrackModel>>((ref) {
+  return ref.watch(audioServiceProvider).watchAllAudioAdmin();
+});

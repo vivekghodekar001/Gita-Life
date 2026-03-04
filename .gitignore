@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 .vercel
+.dart_tool/
+build/
+.idea/
+*.iml

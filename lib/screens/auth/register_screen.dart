@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -36,7 +37,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     
     setState(() => _isLoading = true);
     try {
-      final userData = {
+      final Map<String, dynamic> userData = {
         'fullName': _nameController.text.trim(),
         'rollNumber': _rollNumberController.text.trim(),
         'email': _emailController.text.trim(),
@@ -44,7 +45,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         'profilePhotoUrl': '',
         'role': 'student',
         'status': 'pending',
-        'enrollmentDate': DateTime.now().toIso8601String(),
+        'enrollmentDate': FieldValue.serverTimestamp(),
         'fcmToken': '',
       };
       

@@ -2,9 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/attendance_session.dart';
 import '../models/attendance_record.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class AttendanceService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  void _ensureFirebase() {
+    if (Firebase.apps.isEmpty) {
+      throw Exception('[AttendanceService] Firebase not initialized. Ensure Firebase.initializeApp() is called and verified before accessing this service.');
+    }
+  }
+
+  FirebaseFirestore get _firestore {
+    _ensureFirebase();
+    return FirebaseFirestore.instanceFor(app: Firebase.app());
+  }
+
+  FirebaseAuth get _auth {
+    _ensureFirebase();
+    return FirebaseAuth.instanceFor(app: Firebase.app());
+  }
 
   Future<AttendanceSession> createSession(Map<String, dynamic> sessionData) async {
     final docRef = _firestore.collection('attendance_sessions').doc();
@@ -14,7 +29,7 @@ class AttendanceService {
       title: sessionData['title'] ?? 'New Session',
       topic: sessionData['topic'] ?? '',
       lectureDate: sessionData['date'] ?? DateTime.now(),
-      createdBy: FirebaseAuth.instance.currentUser?.uid ?? 'unknown',
+      createdBy: _auth.currentUser?.uid ?? 'unknown',
       isLocked: false,
       totalStudents: 0,
       presentCount: 0,
@@ -44,7 +59,7 @@ class AttendanceService {
       studentName: studentName ?? 'Unknown',
       rollNumber: rollNumber ?? 'N/A',
       status: status,
-      markedBy: FirebaseAuth.instance.currentUser?.uid ?? 'unknown',
+      markedBy: _auth.currentUser?.uid ?? 'unknown',
       markedAt: DateTime.now(),
     );
 
@@ -97,6 +112,9 @@ class AttendanceService {
         attended++;
       }
     }
+    
+    // To get a true percentage, we should idealistically divide by total sessions.
+    // For now, we'll just return the percentage of marked sessions. 
     return (attended / records.length) * 100;
   }
 
@@ -134,5 +152,17 @@ class AttendanceService {
         .get();
 
     return querySnapshot.docs.map((doc) => AttendanceSession.fromFirestore(doc)).toList();
+  }
+
+  // Helper Methods to replace raw UI calls
+  Future<QuerySnapshot> getStudentsRaw() {
+    return _firestore.collection('users').get();
+  }
+
+  Future<QuerySnapshot> getRecordsBySessionRaw(String sessionId) {
+    return _firestore
+        .collection('attendance_records')
+        .where('sessionId', isEqualTo: sessionId)
+        .get();
   }
 }

@@ -7,14 +7,18 @@ import '../../providers/attendance_provider.dart';
 import '../../widgets/feature_card.dart';
 import '../../widgets/offline_banner.dart';
 
+
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).value;
+    final userProfile = ref.watch(userProfileProvider).valueOrNull;
+    final isAdmin = userProfile?.role == 'admin';
     final todayJapa = ref.watch(todayJapaLogProvider);
     final sessionsAsync = ref.watch(sessionListProvider);
+
 
     return Scaffold(
       appBar: AppBar(
@@ -106,6 +110,32 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
+
+                // Admin Panel Card — only visible to admins
+                if (isAdmin)
+                  Card(
+                    elevation: 3,
+                    color: Colors.deepOrange.shade50,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.deepOrange.shade200),
+                    ),
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Colors.deepOrange,
+                        child: Icon(Icons.admin_panel_settings, color: Colors.white),
+                      ),
+                      title: const Text(
+                        'Admin Panel',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepOrange),
+                      ),
+                      subtitle: const Text('Manage students, lectures & audio'),
+                      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.deepOrange),
+                      onTap: () => context.push('/admin'),
+                    ),
+                  ),
+
                 const SizedBox(height: 20),
 
                 // Today's Japa Progress

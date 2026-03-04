@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
+import '../models/lecture_model.dart';
 import '../providers/auth_provider.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
@@ -24,7 +25,7 @@ import '../screens/audio/downloads_screen.dart';
 import '../screens/lectures/lecture_list_screen.dart';
 import '../screens/lectures/lecture_player_screen.dart';
 import '../screens/profile/profile_screen.dart';
-import '../screens/profile/settings_screen.dart';
+import '../screens/settings/settings_screen.dart';
 import '../screens/attendance/attendance_history_screen.dart';
 import '../screens/attendance/mark_attendance_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
@@ -85,6 +86,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               (isAuthRoute || state.matchedLocation == '/pending' || state.matchedLocation == '/suspended')) {
             return '/home';
           }
+          
+          // RoleGuard logic: Prevent non-admins from accessing /admin routes
+          if (state.matchedLocation.startsWith('/admin') && profile.role != 'admin') {
+            return '/home';
+          }
         }
       }
       return null;
@@ -133,7 +139,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/lectures', builder: (context, state) => const LectureListScreen()),
       GoRoute(
         path: '/lectures/player/:lectureId',
-        builder: (context, state) => LecturePlayerScreen(lectureId: state.pathParameters['lectureId']!),
+        builder: (context, state) => LecturePlayerScreen(
+          lectureId: state.pathParameters['lectureId']!,
+          lecture: state.extra as LectureModel?,
+        ),
       ),
 
       // Profile routes

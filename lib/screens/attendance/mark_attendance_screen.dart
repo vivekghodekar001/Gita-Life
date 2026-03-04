@@ -31,12 +31,10 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
     setState(() => _isLoading = true);
     // In actual app, fetch all registered users who are assumed students
     try {
-      final snapshot = await FirebaseFirestore.instance.collection('users').get();
+      final attendanceService = ref.read(attendanceServiceProvider);
+      final snapshot = await attendanceService.getStudentsRaw();
       // Load current attendance status if any
-      final recordsSnap = await FirebaseFirestore.instance
-          .collection('attendance_records')
-          .where('sessionId', isEqualTo: widget.sessionId)
-          .get();
+      final recordsSnap = await attendanceService.getRecordsBySessionRaw(widget.sessionId);
 
       Map<String, String> statusMap = {};
       for (var doc in recordsSnap.docs) {
@@ -45,7 +43,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
 
       setState(() {
         _students = snapshot.docs.map((d) {
-          final data = d.data();
+          final data = d.data() as Map<String, dynamic>;
           final uid = d.id;
           return {
             'uid': uid,
