@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, User, Mail, Phone, ShieldAlert, Calendar, MapPin, GraduationCap, Briefcase, Heart, BookOpen } from "lucide-react";
@@ -32,35 +32,40 @@ export default function StudentDetailPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function fetchUser() {
-            try {
-                const userDoc = await getDoc(doc(db, "users", uid as string));
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    setProfile({
-                        id: userDoc.id,
-                        name: data.name || data.displayName || "Unknown",
-                        email: data.email || "No Email",
-                        role: data.role || "student",
-                        status: data.status || "active",
-                        phone: data.phoneNumber || data.phone || "Not Provided",
-                        createdAt: data.createdAt?.toDate?.()?.toLocaleDateString() || "Unknown",
-                        address: data.address || "Not Provided",
-                        dob: data.dateOfBirth?.toDate?.()?.toLocaleDateString() || data.dateOfBirth || "Not Provided",
-                        branch: data.collegeBranch || "Not Provided",
-                        year: data.year || "Not Provided",
-                        interests: data.interests || [],
-                        skills: data.skills || [],
-                    });
-                }
-            } catch (e) {
-                console.error("Error fetching user profile", e);
-            } finally {
-                setLoading(false);
-            }
-        }
+        if (!uid) return;
 
-        if (uid) fetchUser();
+        setLoading(true);
+        const docRef = doc(db, "users", uid as string);
+
+        const unsubscribe = onSnapshot(docRef, (userDoc) => {
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                console.log("Admin Dashboard - Fetched User:", data);
+                setProfile({
+                    id: userDoc.id,
+                    name: data.fullName || data.name || data.displayName || "Unknown",
+                    email: data.email || "No Email",
+                    role: data.role || "student",
+                    status: data.status || "active",
+                    phone: data.phoneNumber || data.phone || "Not Provided",
+                    createdAt: data.createdAt?.toDate?.()?.toLocaleDateString() || "Unknown",
+                    address: data.address || "Not Provided",
+                    dob: data.dateOfBirth?.toDate?.()?.toLocaleDateString() || data.dateOfBirth || "Not Provided",
+                    branch: data.collegeBranch || "Not Provided",
+                    year: data.year || "Not Provided",
+                    interests: data.interests || [],
+                    skills: data.skills || [],
+                });
+            } else {
+                setProfile(null);
+            }
+            setLoading(false);
+        }, (error) => {
+            console.error("Error listening to user profile:", error);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
     }, [uid]);
 
     const toggleStatus = async () => {

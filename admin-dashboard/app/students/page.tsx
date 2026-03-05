@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, updateDoc, doc } from "firebase/firestore";
 import {
     Table,
     TableBody,
@@ -36,19 +36,14 @@ export default function StudentsPage() {
     const [roleFilter, setRoleFilter] = useState("all");
 
     useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    async function fetchUsers() {
-        try {
-            setLoading(true);
-            const snap = await getDocs(collection(db, "users"));
+        setLoading(true);
+        const unsubscribe = onSnapshot(collection(db, "users"), (snap) => {
             const usersData: UserData[] = [];
             snap.forEach((d) => {
                 const data = d.data();
                 usersData.push({
                     id: d.id,
-                    name: data.name || data.displayName || "Unknown",
+                    name: data.fullName || data.name || data.displayName || "Unknown",
                     email: data.email || "No Email",
                     role: data.role || "student",
                     status: data.status || "active",
@@ -58,12 +53,14 @@ export default function StudentsPage() {
                 });
             });
             setUsers(usersData);
-        } catch (e) {
-            console.error(e);
-        } finally {
             setLoading(false);
-        }
-    }
+        }, (error) => {
+            console.error("Error fetching users:", error);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const toggleStatus = async (uid: string, currentStatus: string) => {
         try {
