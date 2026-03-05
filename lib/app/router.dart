@@ -14,7 +14,7 @@ import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/pending_screen.dart';
 import '../screens/auth/suspended_screen.dart';
 import '../screens/home/dashboard_screen.dart';
-import '../screens/gita/chapter_list_screen.dart';
+import '../screens/gita/gita_chapter_list_screen.dart';
 import '../screens/gita/verse_list_screen.dart';
 import '../screens/gita/verse_detail_screen.dart';
 import '../screens/gita/gita_search_screen.dart';
@@ -119,7 +119,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/home', builder: (context, state) => const DashboardScreen()),
 
       // Gita routes
-      GoRoute(path: '/gita', builder: (context, state) => const ChapterListScreen()),
+      GoRoute(path: '/gita', builder: (context, state) => const GitaChapterListScreen()),
       GoRoute(
         path: '/gita/chapter/:chapterId',
         builder: (context, state) => VerseListScreen(chapterId: state.pathParameters['chapterId']!),
