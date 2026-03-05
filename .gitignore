@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Flutter/Dart build artifacts
+build/
+.dart_tool/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -24,7 +28,3 @@ dist-ssr
 *.sw?
 
 .vercel
-.dart_tool/
-build/
-.idea/
-*.iml
