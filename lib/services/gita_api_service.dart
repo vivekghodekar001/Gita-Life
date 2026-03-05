@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,7 +16,11 @@ class GitaApiService {
     try {
       final response = await _dio.get('https://vedicscriptures.github.io/chapters/');
       if (response.statusCode == 200) {
-        final data = response.data as List<dynamic>;
+        dynamic rawData = response.data;
+        if (rawData is String) {
+          rawData = jsonDecode(rawData);
+        }
+        final data = rawData as List<dynamic>;
         _cache[cacheKey] = data;
         return data;
       } else {
@@ -36,7 +41,11 @@ class GitaApiService {
     try {
       final response = await _dio.get('https://vedicscriptures.github.io/slok/$chapter/$verse/');
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
+        dynamic rawData = response.data;
+        if (rawData is String) {
+          rawData = jsonDecode(rawData);
+        }
+        final data = rawData as Map<String, dynamic>;
         _cache[cacheKey] = data;
         return data;
       } else {
