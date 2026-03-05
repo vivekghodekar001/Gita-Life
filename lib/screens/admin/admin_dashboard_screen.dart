@@ -61,11 +61,18 @@ final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) 
   return results.take(10).toList();
 });
 
-class AdminDashboardScreen extends ConsumerWidget {
+class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
+  bool _showAllActivity = false;
+
+  @override
+  Widget build(BuildContext context) {
     final statsAsync = ref.watch(adminStatsProvider);
 
     return Scaffold(
@@ -262,29 +269,44 @@ class AdminDashboardScreen extends ConsumerWidget {
               ),
             );
           }
-          return ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: activities.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, indent: 56),
-            itemBuilder: (context, index) {
-              final item = activities[index];
-              final timestamp = item['timestamp'] as DateTime?;
-              final timeText = timestamp != null
-                  ? _formatTimestamp(timestamp)
-                  : '';
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: (item['color'] as Color).withOpacity(0.12),
-                  child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 20),
+          final displayActivities = _showAllActivity ? activities : activities.take(3).toList();
+          return Column(
+            children: [
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: displayActivities.length,
+                separatorBuilder: (_, __) => const Divider(height: 1, indent: 56),
+                itemBuilder: (context, index) {
+                  final item = displayActivities[index];
+                  final timestamp = item['timestamp'] as DateTime?;
+                  final timeText = timestamp != null
+                      ? _formatTimestamp(timestamp)
+                      : '';
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: (item['color'] as Color).withOpacity(0.12),
+                      child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 20),
+                    ),
+                    title: Text(item['text'] as String, style: const TextStyle(fontSize: 14)),
+                    subtitle: timeText.isNotEmpty
+                        ? Text(timeText, style: TextStyle(fontSize: 12, color: Colors.grey[500]))
+                        : null,
+                  );
+                },
+              ),
+              if (!_showAllActivity && activities.length > 3)
+                TextButton(
+                  onPressed: () => setState(() => _showAllActivity = true),
+                  child: const Text('Show more', style: TextStyle(color: Color(0xFFE65100))),
                 ),
-                title: Text(item['text'] as String, style: const TextStyle(fontSize: 14)),
-                subtitle: timeText.isNotEmpty
-                    ? Text(timeText, style: TextStyle(fontSize: 12, color: Colors.grey[500]))
-                    : null,
-              );
-            },
+              if (_showAllActivity && activities.length > 3)
+                TextButton(
+                  onPressed: () => setState(() => _showAllActivity = false),
+                  child: const Text('Show less', style: TextStyle(color: Color(0xFFE65100))),
+                ),
+            ],
           );
         },
         loading: () => const Padding(

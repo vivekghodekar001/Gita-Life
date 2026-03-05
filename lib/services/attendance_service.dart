@@ -96,21 +96,25 @@ class AttendanceService {
     return _firestore
         .collection('attendance_records')
         .where('studentUid', isEqualTo: studentUid)
-        .orderBy('markedAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => AttendanceRecord.fromFirestore(doc))
-            .toList());
+        .map((snapshot) {
+            final records = snapshot.docs
+                .map((doc) => AttendanceRecord.fromFirestore(doc))
+                .toList();
+            records.sort((a, b) => b.markedAt.compareTo(a.markedAt));
+            return records;
+        });
   }
 
   Future<List<AttendanceRecord>> getStudentAttendance(String studentUid) async {
     final querySnapshot = await _firestore
         .collection('attendance_records')
         .where('studentUid', isEqualTo: studentUid)
-        .orderBy('markedAt', descending: true)
         .get();
 
-    return querySnapshot.docs.map((doc) => AttendanceRecord.fromFirestore(doc)).toList();
+    final records = querySnapshot.docs.map((doc) => AttendanceRecord.fromFirestore(doc)).toList();
+    records.sort((a, b) => b.markedAt.compareTo(a.markedAt));
+    return records;
   }
 
   Future<double> getAttendancePercentage(String studentUid) async {
@@ -170,6 +174,19 @@ class AttendanceService {
         .collection('attendance_sessions')
         .doc(sessionId)
         .update({'isLocked': false});
+  }
+
+  Future<void> deleteSession(String sessionId) async {
+    // Delete all attendance records for this session
+    final recordsQuery = await _firestore
+        .collection('attendance_records')
+        .where('sessionId', isEqualTo: sessionId)
+        .get();
+    for (final doc in recordsQuery.docs) {
+      await doc.reference.delete();
+    }
+    // Delete the session itself
+    await _firestore.collection('attendance_sessions').doc(sessionId).delete();
   }
 
   // Helper Methods to replace raw UI calls

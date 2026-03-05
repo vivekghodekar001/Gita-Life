@@ -95,6 +95,10 @@ class ManageLecturesScreen extends ConsumerWidget {
               icon: const Icon(Icons.edit, color: Colors.blue),
               onPressed: () => _showAddEditLectureDialog(context, ref, lecture: lecture),
             ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: () => _deleteLecture(context, ref, lecture),
+            ),
           ],
         ),
       ),
@@ -108,6 +112,42 @@ class ManageLecturesScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => _AddEditLectureForm(lecture: lecture),
     );
+  }
+
+  Future<void> _deleteLecture(BuildContext context, WidgetRef ref, LectureModel lecture) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Lecture'),
+        content: Text('Are you sure you want to delete "${lecture.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      try {
+        await ref.read(lectureServiceProvider).deleteLecture(lecture.lectureId);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Lecture deleted.')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete: $e')),
+          );
+        }
+      }
+    }
   }
 }
 
