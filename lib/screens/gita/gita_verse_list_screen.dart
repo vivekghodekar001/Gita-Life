@@ -181,7 +181,7 @@ class _VerseCardLoader extends ConsumerWidget {
             ),
           );
         },
-        loading: () => ShimmerLoading.card(height: 200),
+        loading: () => SizedBox(height: 200, child: ShimmerLoading.card()),
         error: (err, stack) => Card(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
