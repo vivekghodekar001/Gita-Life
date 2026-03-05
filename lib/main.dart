@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -35,82 +36,91 @@ void main() async {
     return true;
   };
 
-  // 1. Initialize Services (Firebase, Hive)
+  // Initialize all services
   await _initializeServices(container);
 
   runApp(UncontrolledProviderScope(container: container, child: const GitaLifeApp()));
 }
 
+/// Initializes Firebase, Hive, and AudioService.
+/// Firebase init failures are isolated from Firestore/Hive so we can
+/// properly diagnose the real cause.
 Future<void> _initializeServices(ProviderContainer container) async {
-  // 1. Firebase Initialization
+  // ── Step 1: Firebase Core ──────────────────────────────────────────
+  bool firebaseOk = false;
   try {
-    debugPrint('🔥 [FIREBASE_STATUS]: Starting pre-flight check...');
-    
-    // Check for existing app or initialize
-    try {
-      if (Firebase.apps.isEmpty) {
-        debugPrint('🔥 [FIREBASE_STATUS]: No apps found. Calling initializeApp...');
-        await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        );
-      } else {
-        debugPrint('🔥 [FIREBASE_STATUS]: Found ${Firebase.apps.length} existing apps.');
-      }
-    } catch (e) {
-      debugPrint('🔥 [FIREBASE_STATUS]: Exception during initialization check: $e');
-      if (e.toString().contains('already exists')) {
-        debugPrint('🔥 [FIREBASE_STATUS]: App already exists natively. Reading existing instance...');
-        try {
-          Firebase.app(); // Read existing native instance
-        } catch (inner) {
-          debugPrint('🔥 [FIREBASE_STATUS]: Could not read existing instance: $inner');
-        }
-      } else {
-        rethrow;
+    debugPrint('🔥 [INIT]: Starting Firebase initialization...');
+
+    if (Firebase.apps.isNotEmpty) {
+      debugPrint('🔥 [INIT]: Firebase already has ${Firebase.apps.length} app(s).');
+      firebaseOk = true;
+    } else {
+      debugPrint('🔥 [INIT]: No Firebase apps found. Calling initializeApp...');
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      firebaseOk = true;
+    }
+
+    // Verify it's accessible
+    final app = Firebase.app();
+    debugPrint('🔥 [INIT]: Firebase OK — project: ${app.options.projectId}');
+  } catch (e, stack) {
+    // If error says "already exists", the app was initialized natively
+    if (e.toString().contains('already exists')) {
+      debugPrint('🔥 [INIT]: App exists natively, recovering...');
+      try {
+        Firebase.app();
+        firebaseOk = true;
+      } catch (_) {
+        // truly broken
       }
     }
 
-    // Final verification dump
-    final app = Firebase.app();
-    debugPrint('🔥 [FIREBASE_STATUS]: FINAL VERIFICATION - App Name: ${app.name}');
-    debugPrint('🔥 [FIREBASE_STATUS]: Project ID: ${app.options.projectId}');
-    
-    debugPrint('🔥 [FIREBASE_STATUS]: Initialization Sequence Complete.');
-
-    // Enable Firestore offline persistence
-    FirebaseFirestore.instance.settings = const Settings(
-      persistenceEnabled: true,
-      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-    );
-    debugPrint('🔥 [FIREBASE_STATUS]: Firestore offline persistence enabled.');
-
-    container.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.initialized;
-  } catch (e, stack) {
-    debugPrint('❌ [FIREBASE_ERROR]: $e');
-    debugPrint('❌ [FIREBASE_STACK]: $stack');
-    container.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.failed;
-    container.read(firebaseInitErrorProvider.notifier).state = e.toString();
+    if (!firebaseOk) {
+      debugPrint('❌ [INIT]: Firebase initialization failed: $e');
+      debugPrint('❌ [INIT]: Stack: $stack');
+      container.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.failed;
+      container.read(firebaseInitErrorProvider.notifier).state = e.toString();
+      // Don't return — still initialize Hive so offline features work
+    }
   }
 
-  // 2. Initialize Hive
+  // ── Step 2: Firestore Persistence (separate try/catch!) ────────────
+  if (firebaseOk) {
+    try {
+      // Only set persistence on mobile — web handles it differently
+      if (!kIsWeb) {
+        FirebaseFirestore.instance.settings = const Settings(
+          persistenceEnabled: true,
+          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+        );
+        debugPrint('🔥 [INIT]: Firestore offline persistence enabled.');
+      }
+    } catch (e) {
+      // This can fail on hot restart or if Firestore was already configured.
+      // It's NOT a fatal error — Firebase is still working.
+      debugPrint('⚠️ [INIT]: Firestore persistence config warning (non-fatal): $e');
+    }
+
+    // Mark Firebase as successfully initialized
+    container.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.initialized;
+  }
+
+  // ── Step 3: Hive ───────────────────────────────────────────────────
   try {
     await Hive.initFlutter();
-    
-    // Register Hive adapters here
     if (!Hive.isAdapterRegistered(0)) Hive.registerAdapter(JapaLogAdapter());
     if (!Hive.isAdapterRegistered(1)) Hive.registerAdapter(AudioTrackModelAdapter());
-    
     await Hive.openBox<JapaLog>('japa_logs');
     await Hive.openBox<AudioTrackModel>('downloads');
     await Hive.openBox('settings');
+    debugPrint('📦 [INIT]: Hive initialized successfully.');
   } catch (e) {
-    debugPrint('Hive initialization failed: $e');
+    debugPrint('❌ [INIT]: Hive initialization failed: $e');
   }
 
-  // Run the app with UncontrolledProviderScope to use our container
-  // Removed from here to move to main()
-
-  // Initialize AudioService after the app has started
+  // ── Step 4: AudioService ──────────────────────────────────────────
   try {
     audioHandler = await audio_service.AudioService.init(
       builder: () => AppAudioHandler(),
@@ -120,10 +130,15 @@ Future<void> _initializeServices(ProviderContainer container) async {
         androidNotificationOngoing: true,
       ),
     );
+    debugPrint('🎵 [INIT]: AudioService initialized successfully.');
   } catch (e) {
-    debugPrint('AudioService init failed: $e');
+    debugPrint('⚠️ [INIT]: AudioService init failed (non-fatal): $e');
   }
 }
+
+// ══════════════════════════════════════════════════════════════════
+//  Root App Widget
+// ══════════════════════════════════════════════════════════════════
 
 class GitaLifeApp extends ConsumerWidget {
   const GitaLifeApp({super.key});
@@ -134,9 +149,21 @@ class GitaLifeApp extends ConsumerWidget {
     final error = ref.watch(firebaseInitErrorProvider);
 
     if (status == FirebaseInitStatus.loading) {
-      return const MaterialApp(
-        home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
+      return MaterialApp(
+        theme: gitaLifeTheme,
+        debugShowCheckedModeBanner: false,
+        home: const Scaffold(
+          backgroundColor: Color(0xFFFFF8F0),
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Color(0xFFFF6600)),
+                SizedBox(height: 16),
+                Text('Initializing...', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
+          ),
         ),
       );
     }
@@ -144,37 +171,8 @@ class GitaLifeApp extends ConsumerWidget {
     if (status == FirebaseInitStatus.failed) {
       return MaterialApp(
         theme: gitaLifeTheme,
-        home: Scaffold(
-          body: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 80, color: Colors.red),
-                const SizedBox(height: 24),
-                const Text(
-                  'Firebase Initialization Failed',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  error ?? 'An unknown error occurred during setup.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey.shade700),
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: () {
-                    // In a real scenario, we might want to restart the app or retry
-                    // For now, we just print a message
-                    debugPrint('User requested retry');
-                  },
-                  child: const Text('RETRY'),
-                ),
-              ],
-            ),
-          ),
-        ),
+        debugShowCheckedModeBanner: false,
+        home: _FirebaseErrorScreen(error: error),
       );
     }
 
@@ -201,6 +199,102 @@ class GitaLifeApp extends ConsumerWidget {
     );
   }
 }
+
+// ══════════════════════════════════════════════════════════════════
+//  Firebase Error Screen — with REAL retry logic
+// ══════════════════════════════════════════════════════════════════
+
+class _FirebaseErrorScreen extends ConsumerWidget {
+  final String? error;
+  const _FirebaseErrorScreen({this.error});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFF8F0),
+      body: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 80, color: Colors.red),
+            const SizedBox(height: 24),
+            const Text(
+              'Firebase Initialization Failed',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              error ?? 'An unknown error occurred during setup.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('RETRY'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF6600),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () async {
+                // Reset status to loading
+                ref.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.loading;
+                ref.read(firebaseInitErrorProvider.notifier).state = null;
+
+                // Create a temporary container to access the providers
+                final container = ProviderContainer(parent: ref.container);
+
+                // Actually retry Firebase initialization
+                try {
+                  debugPrint('🔄 [RETRY]: Retrying Firebase initialization...');
+
+                  if (Firebase.apps.isEmpty) {
+                    await Firebase.initializeApp(
+                      options: DefaultFirebaseOptions.currentPlatform,
+                    );
+                  }
+
+                  // Verify
+                  final app = Firebase.app();
+                  debugPrint('🔄 [RETRY]: Firebase OK — project: ${app.options.projectId}');
+
+                  // Set Firestore persistence
+                  if (!kIsWeb) {
+                    try {
+                      FirebaseFirestore.instance.settings = const Settings(
+                        persistenceEnabled: true,
+                        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+                      );
+                    } catch (_) {}
+                  }
+
+                  ref.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.initialized;
+                  debugPrint('🔄 [RETRY]: Firebase retry successful!');
+                } catch (e) {
+                  debugPrint('❌ [RETRY]: Firebase retry failed: $e');
+                  ref.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.failed;
+                  ref.read(firebaseInitErrorProvider.notifier).state = e.toString();
+                }
+
+                container.dispose();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  Data Importer (bulk audio sync)
+// ══════════════════════════════════════════════════════════════════
 
 class DataImporter extends ConsumerStatefulWidget {
   const DataImporter({super.key});
@@ -274,7 +368,6 @@ class _DataImporterState extends ConsumerState<DataImporter> {
           createdAt: DateTime.now().toIso8601String(),
         );
         await audioService.addAudioTrack(track);
-        // Small delay to avoid hitting firestore quote too fast in a single burst
         await Future.delayed(const Duration(milliseconds: 50));
       }
 
@@ -291,7 +384,7 @@ class _DataImporterState extends ConsumerState<DataImporter> {
       }
     } catch (e) {
       debugPrint('Bulk Sync Failed: $e');
-      _syncStartedThisSession = false; // Allow retry on next auth/rebuild if failed
+      _syncStartedThisSession = false;
     } finally {
       if (mounted) {
         setState(() => _isSyncing = false);

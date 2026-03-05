@@ -1,0 +1,29 @@
+{
+    "project_info": {
+        "project_number": "273830910501",
+        "project_id": "gita-life-b713a",
+        "storage_bucket": "gita-life-b713a.firebasestorage.app"
+    },
+    "client": [
+        {
+            "client_info": {
+                "mobilesdk_app_id": "1:273830910501:android:22c634d5c5061148883dcc",
+                "android_client_info": {
+                    "package_name": "com.gitalife"
+                }
+            },
+            "oauth_client": [],
+            "api_key": [
+                {
+                    "current_key": "AIzaSyCql8GbEzoHV34zL1wVrCCap1lORB78Qjg"
+                }
+            ],
+            "services": {
+                "appinvite_service": {
+                    "other_platform_oauth_client": []
+                }
+            }
+        }
+    ],
+    "configuration_version": "1"
+}
