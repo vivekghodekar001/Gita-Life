@@ -195,115 +195,74 @@ class _BulkImportDialogState extends ConsumerState<_BulkImportDialog> {
       int count = 0;
       final audioService = ref.read(audioServiceProvider);
       
-      // Check if input contains multiple lines (bulk URL list)
+      // Split input into individual URL lines
       final lines = input.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
-      final hasMultipleUrls = lines.length > 1 || 
-          (lines.length == 1 && (lines.first.endsWith('.mp3') || lines.first.endsWith('.MP3')));
       
-      if (hasMultipleUrls && lines.every((l) => l.startsWith('http'))) {
-        // Direct URL list mode: each line is a direct MP3/audio URL
-        for (final url in lines) {
-          final fileName = Uri.decodeFull(url.split('/').last);
-          var title = fileName.replaceAll('.mp3', '').replaceAll('.MP3', '').replaceAll('_', ' ');
-          
-          // Automatic Title Cleaning
-          final prefixes = [
-            'LNS Bhajans - ',
-            'LNS - ',
-            'Lecture - ',
-            'Radhe Radhe - ',
-            'HH Lokanath Swami - ',
-            '16 Hours Kirtan-',
-            'Hare Krishna Kirtan-'
-          ];
-          for (var p in prefixes) {
-            if (title.toLowerCase().startsWith(p.toLowerCase())) {
-              title = title.substring(p.length);
-            }
-          }
-          title = title.trim();
-          if (title.isEmpty) title = 'Audio Track';
-          
-          final track = AudioTrackModel(
-            trackId: DateTime.now().millisecondsSinceEpoch.toString() + count.toString(),
-            title: title,
-            artist: 'Lokanath Swami',
-            category: 'kirtan',
-            sourceType: 'direct_url',
-            streamUrl: url,
-            durationSeconds: 0,
-            fileSizeBytes: 0,
-            coverImageUrl: 'https://iskcondesiretree.com/wp-content/uploads/2018/06/Lokanath-Swami-Maharaja.jpg',
-            isActive: true,
-            playCount: 0,
-            addedBy: 'admin',
-            createdAt: DateTime.now().toIso8601String(),
+      if (lines.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No valid URLs found. Please paste one URL per line.')),
           );
-          
-          await audioService.addAudioTrack(track);
-          count++;
-          // Small delay to ensure unique trackIds
-          await Future.delayed(const Duration(milliseconds: 10));
         }
-      } else {
-        // HTML scraping mode: fetch the URL and scan for MP3 links
-        final url = lines.first;
-        final dio = Dio();
-        final response = await dio.get(url);
-        final html = response.data.toString();
-        
-        // Regex to find .mp3 or .MP3 links
-        final regExp = RegExp(r'href="([^"]+\.mp3)"', caseSensitive: false);
-        final matches = regExp.allMatches(html);
-        
-        for (final match in matches) {
-          final link = match.group(1)!;
-          String fullUrl = link;
-          if (!link.startsWith('http')) {
-            final uri = Uri.parse(url);
-            fullUrl = '${uri.scheme}://${uri.host}$link';
-          }
-          
-          final fileName = Uri.decodeFull(fullUrl.split('/').last);
-          var title = fileName.replaceAll('.mp3', '').replaceAll('.MP3', '').replaceAll('_', ' ');
-          
-          // Automatic Title Cleaning
-          final prefixes = [
-            'LNS Bhajans - ',
-            'LNS - ',
-            'Lecture - ',
-            'Radhe Radhe - ',
-            'HH Lokanath Swami - ',
-            '16 Hours Kirtan-',
-            'Hare Krishna Kirtan-'
-          ];
-          for (var p in prefixes) {
-            if (title.toLowerCase().startsWith(p.toLowerCase())) {
-              title = title.substring(p.length);
-            }
-          }
-          title = title.trim();
-          
-          final track = AudioTrackModel(
-            trackId: DateTime.now().millisecondsSinceEpoch.toString() + count.toString(),
-            title: title,
-            artist: 'Lokanath Swami',
-            category: 'kirtan',
-            sourceType: 'direct_url',
-            streamUrl: fullUrl,
-            durationSeconds: 0,
-            fileSizeBytes: 0,
-            coverImageUrl: 'https://iskcondesiretree.com/wp-content/uploads/2018/06/Lokanath-Swami-Maharaja.jpg',
-            isActive: true,
-            playCount: 0,
-            addedBy: 'admin',
-            createdAt: DateTime.now().toIso8601String(),
+        return;
+      }
+
+      final invalidLines = lines.where((l) => !l.startsWith('http')).toList();
+      if (invalidLines.isNotEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid URL(s) found. Each line must start with https://')),
           );
-          
-          await audioService.addAudioTrack(track);
-          count++;
-          await Future.delayed(const Duration(milliseconds: 10));
         }
+        return;
+      }
+
+      // Direct URL list mode: each line is a direct audio URL
+      for (final url in lines) {
+        final pathSegment = url.split('/').last.split('?').first;
+        final fileName = Uri.decodeFull(pathSegment);
+        var title = fileName
+            .replaceAll(RegExp(r'\.mp3$', caseSensitive: false), '')
+            .replaceAll('_', ' ');
+        
+        // Automatic Title Cleaning
+        final prefixes = [
+          'LNS Bhajans - ',
+          'LNS - ',
+          'Lecture - ',
+          'Radhe Radhe - ',
+          'HH Lokanath Swami - ',
+          '16 Hours Kirtan-',
+          'Hare Krishna Kirtan-'
+        ];
+        for (var p in prefixes) {
+          if (title.toLowerCase().startsWith(p.toLowerCase())) {
+            title = title.substring(p.length);
+          }
+        }
+        title = title.trim();
+        if (title.isEmpty) title = 'Audio Track';
+        
+        final track = AudioTrackModel(
+          trackId: DateTime.now().millisecondsSinceEpoch.toString() + count.toString(),
+          title: title,
+          artist: 'Lokanath Swami',
+          category: 'kirtan',
+          sourceType: 'direct_url',
+          streamUrl: url,
+          durationSeconds: 0,
+          fileSizeBytes: 0,
+          coverImageUrl: 'https://iskcondesiretree.com/wp-content/uploads/2018/06/Lokanath-Swami-Maharaja.jpg',
+          isActive: true,
+          playCount: 0,
+          addedBy: 'admin',
+          createdAt: DateTime.now().toIso8601String(),
+        );
+        
+        await audioService.addAudioTrack(track);
+        count++;
+        // Small delay to ensure unique trackIds
+        await Future.delayed(const Duration(milliseconds: 10));
       }
 
       if (mounted) {
@@ -330,13 +289,13 @@ class _BulkImportDialogState extends ConsumerState<_BulkImportDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Paste a directory URL to scan for MP3 files, or paste multiple audio URLs (one per line).', style: TextStyle(fontSize: 13)),
+          const Text('Paste audio URLs (one per line). Each URL must start with https://. Titles will be auto-generated from file names.', style: TextStyle(fontSize: 13)),
           const SizedBox(height: 16),
           TextField(
             controller: _urlController,
             maxLines: 5,
             decoration: InputDecoration(
-              hintText: 'https://example.com/audio1.mp3\nhttps://example.com/audio2.mp3\n\nor a directory URL...',
+              hintText: 'https://example.com/audio1.mp3\nhttps://example.com/audio2.mp3\nhttps://example.com/audio3.mp3',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),

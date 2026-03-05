@@ -15,6 +15,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   @override
   void dispose() {
@@ -49,6 +50,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      await ref.read(authServiceProvider).signInWithGoogle();
+      if (mounted) {
+        context.go('/home');
+      }
+    } catch (e, stack) {
+      if (!mounted) return;
+      print('GOOGLE SIGN-IN ERROR: $e\n$stack');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isGoogleLoading = false);
     }
   }
 
@@ -116,6 +135,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: _isLoading 
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text('LOGIN', style: TextStyle(fontSize: 16)),
+                  ),
+                  const SizedBox(height: 16),
+                  const Row(
+                    children: [
+                      Expanded(child: Divider()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('OR', style: TextStyle(color: Colors.grey)),
+                      ),
+                      Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: (_isLoading || _isGoogleLoading) ? null : _signInWithGoogle,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: Colors.grey),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    icon: _isGoogleLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Image.network(
+                            'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                            height: 22,
+                            width: 22,
+                            errorBuilder: (_, __, ___) =>
+                                const Icon(Icons.g_mobiledata, size: 22),
+                          ),
+                    label: const Text(
+                      'Sign in with Google',
+                      style: TextStyle(fontSize: 15, color: Colors.black87),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Row(

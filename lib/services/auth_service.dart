@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 import 'dart:io';
 
@@ -64,6 +65,49 @@ class AuthService {
       );
     } catch (e, stack) {
       print('AuthService.loginWithEmail error: $e\n$stack');
+      rethrow;
+    }
+  }
+
+  Future<UserCredential> signInWithGoogle() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        throw Exception('Google sign-in was cancelled.');
+      }
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final userCredential = await _auth.signInWithCredential(credential);
+
+      // Create Firestore profile if it doesn't exist yet
+      if (userCredential.user != null) {
+        final doc = await _firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get();
+        if (!doc.exists) {
+          await _firestore
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set({
+            'uid': userCredential.user!.uid,
+            'email': userCredential.user!.email ?? '',
+            'name': userCredential.user!.displayName ?? '',
+            'photoUrl': userCredential.user!.photoURL ?? '',
+            'role': 'student',
+            'status': 'pending',
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+      return userCredential;
+    } catch (e, stack) {
+      print('AuthService.signInWithGoogle error: $e\n$stack');
       rethrow;
     }
   }
