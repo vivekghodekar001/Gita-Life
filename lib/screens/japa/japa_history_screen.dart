@@ -4,6 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../../providers/japa_provider.dart';
 import '../../models/japa_log.dart';
+import '../../widgets/shimmer_loading.dart';
+import '../../widgets/error_retry.dart';
 
 class JapaHistoryScreen extends ConsumerWidget {
   const JapaHistoryScreen({super.key});
@@ -17,8 +19,11 @@ class JapaHistoryScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFFFF8F0),
       appBar: AppBar(title: const Text('Japa History')),
       body: weekAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: \$err')),
+        loading: () => ShimmerLoading.card(count: 2),
+        error: (err, stack) => ErrorRetry(
+          message: 'Failed to load japa history',
+          onRetry: () => ref.invalidate(weekHistoryProvider),
+        ),
         data: (weekLogs) {
           int bestDay = 0;
           int currentStreak = 0;
@@ -112,8 +117,11 @@ class JapaHistoryScreen extends ConsumerWidget {
                 const Text('Month Overview', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
                 const SizedBox(height: 20),
                 monthAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e,s) => Text('Error: \$e'),
+                  loading: () => const ShimmerLoading(height: 40),
+                  error: (e,s) => ErrorRetry(
+                    message: 'Failed to load month data',
+                    onRetry: () => ref.invalidate(monthHistoryProvider),
+                  ),
                   data: (monthLogs) {
                      return Wrap(
                        spacing: 8,

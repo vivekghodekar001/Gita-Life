@@ -1,6 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/japa_log.dart';
 import 'models/audio_track.dart';
@@ -13,12 +15,25 @@ import 'providers/firebase_provider.dart';
 import 'services/audio_service.dart';
 import 'data/bulk_audio_data.dart';
 import 'providers/auth_provider.dart';
+import 'widgets/offline_banner.dart';
 
 AppAudioHandler? audioHandler;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final container = ProviderContainer();
+
+  // Global error handlers
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('\u274c [FLUTTER_ERROR]: ${details.exception}');
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('\u274c [UNCAUGHT_ERROR]: $error');
+    debugPrint('\u274c [UNCAUGHT_STACK]: $stack');
+    return true;
+  };
 
   // 1. Initialize Services (Firebase, Hive)
   await _initializeServices(container);
@@ -61,6 +76,13 @@ Future<void> _initializeServices(ProviderContainer container) async {
     debugPrint('🔥 [FIREBASE_STATUS]: Project ID: ${app.options.projectId}');
     
     debugPrint('🔥 [FIREBASE_STATUS]: Initialization Sequence Complete.');
+
+    // Enable Firestore offline persistence
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+    debugPrint('🔥 [FIREBASE_STATUS]: Firestore offline persistence enabled.');
 
     container.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.initialized;
   } catch (e, stack) {
@@ -166,6 +188,12 @@ class GitaLifeApp extends ConsumerWidget {
         return Stack(
           children: [
             if (child != null) child,
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: OfflineBanner(),
+            ),
             const DataImporter(),
           ],
         );

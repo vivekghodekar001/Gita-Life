@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/lecture_provider.dart';
+import '../../widgets/shimmer_loading.dart';
+import '../../widgets/error_retry.dart';
 
 class LectureListScreen extends ConsumerWidget {
   const LectureListScreen({super.key});
@@ -70,13 +72,19 @@ class LectureListScreen extends ConsumerWidget {
           // Lectures List
           Expanded(
             child: lecturesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFFF6600))),
-              error: (err, stack) => Center(child: Text('Error: \$err')),
+              loading: () => ShimmerLoading.card(),
+              error: (err, stack) => ErrorRetry(
+                message: 'Failed to load lectures',
+                onRetry: () => ref.invalidate(filteredLecturesProvider),
+              ),
               data: (lectures) {
                 if (lectures.isEmpty) {
                   return const Center(child: Text('No lectures found.', style: TextStyle(color: Colors.blueGrey, fontSize: 16)));
                 }
-                return ListView.builder(
+                return RefreshIndicator(
+                  color: const Color(0xFFFF6600),
+                  onRefresh: () async => ref.invalidate(filteredLecturesProvider),
+                  child: ListView.builder(
                   padding: const EdgeInsets.only(bottom: 20),
                   itemCount: lectures.length,
                   itemBuilder: (context, index) {
@@ -128,6 +136,7 @@ class LectureListScreen extends ConsumerWidget {
                       ),
                     );
                   },
+                ),
                 );
               },
             ),

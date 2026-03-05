@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/attendance_provider.dart';
+import '../../widgets/shimmer_loading.dart';
+import '../../widgets/error_retry.dart';
 
 class AttendanceHistoryScreen extends ConsumerStatefulWidget {
   const AttendanceHistoryScreen({super.key});
@@ -51,8 +53,11 @@ class _AttendanceHistoryScreenState extends ConsumerState<AttendanceHistoryScree
       ),
       backgroundColor: const Color(0xFFFFF8F0),
       body: historyAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Error: $error')),
+        loading: () => ShimmerLoading.listItem(),
+        error: (error, _) => ErrorRetry(
+          message: 'Failed to load attendance history',
+          onRetry: () => ref.invalidate(studentAttendanceProvider(user.uid!)),
+        ),
         data: (records) {
           if (records.isEmpty) {
             return const Center(child: Text('No attendance history available.'));

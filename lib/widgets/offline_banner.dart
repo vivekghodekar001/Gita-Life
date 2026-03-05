@@ -1,24 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/connectivity_provider.dart';
 
-class OfflineBanner extends StatelessWidget {
+class OfflineBanner extends ConsumerWidget {
   const OfflineBanner({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // TODO: Implement banner shown when device is offline
-    return Container(
-      color: Colors.red,
-      padding: const EdgeInsets.all(8),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.wifi_off, color: Colors.white, size: 16),
-          SizedBox(width: 8),
-          Text(
-            'You are offline',
-            style: TextStyle(color: Colors.white),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isOnline = ref.watch(isOnlineProvider);
+
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 300),
+      offset: isOnline ? const Offset(0, -1) : Offset.zero,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 300),
+        opacity: isOnline ? 0.0 : 1.0,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFE65100), Color(0xFFFF6600)],
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 16),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'You are offline — using cached data',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

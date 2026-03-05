@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 import '../models/lecture_model.dart';
 import '../providers/auth_provider.dart';
+import '../screens/onboarding/splash_screen.dart';
+import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/otp_screen.dart';
@@ -53,7 +55,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final notifier = RouterNotifier(ref);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     refreshListenable: notifier,
     redirect: (context, state) {
       final authState = ref.read(authStateProvider);
@@ -64,8 +66,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/otp' ||
           state.matchedLocation == '/forgot-password';
+      final isOnboardingRoute = state.matchedLocation == '/splash' ||
+          state.matchedLocation == '/onboarding';
 
-      print('ROUTER REDIRECT: matchedLocation=${state.matchedLocation}, isAuth=$isAuthenticated, userProfile=${userProfile.valueOrNull?.status}, isLoading=${userProfile.isLoading}');
+      // Don't redirect from splash or onboarding — they handle their own navigation
+      if (isOnboardingRoute) return null;
+
+      debugPrint('ROUTER: loc=${state.matchedLocation}, auth=$isAuthenticated, status=${userProfile.valueOrNull?.status}');
 
       if (!isAuthenticated && !isAuthRoute) return '/login';
       
@@ -96,6 +103,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+      GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
+
       // Auth routes
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),

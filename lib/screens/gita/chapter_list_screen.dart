@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/gita_provider.dart';
+import '../../widgets/shimmer_loading.dart';
+import '../../widgets/error_retry.dart';
 
 class ChapterListScreen extends ConsumerWidget {
   const ChapterListScreen({super.key});
@@ -47,8 +49,11 @@ class ChapterListScreen extends ConsumerWidget {
         ],
       ),
       body: chaptersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        loading: () => ShimmerLoading.card(count: 5),
+        error: (err, stack) => ErrorRetry(
+          message: 'Failed to load Gita chapters',
+          onRetry: () => ref.invalidate(chaptersProvider),
+        ),
         data: (chapters) {
           if (chapters.isEmpty) {
              return const Center(child: Text('Database is currently empty. Run the setup.'));

@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/audio_provider.dart';
 import '../../models/audio_track.dart';
 import '../../widgets/audio_mini_player.dart';
+import '../../widgets/shimmer_loading.dart';
+import '../../widgets/error_retry.dart';
 
 class AudioLibraryScreen extends StatefulWidget {
   const AudioLibraryScreen({super.key});
@@ -70,8 +72,11 @@ class _TrackList extends ConsumerWidget {
     final downloads = ref.watch(downloadedTracksProvider);
 
     return tracksAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('Error: \$err')),
+      loading: () => ShimmerLoading.listItem(),
+      error: (err, stack) => ErrorRetry(
+        message: 'Failed to load audio tracks',
+        onRetry: () => ref.invalidate(audioTracksProvider(queryCategory)),
+      ),
       data: (tracks) {
         if (tracks.isEmpty) return const Center(child: Text('No tracks found in this category.'));
         
