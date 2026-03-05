@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/audio_track.dart';
@@ -65,29 +66,40 @@ class AudioPlayerController {
   }
 
   Future<void> playTrack(AudioTrackModel track, List<AudioTrackModel> playlistContext) async {
+    final handler = audioHandler;
+    if (handler == null) {
+      debugPrint('❌ [AUDIO]: audioHandler is null — AudioService not initialized');
+      return;
+    }
+
     ref.read(currentPlaylistProvider.notifier).state = playlistContext;
     ref.read(activeTrackProvider.notifier).state = track;
 
     final service = ref.read(audioServiceProvider);
     
-    final audioSources = <AudioSource>[];
-    int initialIndex = 0;
-    
-    for (int i = 0; i < playlistContext.length; i++) {
-       final t = playlistContext[i];
-       if (t.trackId == track.trackId) initialIndex = i;
-       
-       if (t.localFilePath != null) {
-          audioSources.add(AudioSource.file(t.localFilePath!, tag: t.trackId));
-       } else {
-          final url = await service.buildStreamUrl(t);
-          audioSources.add(AudioSource.uri(Uri.parse(url), tag: t.trackId));
-       }
+    try {
+      // Play the selected track immediately (don't wait for entire playlist)
+      String url;
+      if (track.localFilePath != null) {
+        url = track.localFilePath!;
+      } else {
+        url = await service.buildStreamUrl(track);
+      }
+      
+      debugPrint('🎵 [AUDIO]: Playing track: ${track.title}');
+      debugPrint('🎵 [AUDIO]: URL: $url');
+
+      // Set the single track as audio source and play immediately
+      if (track.localFilePath != null) {
+        await handler.player.setAudioSource(AudioSource.file(url, tag: track.trackId));
+      } else {
+        await handler.player.setAudioSource(AudioSource.uri(Uri.parse(url), tag: track.trackId));
+      }
+      handler.play();
+    } catch (e, stack) {
+      debugPrint('❌ [AUDIO]: Failed to play track ${track.title}: $e');
+      debugPrint('❌ [AUDIO]: Stack: $stack');
     }
-    
-    final playlist = ConcatenatingAudioSource(children: audioSources);
-    await audioHandler?.player.setAudioSource(playlist, initialIndex: initialIndex);
-    audioHandler?.play();
   }
 
   void togglePlay() {
