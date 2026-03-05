@@ -9,7 +9,6 @@ import '../screens/onboarding/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
-import '../screens/auth/otp_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/pending_screen.dart';
 import '../screens/auth/suspended_screen.dart';
@@ -67,7 +66,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState.valueOrNull != null;
       final isAuthRoute = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
-          state.matchedLocation == '/otp' ||
           state.matchedLocation == '/forgot-password';
       final isOnboardingRoute = state.matchedLocation == '/splash' ||
           state.matchedLocation == '/onboarding';
@@ -112,7 +110,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Auth routes
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
-      GoRoute(path: '/otp', builder: (context, state) => const OtpScreen()),
       GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
       GoRoute(path: '/pending', builder: (context, state) => const PendingScreen()),
       GoRoute(path: '/suspended', builder: (context, state) => const SuspendedScreen()),
