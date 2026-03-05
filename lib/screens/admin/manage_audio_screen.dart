@@ -222,7 +222,7 @@ class _BulkImportDialogState extends ConsumerState<_BulkImportDialog> {
             }
           }
           title = title.trim();
-          if (title.isEmpty) title = 'Audio Track ${count + 1}';
+          if (title.isEmpty) title = 'Audio Track';
           
           final track = AudioTrackModel(
             trackId: DateTime.now().millisecondsSinceEpoch.toString() + count.toString(),
