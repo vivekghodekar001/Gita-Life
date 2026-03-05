@@ -1,7 +1,0 @@
-{
-  "name": "Copy of ISKCON Devotee Management System",
-  "description": "A comprehensive portal for ISKCON temple management, devotee registration, session attendance, and spiritual inspiration from the Bhagavad Gita.",
-  "requestFramePermissions": [
-    "camera"
-  ]
-}
