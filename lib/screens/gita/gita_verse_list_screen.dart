@@ -224,10 +224,10 @@ class _BottomNavButtons extends ConsumerWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => GitaVerseListScreen(
-                          chapterNumber: prevCh['chapter_number'],
-                          chapterNameEn: prevCh['translation'],
-                          chapterNameHi: prevCh['meaning']['hi'] ?? prevCh['name'],
-                          versesCount: prevCh['verses_count'],
+                          chapterNumber: prevCh['chapter_number'] ?? 0,
+                          chapterNameEn: prevCh['name_translated'] ?? prevCh['name_meaning'] ?? '',
+                          chapterNameHi: prevCh['name'] ?? '',
+                          versesCount: prevCh['verses_count'] ?? 0,
                         ),
                       ),
                     );
@@ -246,10 +246,10 @@ class _BottomNavButtons extends ConsumerWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => GitaVerseListScreen(
-                          chapterNumber: nextCh['chapter_number'],
-                          chapterNameEn: nextCh['translation'],
-                          chapterNameHi: nextCh['meaning']['hi'] ?? nextCh['name'],
-                          versesCount: nextCh['verses_count'],
+                          chapterNumber: nextCh['chapter_number'] ?? 0,
+                          chapterNameEn: nextCh['name_translated'] ?? nextCh['name_meaning'] ?? '',
+                          chapterNameHi: nextCh['name'] ?? '',
+                          versesCount: nextCh['verses_count'] ?? 0,
                         ),
                       ),
                     );

@@ -78,10 +78,10 @@ class GitaChapterListScreen extends ConsumerWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => GitaVerseListScreen(
-                        chapterNumber: chapter['chapter_number'],
-                        chapterNameEn: chapter['translation'],
-                        chapterNameHi: chapter['meaning']['hi'] ?? chapter['name'],
-                        versesCount: chapter['verses_count'],
+                        chapterNumber: chapter['chapter_number'] ?? 0,
+                        chapterNameEn: chapter['name_translated'] ?? chapter['name_meaning'] ?? '',
+                        chapterNameHi: chapter['name'] ?? '',
+                        versesCount: chapter['verses_count'] ?? 0,
                       ),
                     ),
                   );
@@ -161,9 +161,9 @@ class _ChapterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chNum = chapter['chapter_number']?.toString() ?? '';
-    final nameEn = chapter['translation'] ?? '';
+    final nameEn = chapter['name_translated'] ?? chapter['name_meaning'] ?? '';
     final nameSa = chapter['name'] ?? '';
-    final verses = chapter['verses_count']?.toString() ?? '0';
+    final verses = (chapter['verses_count'] ?? 0).toString();
 
     return InkWell(
       onTap: onTap,
