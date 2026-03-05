@@ -33,7 +33,7 @@ class DashboardScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFFFF8F0),
       body: Column(
         children: [
-          // const OfflineBanner(), // Uncomment if you implement connectivity checking
+          const OfflineBanner(),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16.0),

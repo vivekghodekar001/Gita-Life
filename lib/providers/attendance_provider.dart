@@ -12,3 +12,8 @@ final sessionListProvider = FutureProvider<List<AttendanceSession>>((ref) {
 final studentAttendanceProvider = FutureProvider.family<List<AttendanceRecord>, String>((ref, studentUid) {
   return ref.watch(attendanceServiceProvider).getStudentAttendance(studentUid);
 });
+
+final createSessionProvider = FutureProvider.family<AttendanceSession, Map<String, dynamic>>((ref, sessionData) {
+  return ref.read(attendanceServiceProvider).createSession(sessionData);
+});
+

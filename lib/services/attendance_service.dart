@@ -154,6 +154,13 @@ class AttendanceService {
     return querySnapshot.docs.map((doc) => AttendanceSession.fromFirestore(doc)).toList();
   }
 
+  Future<void> unlockSession(String sessionId) async {
+    await _firestore
+        .collection('attendance_sessions')
+        .doc(sessionId)
+        .update({'isLocked': false});
+  }
+
   // Helper Methods to replace raw UI calls
   Future<QuerySnapshot> getStudentsRaw() {
     return _firestore.collection('users').get();
