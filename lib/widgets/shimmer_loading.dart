@@ -72,7 +72,8 @@ class ShimmerLoading extends StatelessWidget {
     return Shimmer.fromColors(
       baseColor: const Color(0xFFFFE0B2),
       highlightColor: const Color(0xFFFFF3E0),
-      child: Padding(
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           children: List.generate(count, (_) => Padding(

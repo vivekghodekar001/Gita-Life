@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -40,9 +41,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     if (mounted) {
       if (onboardingComplete) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        context.go('/login');
       } else {
-        Navigator.of(context).pushReplacementNamed('/onboarding');
+        context.go('/onboarding');
       }
     }
   }
