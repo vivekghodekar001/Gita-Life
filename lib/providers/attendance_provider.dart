@@ -9,8 +9,8 @@ final sessionListProvider = FutureProvider<List<AttendanceSession>>((ref) {
   return ref.watch(attendanceServiceProvider).getSessionList();
 });
 
-final studentAttendanceProvider = FutureProvider.family<List<AttendanceRecord>, String>((ref, studentUid) {
-  return ref.watch(attendanceServiceProvider).getStudentAttendance(studentUid);
+final studentAttendanceProvider = StreamProvider.family<List<AttendanceRecord>, String>((ref, studentUid) {
+  return ref.watch(attendanceServiceProvider).streamStudentAttendance(studentUid);
 });
 
 final createSessionProvider = FutureProvider.family<AttendanceSession, Map<String, dynamic>>((ref, sessionData) {

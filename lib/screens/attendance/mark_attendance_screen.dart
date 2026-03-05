@@ -47,7 +47,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
           final uid = d.id;
           return {
             'uid': uid,
-            'name': data['displayName'] ?? 'Unknown',
+            'name': data['fullName'] ?? data['displayName'] ?? 'Unknown',
             'rollNumber': data['rollNumber'] ?? 'N/A',
             'status': statusMap[uid] ?? 'absent',
           };

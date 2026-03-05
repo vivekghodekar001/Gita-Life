@@ -195,6 +195,7 @@ class AdminDashboardScreen extends ConsumerWidget {
         _buildActionCard(context, 'Manage Audio', Icons.library_music, '/admin/audio', const Color(0xFFE65100)),
         _buildActionCard(context, 'Send Notifications', Icons.notifications_active, '/admin/notifications', const Color(0xFFE65100)),
         _buildActionCard(context, 'Manage Attendance', Icons.how_to_reg, '/admin/attendance', const Color(0xFFE65100)),
+        _buildActionCard(context, 'Manage Assignments', Icons.assignment, '/admin/assignments', const Color(0xFFE65100)),
       ],
     );
   }
