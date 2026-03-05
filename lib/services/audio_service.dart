@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -56,22 +57,34 @@ class AudioService {
   Future<void> downloadTrack(AudioTrackModel track, Function(double) onProgress) async {
     if (_downloadsBox.containsKey(track.trackId)) return;
 
-    final url = await buildStreamUrl(track);
-    final dir = await getApplicationDocumentsDirectory();
-    final filePath = '\${dir.path}/audio_\${track.trackId}.mp3';
+    try {
+      final url = await buildStreamUrl(track);
+      debugPrint('⏬ [DOWNLOAD]: Starting download for ${track.title}');
+      debugPrint('⏬ [DOWNLOAD]: URL: $url');
+      
+      final dir = await getApplicationDocumentsDirectory();
+      final filePath = '${dir.path}/audio_${track.trackId}.mp3';
+      debugPrint('⏬ [DOWNLOAD]: Target path: $filePath');
 
-    await _dio.download(
-      url,
-      filePath,
-      onReceiveProgress: (received, total) {
-        if (total != -1) {
-          onProgress(received / total);
-        }
-      },
-    );
+      await _dio.download(
+        url,
+        filePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            onProgress(received / total);
+          }
+        },
+      );
 
-    final downloadedTrack = track.copyWith(localFilePath: filePath);
-    await _downloadsBox.put(track.trackId, downloadedTrack);
+      final downloadedTrack = track.copyWith(localFilePath: filePath);
+      await _downloadsBox.put(track.trackId, downloadedTrack);
+      debugPrint('✅ [DOWNLOAD]: Successfully downloaded ${track.title}');
+    } catch (e, stack) {
+      debugPrint('❌ [DOWNLOAD_ERROR]: Failed to download ${track.title}');
+      debugPrint('❌ [DOWNLOAD_ERROR]: $e');
+      debugPrint('❌ [DOWNLOAD_ERROR]: $stack');
+      rethrow;
+    }
   }
 
   List<AudioTrackModel> getDownloadedTracks() {

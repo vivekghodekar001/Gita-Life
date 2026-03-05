@@ -14,6 +14,14 @@ class UserModel {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  // New Profile Fields
+  final String? address;
+  final DateTime? dateOfBirth;
+  final String? collegeBranch;
+  final String? year;
+  final List<String>? interests;
+  final List<String>? skills;
+
   const UserModel({
     required this.uid,
     required this.fullName,
@@ -27,6 +35,12 @@ class UserModel {
     required this.fcmToken,
     required this.createdAt,
     required this.updatedAt,
+    this.address,
+    this.dateOfBirth,
+    this.collegeBranch,
+    this.year,
+    this.interests,
+    this.skills,
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
@@ -51,6 +65,12 @@ class UserModel {
       fcmToken: data['fcmToken'] ?? '',
       createdAt: _parseDate(data['createdAt']),
       updatedAt: _parseDate(data['updatedAt']),
+      address: data['address'],
+      dateOfBirth: data['dateOfBirth'] != null ? _parseDate(data['dateOfBirth']) : null,
+      collegeBranch: data['collegeBranch'],
+      year: data['year'],
+      interests: data['interests'] != null ? List<String>.from(data['interests']) : null,
+      skills: data['skills'] != null ? List<String>.from(data['skills']) : null,
     );
   }
 
@@ -67,6 +87,12 @@ class UserModel {
       'fcmToken': fcmToken,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      if (address != null) 'address': address,
+      if (dateOfBirth != null) 'dateOfBirth': Timestamp.fromDate(dateOfBirth!),
+      if (collegeBranch != null) 'collegeBranch': collegeBranch,
+      if (year != null) 'year': year,
+      if (interests != null) 'interests': interests,
+      if (skills != null) 'skills': skills,
     };
   }
 
@@ -83,6 +109,12 @@ class UserModel {
     String? fcmToken,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? address,
+    DateTime? dateOfBirth,
+    String? collegeBranch,
+    String? year,
+    List<String>? interests,
+    List<String>? skills,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -97,6 +129,12 @@ class UserModel {
       fcmToken: fcmToken ?? this.fcmToken,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      address: address ?? this.address,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      collegeBranch: collegeBranch ?? this.collegeBranch,
+      year: year ?? this.year,
+      interests: interests ?? this.interests,
+      skills: skills ?? this.skills,
     );
   }
 }

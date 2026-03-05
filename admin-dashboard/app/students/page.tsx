@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Search, ShieldAlert, ShieldCheck, Ban } from "lucide-react";
+import { ChevronRight, Search, ShieldCheck, Ban } from "lucide-react";
 import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -25,6 +25,8 @@ interface UserData {
     status: string; // active, suspended, pending
     joinedAt?: string;
     phone?: string;
+    branch?: string;
+    year?: string;
 }
 
 export default function StudentsPage() {
@@ -51,6 +53,8 @@ export default function StudentsPage() {
                     role: data.role || "student",
                     status: data.status || "active",
                     phone: data.phoneNumber || data.phone || "No Phone",
+                    branch: data.collegeBranch || "N/A",
+                    year: data.year || "N/A",
                 });
             });
             setUsers(usersData);
@@ -111,6 +115,7 @@ export default function StudentsPage() {
                         <TableRow>
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
+                            <TableHead>Branch / Year</TableHead>
                             <TableHead>Role</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -131,6 +136,10 @@ export default function StudentsPage() {
                                     <TableCell className="font-medium">{user.name}</TableCell>
                                     <TableCell className="text-slate-500">{user.email}</TableCell>
                                     <TableCell>
+                                        <div className="text-sm font-medium text-slate-700">{user.branch}</div>
+                                        <div className="text-xs text-slate-400">{user.year}</div>
+                                    </TableCell>
+                                    <TableCell>
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                                             }`}>
                                             {user.role}
@@ -138,7 +147,7 @@ export default function StudentsPage() {
                                     </TableCell>
                                     <TableCell>
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${user.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                user.status === 'suspended' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                                            user.status === 'suspended' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                                             }`}>
                                             {user.status}
                                         </span>

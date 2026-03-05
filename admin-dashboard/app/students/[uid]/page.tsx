@@ -6,7 +6,8 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, User, Mail, Phone, ShieldAlert, Calendar } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, ShieldAlert, Calendar, MapPin, GraduationCap, Briefcase, Heart, BookOpen } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface UserProfile {
     id: string;
@@ -16,7 +17,12 @@ interface UserProfile {
     status: string;
     phone?: string;
     createdAt?: string;
-    // Extensible for more GitaLife properties (japa rounds, etc.)
+    address?: string;
+    dob?: string;
+    branch?: string;
+    year?: string;
+    interests?: string[];
+    skills?: string[];
 }
 
 export default function StudentDetailPage() {
@@ -39,6 +45,12 @@ export default function StudentDetailPage() {
                         status: data.status || "active",
                         phone: data.phoneNumber || data.phone || "Not Provided",
                         createdAt: data.createdAt?.toDate?.()?.toLocaleDateString() || "Unknown",
+                        address: data.address || "Not Provided",
+                        dob: data.dateOfBirth?.toDate?.()?.toLocaleDateString() || data.dateOfBirth || "Not Provided",
+                        branch: data.collegeBranch || "Not Provided",
+                        year: data.year || "Not Provided",
+                        interests: data.interests || [],
+                        skills: data.skills || [],
                     });
                 }
             } catch (e) {
@@ -121,10 +133,74 @@ export default function StudentDetailPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
+                            <GraduationCap className="h-5 w-5 text-[#FF6600]" />
+                            Education & Location
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-start gap-2">
+                            <MapPin className="h-4 w-4 mt-1 text-slate-400" />
+                            <div>
+                                <p className="text-sm font-medium text-slate-500">Address</p>
+                                <p className="text-slate-700">{profile.address}</p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm font-medium text-slate-500">College Branch</p>
+                                <p className="flex items-center gap-2 text-slate-700">
+                                    <BookOpen className="h-4 w-4" /> {profile.branch}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-slate-500">Year of Study</p>
+                                <p className="text-slate-700">{profile.year}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-slate-500">Date of Birth</p>
+                            <p className="text-slate-700">{profile.dob}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="md:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Interests & Skills</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-6 md:grid-cols-2">
+                        <div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <Heart className="h-4 w-4 text-rose-500" />
+                                <h4 className="font-semibold text-slate-800">Interests</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {profile.interests?.length ? profile.interests.map((it, idx) => (
+                                    <Badge key={idx} variant="secondary" className="bg-slate-100">{it}</Badge>
+                                )) : <span className="text-sm text-slate-400 italic">No interests listed</span>}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <Briefcase className="h-4 w-4 text-blue-500" />
+                                <h4 className="font-semibold text-slate-800">Skills</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {profile.skills?.length ? profile.skills.map((sk, idx) => (
+                                    <Badge key={idx} variant="outline" className="text-blue-600 border-blue-200">{sk}</Badge>
+                                )) : <span className="text-sm text-slate-400 italic">No skills listed</span>}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="md:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
                             <ShieldAlert className="h-5 w-5 text-[#FF6600]" />
                             Account Administration
                         </CardTitle>
-                        <CardDescription>Manage this user's access and roles.</CardDescription>
+                        <CardDescription>Manage this user&apos;s access and roles.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="flex items-center justify-between">

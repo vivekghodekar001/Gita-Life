@@ -3,20 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/japa_provider.dart';
 import '../../services/auth_service.dart';
-import '../../services/attendance_service.dart';
-import '../../services/japa_service.dart';
-
-final attendanceStatsProvider = FutureProvider.family<double, String>((ref, uid) {
-  return AttendanceService().getAttendancePercentage(uid);
-});
-
-final japaStatsProvider = FutureProvider<int>((ref) async {
-  final logs = await ref.read(japaServiceProvider).getMonthHistory();
-  return logs.fold<int>(0, (sum, log) => sum + log.totalMalas);
-});
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -29,20 +18,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
+  late TextEditingController _addressController;
+  late TextEditingController _branchController;
+  late TextEditingController _yearController;
+  late TextEditingController _interestsController;
+  late TextEditingController _skillsController;
+  DateTime? _selectedDob;
   bool _isEditing = false;
   bool _isLoading = false;
+
+  Future<void> _selectDate(BuildContext context) async {
+    if (!_isEditing) return;
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDob ?? DateTime.now().subtract(const Duration(days: 365 * 18)),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDob) {
+      setState(() {
+        _selectedDob = picked;
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
     _phoneController = TextEditingController();
+    _addressController = TextEditingController();
+    _branchController = TextEditingController();
+    _yearController = TextEditingController();
+    _interestsController = TextEditingController();
+    _skillsController = TextEditingController();
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = ref.read(userProfileProvider).valueOrNull;
       if (user != null) {
         _nameController.text = user.fullName;
         _phoneController.text = user.phoneNumber;
+        _addressController.text = user.address ?? '';
+        _branchController.text = user.collegeBranch ?? '';
+        _yearController.text = user.year ?? '';
+        _interestsController.text = user.interests?.join(', ') ?? '';
+        _skillsController.text = user.skills?.join(', ') ?? '';
+        _selectedDob = user.dateOfBirth;
       }
     });
   }
@@ -51,6 +72,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _addressController.dispose();
+    _branchController.dispose();
+    _yearController.dispose();
+    _interestsController.dispose();
+    _skillsController.dispose();
     super.dispose();
   }
 
@@ -93,6 +119,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       await ref.read(authServiceProvider).updateProfile(uid, {
         'fullName': _nameController.text,
         'phoneNumber': _phoneController.text,
+        'address': _addressController.text,
+        if (_selectedDob != null) 'dateOfBirth': Timestamp.fromDate(_selectedDob!),
+        'collegeBranch': _branchController.text,
+        'year': _yearController.text,
+        'interests': _interestsController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+        'skills': _skillsController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
       });
       
       ref.invalidate(userProfileProvider);
@@ -127,6 +159,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       if (_isEditing) {
                         _nameController.text = user.fullName;
                         _phoneController.text = user.phoneNumber;
+                        _addressController.text = user.address ?? '';
+                        _branchController.text = user.collegeBranch ?? '';
+                        _yearController.text = user.year ?? '';
+                        _interestsController.text = user.interests?.join(', ') ?? '';
+                        _skillsController.text = user.skills?.join(', ') ?? '';
+                        _selectedDob = user.dateOfBirth;
                       }
                       setState(() => _isEditing = !_isEditing);
                     },
@@ -148,9 +186,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         data: (user) {
           if (user == null) return const Center(child: Text('User profile not found.'));
           
-          final attendanceAsync = ref.watch(attendanceStatsProvider(user.uid));
-          final japaAsync = ref.watch(japaStatsProvider);
-
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Form(
@@ -205,8 +240,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          _buildInfoRow(Icons.badge, 'Roll Number', user.rollNumber),
-                          const Divider(),
                           _buildInfoRow(Icons.email, 'Email', user.email),
                           const Divider(),
                           _buildInfoRow(Icons.admin_panel_settings, 'Role', user.role.toUpperCase()),
@@ -240,6 +273,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     decoration: _inputDecoration('Phone Number', Icons.phone),
                     validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                   ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _addressController,
+                    enabled: _isEditing,
+                    decoration: _inputDecoration('Address', Icons.location_on),
+                  ),
+                  const SizedBox(height: 16),
+                  InkWell(
+                    onTap: () => _selectDate(context),
+                    child: InputDecorator(
+                      decoration: _inputDecoration('Date of Birth', Icons.cake),
+                      child: Text(_selectedDob != null ? DateFormat('MMM d, yyyy').format(_selectedDob!) : (_isEditing ? 'Select Date' : 'Not set')),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _branchController,
+                    enabled: _isEditing,
+                    decoration: _inputDecoration('College Branch', Icons.school),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _yearController,
+                    enabled: _isEditing,
+                    decoration: _inputDecoration('Year of Study', Icons.calendar_today),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _interestsController,
+                    enabled: _isEditing,
+                    decoration: _inputDecoration('Interests (comma separated)', Icons.star),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _skillsController,
+                    enabled: _isEditing,
+                    decoration: _inputDecoration('Skills (comma separated)', Icons.build),
+                  ),
                   
                   if (_isEditing) ...[
                     const SizedBox(height: 24),
@@ -257,34 +328,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   ],
 
-                  const SizedBox(height: 32),
-                  
-                  // Stats Summary
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Your Statistics', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: attendanceAsync.when(
-                          data: (pct) => _buildStatCard('Attendance', '\${pct.toStringAsFixed(1)}%', Icons.event_available, Colors.blue),
-                          loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (_, __) => const SizedBox.shrink(),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: japaAsync.when(
-                          data: (malas) => _buildStatCard('30d Malas', '\$malas', Icons.adjust, const Color(0xFFE65100)),
-                          loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (_, __) => const SizedBox.shrink(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
                 ],
               ),
             ),
@@ -332,39 +375,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-          ),
-        ],
-      ),
     );
   }
 }
