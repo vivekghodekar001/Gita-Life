@@ -103,7 +103,7 @@ class GitaChapterListScreen extends ConsumerWidget {
         ),
         error: (err, stack) => Center(
           child: ErrorRetry(
-            message: 'Failed to load chapters',
+            message: 'Failed to load chapters:\n$err',
             onRetry: () => ref.refresh(gitaApiChaptersProvider),
           ),
         ),
