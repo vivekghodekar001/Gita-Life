@@ -39,7 +39,7 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
           _bodyController.clear();
         }
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \$e')));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
       if (mounted) setState(() => _isSending = false);
     }

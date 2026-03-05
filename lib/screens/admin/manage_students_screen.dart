@@ -167,6 +167,30 @@ class ManageStudentsScreen extends ConsumerWidget {
                 _buildInfoRow('Role', user.role),
                 const SizedBox(height: 8),
                 _buildInfoRow('Enrolled', DateFormat('MMM d, yyyy').format(user.enrollmentDate)),
+                if (user.address != null && user.address!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Address', user.address!),
+                ],
+                if (user.dateOfBirth != null) ...[
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Date of Birth', DateFormat('MMM d, yyyy').format(user.dateOfBirth!)),
+                ],
+                if (user.collegeBranch != null && user.collegeBranch!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Branch', user.collegeBranch!),
+                ],
+                if (user.year != null && user.year!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Year', user.year!),
+                ],
+                if (user.interests != null && user.interests!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Interests', user.interests!.join(', ')),
+                ],
+                if (user.skills != null && user.skills!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Skills', user.skills!.join(', ')),
+                ],
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

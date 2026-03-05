@@ -49,7 +49,7 @@ class DashboardScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hare Krishna, ${user?.displayName ?? 'Devotee'}',
+                          'Hare Krishna, ${(userProfile?.fullName.isNotEmpty == true) ? userProfile!.fullName.split(' ').first : 'Devotee'}',
                           style: const TextStyle(
                               fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepOrange),
                         ),
@@ -103,10 +103,10 @@ class DashboardScreen extends ConsumerWidget {
                       onTap: () => context.push('/attendance/history'),
                     ),
                     FeatureCard(
-                      title: 'Profile',
-                      icon: Icons.person_outline,
+                      title: 'Assignments',
+                      icon: Icons.assignment,
                       color: Colors.purple,
-                      onTap: () => context.push('/profile'),
+                      onTap: () => context.push('/assignments'),
                     ),
                   ],
                 ),

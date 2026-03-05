@@ -36,6 +36,8 @@ import '../screens/admin/manage_audio_screen.dart';
 import '../screens/admin/manage_students_screen.dart';
 import '../screens/admin/send_notification_screen.dart';
 import '../screens/admin/manage_attendance_screen.dart';
+import '../screens/admin/manage_assignments_screen.dart';
+import '../screens/assignments/assignments_screen.dart';
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -174,6 +176,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/admin/students', builder: (context, state) => const ManageStudentsScreen()),
       GoRoute(path: '/admin/notifications', builder: (context, state) => const SendNotificationScreen()),
       GoRoute(path: '/admin/attendance', builder: (context, state) => const ManageAttendanceScreen()),
+      GoRoute(path: '/admin/assignments', builder: (context, state) => const ManageAssignmentsScreen()),
+
+      // Assignments (student)
+      GoRoute(path: '/assignments', builder: (context, state) => const AssignmentsScreen()),
     ],
   );
 });

@@ -92,6 +92,17 @@ class AttendanceService {
     });
   }
 
+  Stream<List<AttendanceRecord>> streamStudentAttendance(String studentUid) {
+    return _firestore
+        .collection('attendance_records')
+        .where('studentUid', isEqualTo: studentUid)
+        .orderBy('markedAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => AttendanceRecord.fromFirestore(doc))
+            .toList());
+  }
+
   Future<List<AttendanceRecord>> getStudentAttendance(String studentUid) async {
     final querySnapshot = await _firestore
         .collection('attendance_records')

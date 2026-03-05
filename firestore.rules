@@ -68,5 +68,20 @@ service cloud.firestore {
       allow create: if isAdmin();
       allow update, delete: if false;
     }
+
+    // Assignments
+    match /assignments/{assignmentId} {
+      allow read: if isActiveUser();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin();
+    }
+
+    // Assignment Submissions
+    match /assignment_submissions/{submissionId} {
+      allow read: if isAdmin() || (isActiveUser() && resource.data.studentUid == request.auth.uid);
+      allow create: if isActiveUser() && request.resource.data.studentUid == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
   }
 }
