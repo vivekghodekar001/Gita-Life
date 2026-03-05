@@ -8,11 +8,18 @@ import '../../widgets/feature_card.dart';
 import '../../widgets/offline_banner.dart';
 
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  bool _showAllSessions = false;
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authStateProvider).value;
     final userProfile = ref.watch(userProfileProvider).valueOrNull;
     final isAdmin = userProfile?.role == 'admin';
@@ -52,11 +59,6 @@ class DashboardScreen extends ConsumerWidget {
                           'Hare Krishna, ${(userProfile?.fullName.isNotEmpty == true) ? userProfile!.fullName.split(' ').first : 'Devotee'}',
                           style: const TextStyle(
                               fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepOrange),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          '"Always think of Me, become My devotee, worship Me and offer your homage unto Me."\n- Bhagavad Gita 18.65',
-                          style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.black87),
                         ),
                       ],
                     ),
@@ -181,14 +183,26 @@ class DashboardScreen extends ConsumerWidget {
                         sessionsAsync.when(
                           data: (sessions) {
                             if (sessions.isEmpty) return const Text('No recent sessions.');
-                            final recent = sessions.take(3).toList();
+                            final displaySessions = _showAllSessions ? sessions : sessions.take(3).toList();
                             return Column(
-                              children: recent.map((s) => ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(s.title),
-                                subtitle: Text(s.topic),
-                                trailing: Text('${s.lectureDate.day}/${s.lectureDate.month}'),
-                              )).toList(),
+                              children: [
+                                ...displaySessions.map((s) => ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(s.title),
+                                  subtitle: Text(s.topic),
+                                  trailing: Text('${s.lectureDate.day}/${s.lectureDate.month}'),
+                                )),
+                                if (!_showAllSessions && sessions.length > 3)
+                                  TextButton(
+                                    onPressed: () => setState(() => _showAllSessions = true),
+                                    child: const Text('Show more', style: TextStyle(color: Color(0xFFE65100))),
+                                  ),
+                                if (_showAllSessions && sessions.length > 3)
+                                  TextButton(
+                                    onPressed: () => setState(() => _showAllSessions = false),
+                                    child: const Text('Show less', style: TextStyle(color: Color(0xFFE65100))),
+                                  ),
+                              ],
                             );
                           },
                           loading: () => const Center(child: CircularProgressIndicator()),

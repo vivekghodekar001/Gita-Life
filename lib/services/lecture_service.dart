@@ -43,7 +43,7 @@ class LectureService {
   }
 
   Future<void> deleteLecture(String id) async {
-    await _firestore.collection('lectures').doc(id).update({'isActive': false});
+    await _firestore.collection('lectures').doc(id).delete();
   }
 
   Future<void> incrementViewCount(String id) async {

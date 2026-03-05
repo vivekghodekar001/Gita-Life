@@ -131,6 +131,10 @@ class AudioService {
   Future<void> toggleAudioActiveStatus(String trackId, bool isActive) async {
     await _firestore.collection('audio_tracks').doc(trackId).update({'isActive': isActive});
   }
+
+  Future<void> deleteAudioTrack(String trackId) async {
+    await _firestore.collection('audio_tracks').doc(trackId).delete();
+  }
 }
 
 final audioServiceProvider = Provider<AudioService>((ref) => AudioService());
