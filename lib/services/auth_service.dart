@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 class AuthService {
   void _ensureFirebase() {
@@ -71,17 +72,28 @@ class AuthService {
 
   Future<UserCredential> signInWithGoogle() async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        throw Exception('Google sign-in was cancelled.');
+      UserCredential userCredential;
+      
+      if (kIsWeb) {
+        final googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+        googleProvider.setCustomParameters({
+          'prompt': 'select_account'
+        });
+        userCredential = await _auth.signInWithPopup(googleProvider);
+      } else {
+        final GoogleSignIn googleSignIn = GoogleSignIn();
+        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+        if (googleUser == null) {
+          throw Exception('Google sign-in was cancelled.');
+        }
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        userCredential = await _auth.signInWithCredential(credential);
       }
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      final userCredential = await _auth.signInWithCredential(credential);
 
       // Create Firestore profile if it doesn't exist yet
       if (userCredential.user != null) {
