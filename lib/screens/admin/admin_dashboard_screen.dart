@@ -1,7 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import '../../providers/admin_provider.dart';
+import '../../providers/firebase_provider.dart';
+
+// Provider for recent admin activity
+final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final status = ref.watch(firebaseInitStatusProvider);
+  if (status != FirebaseInitStatus.initialized || Firebase.apps.isEmpty) return [];
+
+  final firestore = FirebaseFirestore.instanceFor(app: Firebase.app());
+  final results = <Map<String, dynamic>>[];
+
+  // Fetch last 5 attendance sessions
+  final sessionsSnap = await firestore
+      .collection('attendance_sessions')
+      .orderBy('createdAt', descending: true)
+      .limit(5)
+      .get();
+  for (final doc in sessionsSnap.docs) {
+    final data = doc.data();
+    results.add({
+      'type': 'session',
+      'icon': Icons.event_available,
+      'color': Colors.purple,
+      'text': 'Session created: ${data['title'] ?? 'Untitled'}',
+      'timestamp': (data['createdAt'] as Timestamp?)?.toDate(),
+    });
+  }
+
+  // Fetch last 5 new user registrations
+  final usersSnap = await firestore
+      .collection('users')
+      .orderBy('enrollmentDate', descending: true)
+      .limit(5)
+      .get();
+  for (final doc in usersSnap.docs) {
+    final data = doc.data();
+    results.add({
+      'type': 'user',
+      'icon': Icons.person_add_alt_1,
+      'color': Colors.blue,
+      'text': 'New student registered: ${data['fullName'] ?? 'Unknown'}',
+      'timestamp': (data['enrollmentDate'] as Timestamp?)?.toDate(),
+    });
+  }
+
+  // Sort all by timestamp descending and take the 10 most recent
+  results.sort((a, b) {
+    final ta = a['timestamp'] as DateTime?;
+    final tb = b['timestamp'] as DateTime?;
+    if (ta == null && tb == null) return 0;
+    if (ta == null) return 1;
+    if (tb == null) return -1;
+    return tb.compareTo(ta);
+  });
+
+  return results.take(10).toList();
+});
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -34,7 +92,7 @@ class AdminDashboardScreen extends ConsumerWidget {
               const SizedBox(height: 32),
               _buildSectionHeader('Recent Activity'),
               const SizedBox(height: 16),
-              _buildRecentActivityPlaceholder(),
+              _buildRecentActivity(ref),
             ],
           ),
         ),
@@ -136,6 +194,7 @@ class AdminDashboardScreen extends ConsumerWidget {
         _buildActionCard(context, 'Manage Lectures', Icons.video_library, '/admin/lectures', const Color(0xFFE65100)),
         _buildActionCard(context, 'Manage Audio', Icons.library_music, '/admin/audio', const Color(0xFFE65100)),
         _buildActionCard(context, 'Send Notifications', Icons.notifications_active, '/admin/notifications', const Color(0xFFE65100)),
+        _buildActionCard(context, 'Manage Attendance', Icons.how_to_reg, '/admin/attendance', const Color(0xFFE65100)),
       ],
     );
   }
@@ -169,9 +228,9 @@ class AdminDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentActivityPlaceholder() {
+  Widget _buildRecentActivity(WidgetRef ref) {
+    final activityAsync = ref.watch(recentActivityProvider);
     return Container(
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -183,19 +242,72 @@ class AdminDashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(Icons.history, size: 48, color: Colors.grey[300]),
-            const SizedBox(height: 16),
-            Text(
-              'No recent activity',
-              style: TextStyle(color: Colors.grey[500], fontSize: 16),
-            ),
-          ],
+      child: activityAsync.when(
+        data: (activities) {
+          if (activities.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.history, size: 48, color: Colors.grey[300]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No recent activity',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          return ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: activities.length,
+            separatorBuilder: (_, __) => const Divider(height: 1, indent: 56),
+            itemBuilder: (context, index) {
+              final item = activities[index];
+              final timestamp = item['timestamp'] as DateTime?;
+              final timeText = timestamp != null
+                  ? _formatTimestamp(timestamp)
+                  : '';
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: (item['color'] as Color).withOpacity(0.12),
+                  child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 20),
+                ),
+                title: Text(item['text'] as String, style: const TextStyle(fontSize: 14)),
+                subtitle: timeText.isNotEmpty
+                    ? Text(timeText, style: TextStyle(fontSize: 12, color: Colors.grey[500]))
+                    : null,
+              );
+            },
+          );
+        },
+        loading: () => const Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
+        ),
+        error: (_, __) => Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Text('Failed to load activity', style: TextStyle(color: Colors.grey[500])),
+          ),
         ),
       ),
     );
+  }
+
+  String _formatTimestamp(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${dt.day}/${dt.month}/${dt.year}';
   }
 }
 

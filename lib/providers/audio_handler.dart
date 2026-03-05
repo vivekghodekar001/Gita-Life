@@ -85,15 +85,6 @@ class AppAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> setSpeed(double speed) => _player.setSpeed(speed);
-  
-  // Custom command to setup standard playlist streams
-  @override
-  Future<void> customAction(String name, [Map<String, dynamic>? extras]) async {
-     if (name == 'setAudioSource') {
-       // Expects a global list of URLs formatted into ConcatenatingAudioSource handled by Provider layer
-       // However, directly managing sources in the Provider layer is simpler. We expose the raw internal AudioPlayer reference mapping correctly via `AppAudioHandler` instance methods.
-     }
-  }
-  
+
   AudioPlayer get player => _player; 
 }
