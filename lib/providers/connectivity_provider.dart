@@ -6,10 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final connectivityProvider = StreamProvider<bool>((ref) {
   final connectivity = Connectivity();
 
-  // Transform the connectivity stream into a simple bool
-  return connectivity.onConnectivityChanged.map((results) {
-    // connectivity_plus v5+ returns List<ConnectivityResult>
-    return results.any((r) => r != ConnectivityResult.none);
+  // connectivity_plus may return List<ConnectivityResult> or single ConnectivityResult
+  // depending on version. Handle both by checking the runtime type.
+  return connectivity.onConnectivityChanged.map((result) {
+    if (result is List) {
+      return (result as List).any((r) => r != ConnectivityResult.none);
+    }
+    return result != ConnectivityResult.none;
   });
 });
 

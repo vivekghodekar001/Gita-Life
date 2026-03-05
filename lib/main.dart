@@ -247,9 +247,6 @@ class _FirebaseErrorScreen extends ConsumerWidget {
                 ref.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.loading;
                 ref.read(firebaseInitErrorProvider.notifier).state = null;
 
-                // Create a temporary container to access the providers
-                final container = ProviderContainer(parent: ref.container);
-
                 // Actually retry Firebase initialization
                 try {
                   debugPrint('🔄 [RETRY]: Retrying Firebase initialization...');
@@ -281,8 +278,6 @@ class _FirebaseErrorScreen extends ConsumerWidget {
                   ref.read(firebaseInitStatusProvider.notifier).state = FirebaseInitStatus.failed;
                   ref.read(firebaseInitErrorProvider.notifier).state = e.toString();
                 }
-
-                container.dispose();
               },
             ),
           ],
