@@ -51,7 +51,7 @@ class _AttendanceHistoryScreenState extends ConsumerState<AttendanceHistoryScree
           )
         ],
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: historyAsync.when(
         loading: () => ShimmerLoading.listItem(),
         error: (error, _) => ErrorRetry(
@@ -69,7 +69,7 @@ class _AttendanceHistoryScreenState extends ConsumerState<AttendanceHistoryScree
           
           Color percentColor = Colors.red;
           if (percentage > 75) percentColor = Colors.green;
-          else if (percentage >= 50) percentColor = Colors.orange;
+          else if (percentage >= 50) percentColor = const Color(0xFF1565C0);
 
           // Apply month filter
           var filteredRecords = records;
@@ -160,7 +160,7 @@ class _AttendanceHistoryScreenState extends ConsumerState<AttendanceHistoryScree
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'present': return Colors.green;
-      case 'late': return Colors.orange;
+      case 'late': return const Color(0xFF1565C0);
       case 'absent': return Colors.red;
       default: return Colors.grey;
     }

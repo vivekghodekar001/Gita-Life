@@ -20,7 +20,7 @@ class ErrorRetry extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: Colors.orange.shade300),
+            Icon(icon, size: 64, color: const Color(0xFF1565C0)),
             const SizedBox(height: 16),
             Text(
               message,
@@ -37,7 +37,7 @@ class ErrorRetry extends StatelessWidget {
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF6600),
+                backgroundColor: const Color(0xFF1565C0),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

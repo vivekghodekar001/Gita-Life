@@ -153,12 +153,12 @@ class GitaLifeApp extends ConsumerWidget {
         theme: gitaLifeTheme,
         debugShowCheckedModeBanner: false,
         home: const Scaffold(
-          backgroundColor: Color(0xFFFFF8F0),
+          backgroundColor: Color(0xFFE8F5F9),
           body: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: Color(0xFFFF6600)),
+                CircularProgressIndicator(color: Color(0xFF1565C0)),
                 SizedBox(height: 16),
                 Text('Initializing...', style: TextStyle(color: Colors.grey)),
               ],
@@ -211,7 +211,7 @@ class _FirebaseErrorScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: Padding(
         padding: const EdgeInsets.all(32.0),
         child: Column(
@@ -235,7 +235,7 @@ class _FirebaseErrorScreen extends ConsumerWidget {
               icon: const Icon(Icons.refresh),
               label: const Text('RETRY'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF6600),
+                backgroundColor: const Color(0xFF1565C0),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
                 shape: RoundedRectangleBorder(

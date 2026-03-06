@@ -69,8 +69,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             center: Alignment.center,
             radius: 1.2,
             colors: [
+<<<<<<< HEAD
               SacredColors.ember.withOpacity(0.08),
               SacredColors.ink,
+=======
+              Color(0xFF0D47A1),
+              Color(0xFF1565C0),
+              Color(0xFF00695C),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
             ],
           ),
         ),

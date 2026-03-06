@@ -20,6 +20,7 @@ class ManageStudentsScreen extends ConsumerWidget {
     final usersAsync = ref.watch(usersProvider(currentFilter));
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
@@ -82,6 +83,59 @@ class ManageStudentsScreen extends ConsumerWidget {
                 ),
               ),
             ],
+=======
+      appBar: AppBar(
+        title: const Text('Manage Students'),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            tooltip: 'Export CSV',
+            onPressed: () async {
+              final users = usersAsync.valueOrNull;
+              if (users != null && users.isNotEmpty) {
+                try {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Generating CSV...')),
+                  );
+                  await ref.read(userActionsProvider).exportUsersCsv(users);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error exporting CSV: $e')),
+                  );
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('No students to export')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+      backgroundColor: const Color(0xFFE8F5F9),
+      body: Column(
+        children: [
+          _buildFilterChips(ref, currentFilter),
+          Expanded(
+            child: usersAsync.when(
+              data: (users) {
+                if (users.isEmpty) {
+                  return const Center(child: Text('No students found.'));
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    final user = users[index];
+                    return _buildStudentCard(context, ref, user);
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
+              error: (error, stack) => Center(child: Text('Error: $error')),
+            ),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
           ),
         ),
       ),
@@ -100,6 +154,7 @@ class ManageStudentsScreen extends ConsumerWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
+<<<<<<< HEAD
         children: filters.map((f) {
           final isSelected = currentFilter == f.$2;
           return Padding(
@@ -135,6 +190,34 @@ class ManageStudentsScreen extends ConsumerWidget {
             ),
           );
         }).toList(),
+=======
+        children: [
+          _buildChip(ref, currentFilter, 'All', 'all'),
+          const SizedBox(width: 8),
+          _buildChip(ref, currentFilter, 'Pending', 'pending'),
+          const SizedBox(width: 8),
+          _buildChip(ref, currentFilter, 'Active', 'active'),
+          const SizedBox(width: 8),
+          _buildChip(ref, currentFilter, 'Suspended', 'suspended'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChip(WidgetRef ref, String currentFilter, String label, String value) {
+    final isSelected = currentFilter == value;
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) {
+        ref.read(studentFilterProvider.notifier).state = value;
+      },
+      selectedColor: const Color(0xFF1565C0).withOpacity(0.2),
+      checkmarkColor: const Color(0xFF1565C0),
+      labelStyle: TextStyle(
+        color: isSelected ? const Color(0xFF1565C0) : Colors.black87,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
       ),
     );
   }
@@ -146,7 +229,11 @@ class ManageStudentsScreen extends ConsumerWidget {
         statusColor = const Color(0xFF4CAF50);
         break;
       case 'pending':
+<<<<<<< HEAD
         statusColor = SacredColors.parchment;
+=======
+        statusColor = const Color(0xFF1565C0);
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
         break;
       case 'suspended':
         statusColor = SacredColors.ember;
@@ -155,6 +242,7 @@ class ManageStudentsScreen extends ConsumerWidget {
         statusColor = SacredColors.ash;
     }
 
+<<<<<<< HEAD
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: SacredDecorations.glassCard(radius: 12),
@@ -164,6 +252,35 @@ class ManageStudentsScreen extends ConsumerWidget {
           expansionTileTheme: ExpansionTileThemeData(
             iconColor: SacredColors.parchment.withOpacity(0.4),
             collapsedIconColor: SacredColors.parchment.withOpacity(0.2),
+=======
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      child: ExpansionTile(
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFF1565C0).withOpacity(0.1),
+          backgroundImage: user.profilePhotoUrl.isNotEmpty ? NetworkImage(user.profilePhotoUrl) : null,
+          child: user.profilePhotoUrl.isEmpty
+              ? Text(
+                  user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
+                  style: const TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.bold),
+                )
+              : null,
+        ),
+        title: Text(user.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text('Roll: ${user.rollNumber}'),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: statusColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: statusColor, width: 1),
+          ),
+          child: Text(
+            user.status.toUpperCase(),
+            style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
           ),
         ),
         child: ExpansionTile(

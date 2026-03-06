@@ -18,6 +18,7 @@ class AssignmentsScreen extends ConsumerWidget {
     final userProfile = ref.watch(userProfileProvider).valueOrNull;
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
@@ -73,6 +74,40 @@ class AssignmentsScreen extends ConsumerWidget {
             ],
           ),
         ),
+=======
+      appBar: AppBar(
+        title: const Text('Assignments'),
+        elevation: 0,
+      ),
+      backgroundColor: const Color(0xFFE8F5F9),
+      body: assignmentsAsync.when(
+        data: (assignments) {
+          if (assignments.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.assignment_outlined, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('No assignments yet.',
+                      style: TextStyle(color: Colors.grey, fontSize: 16)),
+                ],
+              ),
+            );
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: assignments.length,
+            itemBuilder: (context, index) => _AssignmentStudentCard(
+              assignment: assignments[index],
+              userProfile: userProfile,
+            ),
+          );
+        },
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: Color(0xFF1565C0))),
+        error: (err, _) => Center(child: Text('Error: $err')),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
       ),
     );
   }
@@ -106,6 +141,7 @@ class _AssignmentStudentCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+<<<<<<< HEAD
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -123,6 +159,22 @@ class _AssignmentStudentCard extends ConsumerWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+=======
+                const CircleAvatar(
+                  backgroundColor: Color(0x1A1565C0),
+                  child: Icon(Icons.assignment, color: Color(0xFF1565C0)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(assignment.title,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Row(
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                         children: [
                           Text(
                             assignment.title,
@@ -191,6 +243,7 @@ class _AssignmentStudentCard extends ConsumerWidget {
       // Not yet submitted
       return SizedBox(
         width: double.infinity,
+<<<<<<< HEAD
         child: GestureDetector(
           onTap: userProfile != null ? () => _submitAssignment(context, ref) : null,
           child: Container(
@@ -214,6 +267,19 @@ class _AssignmentStudentCard extends ConsumerWidget {
                 ),
               ],
             ),
+=======
+        child: ElevatedButton.icon(
+          onPressed: userProfile != null
+              ? () => _submitAssignment(context, ref)
+              : null,
+          icon: const Icon(Icons.check_circle_outline),
+          label: const Text('Mark as Done (Submitted Offline)'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1565C0),
+            foregroundColor: Colors.white,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
           ),
         ),
       );

@@ -20,6 +20,7 @@ class LectureListScreen extends ConsumerWidget {
     final lecturesAsync = ref.watch(filteredLecturesProvider);
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
@@ -33,6 +34,51 @@ class LectureListScreen extends ConsumerWidget {
                     IconButton(
                       icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.5)),
                       onPressed: () => context.canPop() ? context.pop() : null,
+=======
+      backgroundColor: const Color(0xFFE8F5F9),
+      appBar: AppBar(
+        title: const Text('Multimedia Lectures'),
+      ),
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              onChanged: (val) => ref.read(lectureSearchQueryProvider.notifier).state = val,
+              decoration: InputDecoration(
+                hintText: 'Search lectures by title or topic...',
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF1565C0)),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              ),
+            ),
+          ),
+          // Filter Chips
+          SizedBox(
+            height: 50,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: topics.length,
+              itemBuilder: (context, index) {
+                final topic = topics[index];
+                final isSelected = topic == selectedTopic;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: FilterChip(
+                    label: Text(topic),
+                    selected: isSelected,
+                    selectedColor: const Color(0xFF1565C0),
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black87,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                     ),
                     const Spacer(),
                     Text('LECTURES', style: SacredTextStyles.sectionLabel(fontSize: 10)),
@@ -41,6 +87,7 @@ class LectureListScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+<<<<<<< HEAD
               const SizedBox(height: 8),
               // Search Bar — glassmorphism
               Padding(
@@ -83,6 +130,18 @@ class LectureListScreen extends ConsumerWidget {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: topics.length,
+=======
+              data: (lectures) {
+                if (lectures.isEmpty) {
+                  return const Center(child: Text('No lectures found.', style: TextStyle(color: Colors.blueGrey, fontSize: 16)));
+                }
+                return RefreshIndicator(
+                  color: const Color(0xFF1565C0),
+                  onRefresh: () async => ref.invalidate(filteredLecturesProvider),
+                  child: ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  itemCount: lectures.length,
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                   itemBuilder: (context, index) {
                     final topic = topics[index];
                     final isSelected = topic == selectedTopic;
@@ -209,9 +268,15 @@ class LectureListScreen extends ConsumerWidget {
     return Container(
       height: 180,
       width: double.infinity,
+<<<<<<< HEAD
       color: SacredColors.surface,
       child: Center(
         child: Icon(Icons.play_circle_fill_rounded, size: 52, color: SacredColors.parchment.withOpacity(0.15)),
+=======
+      color: const Color(0xFFE8F5F9),
+      child: const Center(
+        child: Icon(Icons.play_circle_fill, size: 64, color: Color(0xFF1565C0)),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
       ),
     );
   }

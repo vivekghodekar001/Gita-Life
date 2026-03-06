@@ -17,6 +17,7 @@ class ManageLecturesScreen extends ConsumerWidget {
     final lecturesAsync = ref.watch(adminLecturesProvider);
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
@@ -68,6 +69,34 @@ class ManageLecturesScreen extends ConsumerWidget {
           backgroundColor: SacredColors.surface,
           child: Icon(Icons.add_rounded, color: SacredColors.parchment.withOpacity(0.7)),
         ),
+=======
+      appBar: AppBar(
+        title: const Text('Manage Lectures'),
+        elevation: 0,
+      ),
+      backgroundColor: const Color(0xFFE8F5F9),
+      body: lecturesAsync.when(
+        data: (lectures) {
+          if (lectures.isEmpty) {
+            return const Center(child: Text('No lectures found.'));
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: lectures.length,
+            itemBuilder: (context, index) {
+              final lecture = lectures[index];
+              return _buildLectureCard(context, ref, lecture);
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
+        error: (error, stack) => Center(child: Text('Error: $error')),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddEditLectureDialog(context, ref),
+        backgroundColor: const Color(0xFF1565C0),
+        child: const Icon(Icons.add, color: Colors.white),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
       ),
     );
   }
@@ -102,6 +131,7 @@ class ManageLecturesScreen extends ConsumerWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+<<<<<<< HEAD
             SizedBox(
               height: 28,
               child: Switch(
@@ -112,6 +142,22 @@ class ManageLecturesScreen extends ConsumerWidget {
                 inactiveThumbColor: SacredColors.parchment.withOpacity(0.3),
                 inactiveTrackColor: SacredColors.parchment.withOpacity(0.06),
               ),
+=======
+            Switch(
+              value: lecture.isActive,
+              onChanged: (value) async {
+                await ref.read(lectureServiceProvider).toggleLectureActiveStatus(lecture.lectureId, value);
+              },
+              activeColor: const Color(0xFF1565C0),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.blue),
+              onPressed: () => _showAddEditLectureDialog(context, ref, lecture: lecture),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: () => _deleteLecture(context, ref, lecture),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
             ),
             IconButton(icon: Icon(Icons.edit_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.4)), onPressed: () => _showAddEditLectureDialog(context, ref, lecture: lecture)),
             IconButton(icon: Icon(Icons.delete_outline_rounded, size: 18, color: SacredColors.ember.withOpacity(0.5)), onPressed: () => _deleteLecture(context, ref, lecture)),
@@ -322,6 +368,7 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
                   style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.7)),
                   decoration: InputDecoration(
                     labelText: 'Category',
+<<<<<<< HEAD
                     labelStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.35)),
                     prefixIcon: Icon(Icons.category, color: SacredColors.parchment.withOpacity(0.3), size: 18),
                     filled: true,
@@ -329,6 +376,14 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.2))),
+=======
+                    prefixIcon: const Icon(Icons.category, color: Color(0xFF1565C0)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                    ),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                   ),
                   items: _categories.map((String category) {
                     return DropdownMenuItem(value: category, child: Text(category));
@@ -342,6 +397,7 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
                   title: Text('Active', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.5))),
                   value: _isActive,
                   onChanged: (val) => setState(() => _isActive = val),
+<<<<<<< HEAD
                   activeColor: SacredColors.ember.withOpacity(0.7),
                   activeTrackColor: SacredColors.ember.withOpacity(0.15),
                   inactiveThumbColor: SacredColors.parchment.withOpacity(0.2),
@@ -363,6 +419,19 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
                         ? SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: SacredColors.parchment.withOpacity(0.4), strokeWidth: 1.5))
                         : Text(widget.lecture == null ? 'ADD LECTURE' : 'SAVE CHANGES',
                             style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5, color: SacredColors.parchmentLight.withOpacity(0.6))),
+=======
+                  activeColor: const Color(0xFF1565C0),
+                  contentPadding: EdgeInsets.zero,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1565C0),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                   ),
                 ),
               ],
@@ -385,6 +454,7 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
       } : null,
       decoration: InputDecoration(
         labelText: label,
+<<<<<<< HEAD
         labelStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.35)),
         prefixIcon: Icon(icon, color: SacredColors.parchment.withOpacity(0.3), size: 18),
         filled: true,
@@ -392,6 +462,14 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.2))),
+=======
+        prefixIcon: Icon(icon, color: const Color(0xFF1565C0)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+        ),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
       ),
     );
   }

@@ -27,12 +27,12 @@ class FeatureCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                color.withOpacity(0.15),
-                color.withOpacity(0.05),
+                color.withAlpha(38),
+                color.withAlpha(13),
               ],
             ),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withOpacity(0.2)),
+            border: Border.all(color: color.withAlpha(51)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(8),
@@ -42,7 +42,7 @@ class FeatureCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
+                    color: color.withAlpha(38),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, size: 28, color: color),
@@ -54,7 +54,7 @@ class FeatureCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: color.withOpacity(0.9),
+                    color: color,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

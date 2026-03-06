@@ -30,7 +30,7 @@ class AttendanceChip extends StatelessWidget {
       case 'present':
         return _StatusConfig('Present', Colors.green, Icons.check_circle_outline);
       case 'late':
-        return _StatusConfig('Late', Colors.orange, Icons.schedule);
+        return _StatusConfig('Late', const Color(0xFF1565C0), Icons.schedule);
       case 'absent':
         return _StatusConfig('Absent', Colors.red, Icons.cancel_outlined);
       default:

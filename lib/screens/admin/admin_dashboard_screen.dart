@@ -81,6 +81,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final statsAsync = ref.watch(adminStatsProvider);
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
@@ -104,6 +105,54 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   const SizedBox(height: 12),
                   _buildRecentActivity(ref),
                 ],
+=======
+      appBar: AppBar(
+        title: const Text('Admin Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Color(0xFF0D47A1), Color(0xFF00695C)],
+            ),
+          ),
+        ),
+        elevation: 0,
+      ),
+      backgroundColor: const Color(0xFFE8F5F9),
+      body: statsAsync.when(
+        data: (stats) => RefreshIndicator(
+          onRefresh: () => ref.refresh(adminStatsProvider.future),
+          child: ListView(
+            padding: const EdgeInsets.all(16.0),
+            children: [
+              _buildSectionHeader('Overview'),
+              const SizedBox(height: 16),
+              _buildStatsGrid(stats),
+              const SizedBox(height: 32),
+              _buildSectionHeader('Quick Actions'),
+              const SizedBox(height: 16),
+              _buildQuickActionsGrid(context),
+              const SizedBox(height: 32),
+              _buildSectionHeader('Recent Activity'),
+              const SizedBox(height: 16),
+              _buildRecentActivity(ref),
+            ],
+          ),
+        ),
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 64),
+              const SizedBox(height: 16),
+              Text('Error loading stats: $error', textAlign: TextAlign.center),
+              TextButton(
+                onPressed: () => ref.refresh(adminStatsProvider),
+                child: const Text('Retry'),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
               ),
             ),
             loading: () => const Center(child: CircularProgressIndicator(color: SacredColors.parchment)),
@@ -128,10 +177,58 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
+<<<<<<< HEAD
   Widget _buildTopBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
       child: Row(
+=======
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF0D1B2A),
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid(Map<String, dynamic> stats) {
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 1.2,
+      children: [
+        _buildStatCard('Total Students', stats['totalStudents'].toString(), Icons.people, const Color(0xFF1565C0)),
+        _buildStatCard('Pending Approvals', stats['pendingApprovals'].toString(), Icons.pending_actions, const Color(0xFF4527A0)),
+        _buildStatCard('Active Today', stats['activeToday'].toString(), Icons.local_fire_department, const Color(0xFF00695C)),
+        _buildStatCard('Sessions This Week', stats['sessionsThisWeek'].toString(), Icons.event_available, const Color(0xFF00ACC1)),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
         children: [
           IconButton(
             icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.5)),
@@ -211,6 +308,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       mainAxisSpacing: 10,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+<<<<<<< HEAD
       childAspectRatio: 1.0,
       children: actions.map((action) {
         return GestureDetector(
@@ -220,6 +318,42 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               color: action.color.withOpacity(0.05),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: action.color.withOpacity(0.12)),
+=======
+      childAspectRatio: 1.5,
+      children: [
+        _buildActionCard(context, 'Manage Students', Icons.group_add, '/admin/students', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Manage Lectures', Icons.video_library, '/admin/lectures', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Manage Audio', Icons.library_music, '/admin/audio', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Send Notifications', Icons.notifications_active, '/admin/notifications', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Manage Attendance', Icons.how_to_reg, '/admin/attendance', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Manage Assignments', Icons.assignment, '/admin/assignments', const Color(0xFF1565C0)),
+      ],
+    );
+  }
+
+  Widget _buildActionCard(BuildContext context, String title, IconData icon, String route, Color color) {
+    return InkWell(
+      onTap: () => context.push(route),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.3), width: 1),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -317,6 +451,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 },
               ),
               if (!_showAllActivity && activities.length > 3)
+<<<<<<< HEAD
                 GestureDetector(
                   onTap: () => setState(() => _showAllActivity = true),
                   child: Padding(
@@ -335,13 +470,29 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       color: SacredColors.parchment.withOpacity(0.4),
                     )),
                   ),
+=======
+                TextButton(
+                  onPressed: () => setState(() => _showAllActivity = true),
+                  child: const Text('Show more', style: TextStyle(color: Color(0xFF1565C0))),
+                ),
+              if (_showAllActivity && activities.length > 3)
+                TextButton(
+                  onPressed: () => setState(() => _showAllActivity = false),
+                  child: const Text('Show less', style: TextStyle(color: Color(0xFF1565C0))),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                 ),
             ],
           );
         },
+<<<<<<< HEAD
         loading: () => Padding(
           padding: const EdgeInsets.all(24),
           child: Center(child: CircularProgressIndicator(color: SacredColors.parchment.withOpacity(0.5))),
+=======
+        loading: () => const Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
         ),
         error: (_, __) => Padding(
           padding: const EdgeInsets.all(24),

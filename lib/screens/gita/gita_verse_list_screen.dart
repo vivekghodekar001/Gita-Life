@@ -27,6 +27,7 @@ class GitaVerseListScreen extends ConsumerWidget {
     final language = ref.watch(gitaLanguageProvider);
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: const Color(0xFF080604),
       body: SacredBackground(
         child: SafeArea(
@@ -96,6 +97,22 @@ class GitaVerseListScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
+=======
+      backgroundColor: const Color(0xFFE8F5F9),
+      appBar: AppBar(
+        backgroundColor: primaryOrange,
+        foregroundColor: Colors.white,
+        title: Text(chapterTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        elevation: 0,
+        actions: [
+          // Language Switcher (reusing minimal logic)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
               ),
               const SizedBox(height: 8),
               // Verse count label

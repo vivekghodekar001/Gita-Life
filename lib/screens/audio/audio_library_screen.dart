@@ -38,6 +38,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> with SingleTick
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
@@ -121,6 +122,33 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> with SingleTick
               ),
               const AudioMiniPlayer(),
             ],
+=======
+      backgroundColor: const Color(0xFFE8F5F9),
+      appBar: AppBar(
+        title: const Text('Audio Library'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download_done),
+            onPressed: () => context.push('/audio/downloads'),
+          )
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          labelColor: const Color(0xFF1565C0),
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: const Color(0xFF1565C0),
+          tabs: categories.map((c) => Tab(text: c)).toList(),
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: categories.map((c) => _TrackList(category: c)).toList(),
+            ),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
           ),
         ),
       ),
@@ -160,6 +188,7 @@ class _TrackList extends ConsumerWidget {
           itemBuilder: (context, index) {
             final track = tracks[index];
             final isDownloaded = downloads.any((d) => d.trackId == track.trackId);
+<<<<<<< HEAD
 
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -208,6 +237,39 @@ class _TrackList extends ConsumerWidget {
                     ? Icon(Icons.offline_pin_rounded, color: SacredColors.parchment.withOpacity(0.4), size: 22)
                     : IconButton(
                         icon: Icon(Icons.download_rounded, color: SacredColors.parchment.withOpacity(0.3), size: 20),
+=======
+            
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              leading: Container(
+                width: 50, height: 50,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5F9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: track.coverImageUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                           imageUrl: track.coverImageUrl!, 
+                           fit: BoxFit.cover,
+                           errorWidget: (context, error, stack) => const Icon(Icons.music_note, color: Color(0xFF1565C0)),
+                        ),
+                      )
+                    : const Icon(Icons.music_note, color: Color(0xFF1565C0)),
+              ),
+              title: Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                 style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(track.artist, style: TextStyle(color: Colors.grey.shade600)),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                   if (isDownloaded)
+                      const Icon(Icons.offline_pin, color: Colors.green, size: 24)
+                   else
+                      IconButton(
+                        icon: const Icon(Icons.download, color: Colors.blueGrey),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

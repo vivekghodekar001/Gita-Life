@@ -16,6 +16,7 @@ class ManageAudioScreen extends ConsumerWidget {
     final audioAsync = ref.watch(adminAudioProvider);
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
@@ -59,9 +60,20 @@ class ManageAudioScreen extends ConsumerWidget {
                 ),
               ),
             ],
+=======
+      appBar: AppBar(
+        title: const Text('Manage Audio'),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_download, color: Color(0xFF1565C0)),
+            tooltip: 'Bulk Import',
+            onPressed: () => _showBulkImportDialog(context, ref),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
           ),
         ),
       ),
+<<<<<<< HEAD
       floatingActionButton: Container(
         width: 48, height: 48,
         decoration: BoxDecoration(
@@ -73,11 +85,36 @@ class ManageAudioScreen extends ConsumerWidget {
           icon: Icon(Icons.add, color: SacredColors.parchment.withOpacity(0.5), size: 20),
           onPressed: () => _showAddEditAudioDialog(context, ref),
         ),
+=======
+      backgroundColor: const Color(0xFFE8F5F9),
+      body: audioAsync.when(
+        data: (tracks) {
+          if (tracks.isEmpty) {
+            return const Center(child: Text('No audio tracks found.'));
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: tracks.length,
+            itemBuilder: (context, index) {
+              final track = tracks[index];
+              return _buildAudioCard(context, ref, track);
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
+        error: (error, stack) => Center(child: Text('Error: $error')),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddEditAudioDialog(context, ref),
+        backgroundColor: const Color(0xFF1565C0),
+        child: const Icon(Icons.add, color: Colors.white),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
       ),
     );
   }
 
   Widget _buildAudioCard(BuildContext context, WidgetRef ref, AudioTrackModel track) {
+<<<<<<< HEAD
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
@@ -94,6 +131,33 @@ class ManageAudioScreen extends ConsumerWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+=======
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(12),
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFF1565C0).withOpacity(0.1),
+          backgroundImage: track.coverImageUrl != null ? NetworkImage(track.coverImageUrl!) : null,
+          child: track.coverImageUrl == null
+              ? const Icon(Icons.music_note, color: Color(0xFF1565C0))
+              : null,
+        ),
+        title: Text(
+          track.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(track.artist, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+            const SizedBox(height: 4),
+            Row(
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
               children: [
                 Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.cormorantGaramond(fontSize: 15, fontWeight: FontWeight.w600, color: SacredColors.parchmentLight.withOpacity(0.7))),
@@ -107,6 +171,7 @@ class ManageAudioScreen extends ConsumerWidget {
                 ]),
               ],
             ),
+<<<<<<< HEAD
           ),
           Switch(
             value: track.isActive,
@@ -126,12 +191,40 @@ class ManageAudioScreen extends ConsumerWidget {
             child: Icon(Icons.delete_outline, size: 16, color: SacredColors.ember.withOpacity(0.4)),
           ),
         ],
+=======
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Switch(
+              value: track.isActive,
+              onChanged: (value) async {
+                await ref.read(audioServiceProvider).toggleAudioActiveStatus(track.trackId, value);
+              },
+              activeColor: const Color(0xFF1565C0),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.blue),
+              onPressed: () => _showAddEditAudioDialog(context, ref, track: track),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: () => _deleteAudioTrack(context, ref, track),
+            ),
+          ],
+        ),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
       ),
     );
   }
 
+<<<<<<< HEAD
   Widget _buildTag(String text, {Color? color}) {
     final c = color ?? SacredColors.ember;
+=======
+  Widget _buildTag(String text, {Color color = const Color(0xFF1565C0)}) {
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
@@ -319,6 +412,7 @@ class _BulkImportDialogState extends ConsumerState<_BulkImportDialog> {
         ],
       ),
       actions: [
+<<<<<<< HEAD
         TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: SacredColors.parchment.withOpacity(0.4)))),
         GestureDetector(
           onTap: _isLoading ? null : _importBulk,
@@ -333,6 +427,13 @@ class _BulkImportDialogState extends ConsumerState<_BulkImportDialog> {
                 ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 1.5, color: SacredColors.parchment.withOpacity(0.4)))
                 : Text('IMPORT', style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 1, color: SacredColors.parchmentLight.withOpacity(0.6))),
           ),
+=======
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _importBulk,
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white),
+          child: _isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Import'),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
         ),
       ],
     );
@@ -537,6 +638,7 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
                   title: Text('Active', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.5))),
                   value: _isActive,
                   onChanged: (val) => setState(() => _isActive = val),
+<<<<<<< HEAD
                   activeColor: SacredColors.ember.withOpacity(0.7),
                   activeTrackColor: SacredColors.ember.withOpacity(0.15),
                   inactiveThumbColor: SacredColors.parchment.withOpacity(0.2),
@@ -558,6 +660,19 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
                         ? SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: SacredColors.parchment.withOpacity(0.4), strokeWidth: 1.5))
                         : Text(widget.track == null ? 'ADD TRACK' : 'SAVE CHANGES',
                             style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5, color: SacredColors.parchmentLight.withOpacity(0.6))),
+=======
+                  activeColor: const Color(0xFF1565C0),
+                  contentPadding: EdgeInsets.zero,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1565C0),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                   ),
                 ),
               ],
@@ -585,6 +700,7 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
   InputDecoration _sacredInputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
+<<<<<<< HEAD
       labelStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.35)),
       prefixIcon: Icon(icon, color: SacredColors.parchment.withOpacity(0.3), size: 18),
       filled: true,
@@ -592,6 +708,14 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.2))),
+=======
+      prefixIcon: Icon(icon, color: const Color(0xFF1565C0)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+      ),
+>>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
     );
   }
 }
