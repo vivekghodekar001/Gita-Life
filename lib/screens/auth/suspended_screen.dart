@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../services/auth_service.dart';
 import '../../providers/auth_provider.dart';
 
 class SuspendedScreen extends ConsumerWidget {
@@ -9,32 +8,84 @@ class SuspendedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account Suspended'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authServiceProvider).logout(),
-          )
-        ],
-      ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF1565C0), Color(0xFFE8F5F9)],
+          ),
+        ),
+        child: SafeArea(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.block, size: 64, color: Colors.red),
-              SizedBox(height: 24),
-              Text(
-                'Account Suspended',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
+              AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                foregroundColor: Colors.white,
+                title: const Text('Account Suspended'),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.logout),
+                    onPressed: () => ref.read(authServiceProvider).logout(),
+                  ),
+                ],
               ),
-              SizedBox(height: 16),
-              Text(
-                'Your account has been suspended by an administrator. Please contact support for assistance.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 20,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.block,
+                            size: 64,
+                            color: Colors.red,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        const Text(
+                          'Account Suspended',
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Text(
+                            'Your account has been suspended by an administrator. Please contact support for assistance.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF0D1B2A),
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
           ),

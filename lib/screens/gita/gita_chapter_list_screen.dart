@@ -17,7 +17,7 @@ class GitaChapterListScreen extends ConsumerWidget {
     const Color primaryOrange = Color(0xFFEA580C);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0), // Warm background
+      backgroundColor: const Color(0xFFE8F5F9), // Warm background
       appBar: AppBar(
         backgroundColor: primaryOrange,
         foregroundColor: Colors.white,

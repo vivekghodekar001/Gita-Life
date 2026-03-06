@@ -61,10 +61,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
-        backgroundColor: const Color(0xFFFFF8F0),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -87,7 +86,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
           _buildSectionHeader('Japa Settings'),
           ListTile(
-            leading: const Icon(Icons.adjust, color: Color(0xFFE65100)),
+            leading: const Icon(Icons.adjust, color: Color(0xFF1565C0)),
             title: const Text('Daily Target (Malas)'),
             subtitle: Text('\${settings["daily_target"] ?? 16} Malas'),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -104,14 +103,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
           _buildSectionHeader('Gita Reader'),
           ListTile(
-            leading: const Icon(Icons.text_fields, color: Color(0xFFE65100)),
+            leading: const Icon(Icons.text_fields, color: Color(0xFF1565C0)),
             title: const Text('Font Size'),
             subtitle: Slider(
               value: (settings['reader_font_size'] as num?)?.toDouble() ?? 16.0,
               min: 12.0,
               max: 24.0,
               divisions: 6,
-              activeColor: const Color(0xFFE65100),
+              activeColor: const Color(0xFF1565C0),
               label: '\${settings["reader_font_size"]?.toInt() ?? 16}',
               onChanged: (val) => notifier.updateSetting('reader_font_size', val),
             ),
@@ -120,12 +119,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
           _buildSectionHeader('App Info'),
           ListTile(
-            leading: const Icon(Icons.info_outline, color: Color(0xFFE65100)),
+            leading: const Icon(Icons.info_outline, color: Color(0xFF1565C0)),
             title: const Text('Version'),
             subtitle: Text(_version),
           ),
           ListTile(
-            leading: const Icon(Icons.star_rate, color: Color(0xFFE65100)),
+            leading: const Icon(Icons.star_rate, color: Color(0xFF1565C0)),
             title: const Text('Rate App'),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -173,10 +172,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return SwitchListTile(
       title: Text(title),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-      secondary: Icon(icon, color: const Color(0xFFE65100)),
+      secondary: Icon(icon, color: const Color(0xFF1565C0)),
       value: value,
       onChanged: onChanged,
-      activeColor: const Color(0xFFE65100),
+      activeColor: const Color(0xFF1565C0),
     );
   }
 
@@ -196,7 +195,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 min: 1,
                 max: 64,
                 divisions: 63,
-                activeColor: const Color(0xFFE65100),
+                activeColor: const Color(0xFF1565C0),
                 onChanged: (val) => setState(() => target = val.toInt()),
               ),
             ],
@@ -211,7 +210,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 notifier.updateSetting('daily_target', target);
                 Navigator.pop(context);
               },
-              child: const Text('Save', style: TextStyle(color: Color(0xFFE65100), fontWeight: FontWeight.bold)),
+              child: const Text('Save', style: TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.bold)),
             ),
           ],
         ),

@@ -16,10 +16,9 @@ class ManageLecturesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Lectures'),
-        backgroundColor: const Color(0xFFFFF8F0),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: lecturesAsync.when(
         data: (lectures) {
           if (lectures.isEmpty) {
@@ -34,12 +33,12 @@ class ManageLecturesScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
         error: (error, stack) => Center(child: Text('Error: $error')),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEditLectureDialog(context, ref),
-        backgroundColor: const Color(0xFFE65100),
+        backgroundColor: const Color(0xFF1565C0),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -89,7 +88,7 @@ class ManageLecturesScreen extends ConsumerWidget {
               onChanged: (value) async {
                 await ref.read(lectureServiceProvider).toggleLectureActiveStatus(lecture.lectureId, value);
               },
-              activeColor: const Color(0xFFE65100),
+              activeColor: const Color(0xFF1565C0),
             ),
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.blue),
@@ -310,11 +309,11 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
                   value: _selectedCategory,
                   decoration: InputDecoration(
                     labelText: 'Category',
-                    prefixIcon: const Icon(Icons.category, color: Color(0xFFE65100)),
+                    prefixIcon: const Icon(Icons.category, color: Color(0xFF1565C0)),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE65100), width: 2),
+                      borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
                     ),
                   ),
                   items: _categories.map((String category) {
@@ -336,14 +335,14 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
                   title: const Text('Active'),
                   value: _isActive,
                   onChanged: (val) => setState(() => _isActive = val),
-                  activeColor: const Color(0xFFE65100),
+                  activeColor: const Color(0xFF1565C0),
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE65100),
+                    backgroundColor: const Color(0xFF1565C0),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -371,11 +370,11 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
       } : null,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFFE65100)),
+        prefixIcon: Icon(icon, color: const Color(0xFF1565C0)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE65100), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
         ),
       ),
     );

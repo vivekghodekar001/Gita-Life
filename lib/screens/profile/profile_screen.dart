@@ -148,7 +148,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: const Color(0xFFFFF8F0),
         elevation: 0,
         actions: [
           userAsync.maybeWhen(
@@ -181,7 +180,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           )
         ],
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: userAsync.when(
         data: (user) {
           if (user == null) return const Center(child: Text('User profile not found.'));
@@ -198,12 +197,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: const Color(0xFFE65100).withOpacity(0.1),
+                        backgroundColor: const Color(0xFF1565C0).withOpacity(0.1),
                         backgroundImage: user.profilePhotoUrl.isNotEmpty ? NetworkImage(user.profilePhotoUrl) : null,
                         child: user.profilePhotoUrl.isEmpty
                             ? Text(
                                 user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
-                                style: const TextStyle(fontSize: 48, color: Color(0xFFE65100), fontWeight: FontWeight.bold),
+                                style: const TextStyle(fontSize: 48, color: Color(0xFF1565C0), fontWeight: FontWeight.bold),
                               )
                             : null,
                       ),
@@ -216,7 +215,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: const BoxDecoration(
-                                color: Color(0xFFE65100),
+                                color: Color(0xFF1565C0),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
@@ -225,7 +224,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                       if (_isLoading)
                         const Positioned.fill(
-                          child: CircularProgressIndicator(color: Color(0xFFE65100)),
+                          child: CircularProgressIndicator(color: Color(0xFF1565C0)),
                         ),
                     ],
                   ),
@@ -245,7 +244,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           _buildInfoRow(Icons.admin_panel_settings, 'Role', user.role.toUpperCase()),
                           const Divider(),
                           _buildInfoRow(Icons.check_circle_outline, 'Status', user.status.toUpperCase(), 
-                              color: user.status == 'active' ? Colors.green : (user.status == 'suspended' ? Colors.red : Colors.orange)),
+                              color: user.status == 'active' ? Colors.green : (user.status == 'suspended' ? Colors.red : const Color(0xFF1565C0))),
                           const Divider(),
                           _buildInfoRow(Icons.date_range, 'Enrolled', DateFormat('MMM d, yyyy').format(user.enrollmentDate)),
                         ],
@@ -317,7 +316,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : () => _saveProfile(user.uid),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE65100),
+                        backgroundColor: const Color(0xFF1565C0),
                         foregroundColor: Colors.white,
                         minimumSize: const Size.fromHeight(50),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -333,7 +332,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
         error: (error, stack) => Center(child: Text('Error loading profile: \$error')),
       ),
     );
@@ -342,7 +341,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: const Color(0xFFE65100)),
+      prefixIcon: Icon(icon, color: const Color(0xFF1565C0)),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -354,7 +353,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE65100), width: 2),
+        borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
       ),
       filled: !_isEditing,
       fillColor: _isEditing ? Colors.white : Colors.grey[100],

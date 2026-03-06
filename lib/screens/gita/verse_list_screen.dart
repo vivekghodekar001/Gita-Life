@@ -14,7 +14,7 @@ class VerseListScreen extends ConsumerWidget {
     final versesAsync = ref.watch(versesByChapterProvider(chapterNum));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         title: Text('Chapter $chapterNum'),
       ),
@@ -59,11 +59,11 @@ class VerseListScreen extends ConsumerWidget {
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   leading: CircleAvatar(
-                    backgroundColor: const Color(0xFFFF9933).withOpacity(0.2),
+                    backgroundColor: const Color(0xFF1565C0).withOpacity(0.2),
                     child: Text(
                       '${verse.verseNumber}',
                       style: const TextStyle(
-                        color: Color(0xFFFF6600),
+                        color: Color(0xFF1565C0),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -83,7 +83,7 @@ class VerseListScreen extends ConsumerWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  trailing: verse.isBookmarked ? const Icon(Icons.bookmark, color: Color(0xFFFF6600)) : null,
+                  trailing: verse.isBookmarked ? const Icon(Icons.bookmark, color: Color(0xFF1565C0)) : null,
                   onTap: () {
                     context.push('/gita/chapter/$chapterNum/verse/${verse.verseNumber}');
                   },

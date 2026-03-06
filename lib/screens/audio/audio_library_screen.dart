@@ -28,7 +28,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> with SingleTick
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         title: const Text('Audio Library'),
         actions: [
@@ -40,9 +40,9 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> with SingleTick
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          labelColor: const Color(0xFFFF6600),
+          labelColor: const Color(0xFF1565C0),
           unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFFFF6600),
+          indicatorColor: const Color(0xFF1565C0),
           tabs: categories.map((c) => Tab(text: c)).toList(),
         ),
       ),
@@ -91,7 +91,7 @@ class _TrackList extends ConsumerWidget {
               leading: Container(
                 width: 50, height: 50,
                 decoration: BoxDecoration(
-                  color: Colors.orange.shade100,
+                  color: const Color(0xFFE8F5F9),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: track.coverImageUrl != null
@@ -100,10 +100,10 @@ class _TrackList extends ConsumerWidget {
                         child: CachedNetworkImage(
                            imageUrl: track.coverImageUrl!, 
                            fit: BoxFit.cover,
-                           errorWidget: (context, error, stack) => const Icon(Icons.music_note, color: Colors.orange),
+                           errorWidget: (context, error, stack) => const Icon(Icons.music_note, color: Color(0xFF1565C0)),
                         ),
                       )
-                    : const Icon(Icons.music_note, color: Colors.orange),
+                    : const Icon(Icons.music_note, color: Color(0xFF1565C0)),
               ),
               title: Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis,
                  style: const TextStyle(fontWeight: FontWeight.bold)),

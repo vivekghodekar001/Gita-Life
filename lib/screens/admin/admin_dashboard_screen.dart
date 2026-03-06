@@ -79,10 +79,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       appBar: AppBar(
         title: const Text('Admin Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
-        backgroundColor: const Color(0xFFFFF8F0),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Color(0xFF0D47A1), Color(0xFF00695C)],
+            ),
+          ),
+        ),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: statsAsync.when(
         data: (stats) => RefreshIndicator(
           onRefresh: () => ref.refresh(adminStatsProvider.future),
@@ -103,7 +111,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ],
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -128,7 +136,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       style: const TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.bold,
-        color: Color(0xFF3E2723),
+        color: Color(0xFF0D1B2A),
       ),
     );
   }
@@ -142,10 +150,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       childAspectRatio: 1.2,
       children: [
-        _buildStatCard('Total Students', stats['totalStudents'].toString(), Icons.people, Colors.blue),
-        _buildStatCard('Pending Approvals', stats['pendingApprovals'].toString(), Icons.pending_actions, Colors.orange),
-        _buildStatCard('Active Today', stats['activeToday'].toString(), Icons.local_fire_department, Colors.green),
-        _buildStatCard('Sessions This Week', stats['sessionsThisWeek'].toString(), Icons.event_available, Colors.purple),
+        _buildStatCard('Total Students', stats['totalStudents'].toString(), Icons.people, const Color(0xFF1565C0)),
+        _buildStatCard('Pending Approvals', stats['pendingApprovals'].toString(), Icons.pending_actions, const Color(0xFF4527A0)),
+        _buildStatCard('Active Today', stats['activeToday'].toString(), Icons.local_fire_department, const Color(0xFF00695C)),
+        _buildStatCard('Sessions This Week', stats['sessionsThisWeek'].toString(), Icons.event_available, const Color(0xFF00ACC1)),
       ],
     );
   }
@@ -197,12 +205,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       childAspectRatio: 1.5,
       children: [
-        _buildActionCard(context, 'Manage Students', Icons.group_add, '/admin/students', const Color(0xFFE65100)),
-        _buildActionCard(context, 'Manage Lectures', Icons.video_library, '/admin/lectures', const Color(0xFFE65100)),
-        _buildActionCard(context, 'Manage Audio', Icons.library_music, '/admin/audio', const Color(0xFFE65100)),
-        _buildActionCard(context, 'Send Notifications', Icons.notifications_active, '/admin/notifications', const Color(0xFFE65100)),
-        _buildActionCard(context, 'Manage Attendance', Icons.how_to_reg, '/admin/attendance', const Color(0xFFE65100)),
-        _buildActionCard(context, 'Manage Assignments', Icons.assignment, '/admin/assignments', const Color(0xFFE65100)),
+        _buildActionCard(context, 'Manage Students', Icons.group_add, '/admin/students', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Manage Lectures', Icons.video_library, '/admin/lectures', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Manage Audio', Icons.library_music, '/admin/audio', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Send Notifications', Icons.notifications_active, '/admin/notifications', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Manage Attendance', Icons.how_to_reg, '/admin/attendance', const Color(0xFF1565C0)),
+        _buildActionCard(context, 'Manage Assignments', Icons.assignment, '/admin/assignments', const Color(0xFF1565C0)),
       ],
     );
   }
@@ -299,19 +307,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               if (!_showAllActivity && activities.length > 3)
                 TextButton(
                   onPressed: () => setState(() => _showAllActivity = true),
-                  child: const Text('Show more', style: TextStyle(color: Color(0xFFE65100))),
+                  child: const Text('Show more', style: TextStyle(color: Color(0xFF1565C0))),
                 ),
               if (_showAllActivity && activities.length > 3)
                 TextButton(
                   onPressed: () => setState(() => _showAllActivity = false),
-                  child: const Text('Show less', style: TextStyle(color: Color(0xFFE65100))),
+                  child: const Text('Show less', style: TextStyle(color: Color(0xFF1565C0))),
                 ),
             ],
           );
         },
         loading: () => const Padding(
           padding: EdgeInsets.all(24),
-          child: Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
+          child: Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
         ),
         error: (_, __) => Padding(
           padding: const EdgeInsets.all(24),

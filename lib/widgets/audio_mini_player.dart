@@ -21,7 +21,7 @@ class AudioMiniPlayer extends ConsumerWidget {
       child: Container(
         height: 70,
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF8F0),
+          color: const Color(0xFFE8F5F9),
           boxShadow: [
             BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, -2))
           ],
@@ -61,7 +61,7 @@ class AudioMiniPlayer extends ConsumerWidget {
             ),
             IconButton(
               icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow, size: 32),
-              color: const Color(0xFFFF6600),
+              color: const Color(0xFF1565C0),
               onPressed: () {
                 ref.read(audioPlayerControllerProvider).togglePlay();
               },
@@ -77,8 +77,8 @@ class AudioMiniPlayer extends ConsumerWidget {
     return Container(
       width: 70,
       height: 70,
-      color: Colors.orange.shade100,
-      child: const Icon(Icons.music_note, color: Colors.orange, size: 30),
+      color: const Color(0xFFE8F5F9),
+      child: const Icon(Icons.music_note, color: Color(0xFF1565C0), size: 30),
     );
   }
 }

@@ -123,7 +123,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
            IconButton(icon: const Icon(Icons.lock), onPressed: _submitSession),
         ],
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator()) 
         : Column(
@@ -152,7 +152,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                         trailing: SegmentedButton<String>(
                           segments: const [
                             ButtonSegment(value: 'present', label: Text('P'), icon: Icon(Icons.check, size: 16, color: Colors.green)),
-                            ButtonSegment(value: 'late', label: Text('L'), icon: Icon(Icons.access_time, size: 16, color: Colors.orange)),
+                            ButtonSegment(value: 'late', label: Text('L'), icon: Icon(Icons.access_time, size: 16, color: const Color(0xFF1565C0))),
                             ButtonSegment(value: 'absent', label: Text('A'), icon: Icon(Icons.close, size: 16, color: Colors.red)),
                           ],
                           selected: {student['status']},

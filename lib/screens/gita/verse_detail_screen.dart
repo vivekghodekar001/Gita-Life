@@ -28,7 +28,7 @@ class VerseDetailScreen extends ConsumerWidget {
     final fontSize = ref.watch(fontSizeProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         title: Text('BG $chapterNum.$verseNum'),
         actions: [
@@ -71,7 +71,7 @@ class VerseDetailScreen extends ConsumerWidget {
                     IconButton(
                       icon: Icon(
                         verse.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                        color: const Color(0xFFFF6600),
+                        color: const Color(0xFF1565C0),
                         size: 30,
                       ),
                       onPressed: () async {
@@ -98,7 +98,7 @@ class VerseDetailScreen extends ConsumerWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: fontSize + 6,
-                    color: const Color(0xFFFF6600),
+                    color: const Color(0xFF1565C0),
                     fontWeight: FontWeight.bold,
                     fontFamily: 'NotoSerifDevanagari',
                     height: 1.6,
