@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/audio_service.dart';
 import '../../models/audio_track.dart';
+import '../../app/sacred_theme.dart';
+import '../../widgets/sacred_widgets.dart';
 import 'package:dio/dio.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -13,114 +16,130 @@ class ManageAudioScreen extends ConsumerWidget {
     final audioAsync = ref.watch(adminAudioProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manage Audio'),
-        backgroundColor: const Color(0xFFFFF8F0),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.cloud_download, color: Color(0xFFE65100)),
-            tooltip: 'Bulk Import',
-            onPressed: () => _showBulkImportDialog(context, ref),
+      backgroundColor: SacredColors.ink,
+      body: SacredBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ── Top Bar ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Icon(Icons.arrow_back_ios_new, size: 16, color: SacredColors.parchment.withOpacity(0.4)),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text('Manage Audio', style: SacredTextStyles.sectionLabel()),
+                    ),
+                    GestureDetector(
+                      onTap: () => _showBulkImportDialog(context, ref),
+                      child: Icon(Icons.cloud_download_outlined, size: 18, color: SacredColors.parchment.withOpacity(0.35)),
+                    ),
+                  ],
+                ),
+              ),
+              // ── List ──
+              Expanded(
+                child: audioAsync.when(
+                  data: (tracks) {
+                    if (tracks.isEmpty) {
+                      return Center(child: Text('No audio tracks found.', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.3))));
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: tracks.length,
+                      itemBuilder: (_, i) => _buildAudioCard(context, ref, tracks[i]),
+                    );
+                  },
+                  loading: () => Center(child: CircularProgressIndicator(color: SacredColors.parchment.withOpacity(0.2), strokeWidth: 1.5)),
+                  error: (e, _) => Center(child: Text('Error: $e', style: TextStyle(color: SacredColors.parchment.withOpacity(0.3)))),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
-      body: audioAsync.when(
-        data: (tracks) {
-          if (tracks.isEmpty) {
-            return const Center(child: Text('No audio tracks found.'));
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: tracks.length,
-            itemBuilder: (context, index) {
-              final track = tracks[index];
-              return _buildAudioCard(context, ref, track);
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
-        error: (error, stack) => Center(child: Text('Error: $error')),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddEditAudioDialog(context, ref),
-        backgroundColor: const Color(0xFFE65100),
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Container(
+        width: 48, height: 48,
+        decoration: BoxDecoration(
+          color: SacredColors.surface,
+          shape: BoxShape.circle,
+          border: Border.all(color: SacredColors.parchment.withOpacity(0.1)),
+        ),
+        child: IconButton(
+          icon: Icon(Icons.add, color: SacredColors.parchment.withOpacity(0.5), size: 20),
+          onPressed: () => _showAddEditAudioDialog(context, ref),
+        ),
       ),
     );
   }
 
   Widget _buildAudioCard(BuildContext context, WidgetRef ref, AudioTrackModel track) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
-        leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE65100).withOpacity(0.1),
-          backgroundImage: track.coverImageUrl != null ? NetworkImage(track.coverImageUrl!) : null,
-          child: track.coverImageUrl == null
-              ? const Icon(Icons.music_note, color: Color(0xFFE65100))
-              : null,
-        ),
-        title: Text(
-          track.title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(track.artist, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-            const SizedBox(height: 4),
-            Row(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: SacredDecorations.glassCard(),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: SacredColors.parchment.withOpacity(0.06),
+            backgroundImage: track.coverImageUrl != null ? NetworkImage(track.coverImageUrl!) : null,
+            child: track.coverImageUrl == null ? Icon(Icons.music_note, color: SacredColors.parchment.withOpacity(0.3), size: 16) : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTag(track.category.toUpperCase()),
-                const SizedBox(width: 8),
-                _buildTag(track.sourceType.toUpperCase(), color: Colors.blue),
+                Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.cormorantGaramond(fontSize: 15, fontWeight: FontWeight.w600, color: SacredColors.parchmentLight.withOpacity(0.7))),
+                const SizedBox(height: 2),
+                Text(track.artist, style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.35))),
+                const SizedBox(height: 4),
+                Row(children: [
+                  _buildTag(track.category.toUpperCase()),
+                  const SizedBox(width: 6),
+                  _buildTag(track.sourceType.toUpperCase(), color: SacredColors.parchment),
+                ]),
               ],
             ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Switch(
-              value: track.isActive,
-              onChanged: (value) async {
-                await ref.read(audioServiceProvider).toggleAudioActiveStatus(track.trackId, value);
-              },
-              activeColor: const Color(0xFFE65100),
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () => _showAddEditAudioDialog(context, ref, track: track),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: () => _deleteAudioTrack(context, ref, track),
-            ),
-          ],
-        ),
+          ),
+          Switch(
+            value: track.isActive,
+            onChanged: (v) => ref.read(audioServiceProvider).toggleAudioActiveStatus(track.trackId, v),
+            activeColor: SacredColors.ember.withOpacity(0.7),
+            activeTrackColor: SacredColors.ember.withOpacity(0.15),
+            inactiveThumbColor: SacredColors.parchment.withOpacity(0.2),
+            inactiveTrackColor: SacredColors.parchment.withOpacity(0.06),
+          ),
+          GestureDetector(
+            onTap: () => _showAddEditAudioDialog(context, ref, track: track),
+            child: Icon(Icons.edit_outlined, size: 16, color: SacredColors.parchment.withOpacity(0.3)),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => _deleteAudioTrack(context, ref, track),
+            child: Icon(Icons.delete_outline, size: 16, color: SacredColors.ember.withOpacity(0.4)),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTag(String text, {Color color = Colors.orange}) {
+  Widget _buildTag(String text, {Color? color}) {
+    final c = color ?? SacredColors.ember;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity(0.5)),
+        color: c.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: c.withOpacity(0.15)),
       ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold),
-      ),
+      child: Text(text, style: GoogleFonts.jost(fontSize: 8, fontWeight: FontWeight.w500, letterSpacing: 0.5, color: c.withOpacity(0.5))),
     );
   }
 
@@ -134,27 +153,20 @@ class ManageAudioScreen extends ConsumerWidget {
   }
 
   void _showBulkImportDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => _BulkImportDialog(),
-    );
+    showDialog(context: context, builder: (context) => _BulkImportDialog());
   }
 
   Future<void> _deleteAudioTrack(BuildContext context, WidgetRef ref, AudioTrackModel track) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Audio Track'),
-        content: Text('Are you sure you want to delete "${track.title}"?'),
+        backgroundColor: SacredColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text('Delete Track', style: GoogleFonts.cormorantGaramond(color: SacredColors.parchmentLight.withOpacity(0.8))),
+        content: Text('Delete "${track.title}"?', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.5))),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Cancel', style: TextStyle(color: SacredColors.parchment.withOpacity(0.4)))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Delete', style: TextStyle(color: SacredColors.ember.withOpacity(0.7)))),
         ],
       ),
     );
@@ -162,15 +174,11 @@ class ManageAudioScreen extends ConsumerWidget {
       try {
         await ref.read(audioServiceProvider).deleteAudioTrack(track.trackId);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Audio track deleted.')),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Audio track deleted.'), backgroundColor: SacredColors.surface));
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete: $e')),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e'), backgroundColor: SacredColors.surface));
         }
       }
     }
@@ -285,28 +293,46 @@ class _BulkImportDialogState extends ConsumerState<_BulkImportDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Bulk Audio Import'),
+      backgroundColor: SacredColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      title: Text('Bulk Audio Import', style: GoogleFonts.cormorantGaramond(fontSize: 20, fontWeight: FontWeight.w600, color: SacredColors.parchmentLight.withOpacity(0.8))),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Paste audio URLs (one per line). Each URL must start with https://. Titles will be auto-generated from file names.', style: TextStyle(fontSize: 13)),
+          Text('Paste audio URLs (one per line). Titles will be auto-generated from file names.',
+              style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.35))),
           const SizedBox(height: 16),
           TextField(
             controller: _urlController,
             maxLines: 5,
+            style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.7)),
             decoration: InputDecoration(
-              hintText: 'https://example.com/audio1.mp3\nhttps://example.com/audio2.mp3\nhttps://example.com/audio3.mp3',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              hintText: 'https://example.com/audio1.mp3\nhttps://example.com/audio2.mp3',
+              hintStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.2)),
+              filled: true,
+              fillColor: SacredColors.parchment.withOpacity(0.04),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.2))),
             ),
           ),
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        ElevatedButton(
-          onPressed: _isLoading ? null : _importBulk,
-          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), foregroundColor: Colors.white),
-          child: _isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Import'),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: SacredColors.parchment.withOpacity(0.4)))),
+        GestureDetector(
+          onTap: _isLoading ? null : _importBulk,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: SacredColors.parchment.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: SacredColors.parchment.withOpacity(0.15)),
+            ),
+            child: _isLoading
+                ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 1.5, color: SacredColors.parchment.withOpacity(0.4)))
+                : Text('IMPORT', style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 1, color: SacredColors.parchmentLight.withOpacity(0.6))),
+          ),
         ),
       ],
     );
@@ -470,9 +496,10 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: SacredColors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -486,44 +513,52 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      widget.track == null ? 'Add Audio Track' : 'Edit Audio Track',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                    Text(widget.track == null ? 'Add Audio Track' : 'Edit Audio Track',
+                        style: GoogleFonts.cormorantGaramond(fontSize: 22, fontWeight: FontWeight.w600, color: SacredColors.parchmentLight.withOpacity(0.8))),
+                    IconButton(icon: Icon(Icons.close, color: SacredColors.parchment.withOpacity(0.4), size: 20), onPressed: () => Navigator.pop(context)),
                   ],
                 ),
-                const SizedBox(height: 16),
-                const Text('Paste a YouTube, Google Drive, or MP3 link. Metadata will be fetched automatically.', style: TextStyle(color: Colors.grey, fontSize: 13)),
                 const SizedBox(height: 12),
-                _buildTextField(_urlController, 'Audio Link / URL', Icons.link, required: true),
+                Text('Paste a YouTube, Google Drive, or MP3 link. Metadata will be fetched automatically.',
+                    style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.35))),
+                const SizedBox(height: 16),
+                _buildSacredField(_urlController, 'Audio Link / URL', Icons.link, required: true),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _category,
-                  decoration: _inputDecoration('Category', Icons.category),
+                  dropdownColor: SacredColors.surface,
+                  style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.7)),
+                  decoration: _sacredInputDecoration('Category', Icons.category),
                   items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.toUpperCase()))).toList(),
                   onChanged: (val) => setState(() => _category = val!),
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  title: const Text('Active'),
+                  title: Text('Active', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.5))),
                   value: _isActive,
                   onChanged: (val) => setState(() => _isActive = val),
-                  activeColor: const Color(0xFFE65100),
+                  activeColor: SacredColors.ember.withOpacity(0.7),
+                  activeTrackColor: SacredColors.ember.withOpacity(0.15),
+                  inactiveThumbColor: SacredColors.parchment.withOpacity(0.2),
+                  inactiveTrackColor: SacredColors.parchment.withOpacity(0.06),
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE65100),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                GestureDetector(
+                  onTap: _isLoading ? null : _submit,
+                  child: Container(
+                    height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: SacredColors.parchment.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: SacredColors.parchment.withOpacity(0.15)),
+                    ),
+                    child: _isLoading
+                        ? SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: SacredColors.parchment.withOpacity(0.4), strokeWidth: 1.5))
+                        : Text(widget.track == null ? 'ADD TRACK' : 'SAVE CHANGES',
+                            style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5, color: SacredColors.parchmentLight.withOpacity(0.6))),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text(widget.track == null ? 'Add Track' : 'Save Changes', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -533,28 +568,30 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool required = false, int maxLines = 1, bool isNumber = false}) {
+  Widget _buildSacredField(TextEditingController controller, String label, IconData icon, {bool required = false, int maxLines = 1, bool isNumber = false}) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.7)),
       validator: required ? (value) {
         if (value == null || value.trim().isEmpty) return '$label is required';
         return null;
       } : null,
-      decoration: _inputDecoration(label, icon),
+      decoration: _sacredInputDecoration(label, icon),
     );
   }
 
-  InputDecoration _inputDecoration(String label, IconData icon) {
+  InputDecoration _sacredInputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: const Color(0xFFE65100)),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE65100), width: 2),
-      ),
+      labelStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.35)),
+      prefixIcon: Icon(icon, color: SacredColors.parchment.withOpacity(0.3), size: 18),
+      filled: true,
+      fillColor: SacredColors.parchment.withOpacity(0.04),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.2))),
     );
   }
 }

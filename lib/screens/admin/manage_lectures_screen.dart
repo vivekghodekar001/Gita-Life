@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/lecture_provider.dart';
 import '../../models/lecture_model.dart';
+import '../../app/sacred_theme.dart';
+import '../../widgets/sacred_widgets.dart';
 import 'package:intl/intl.dart';
 
 class ManageLecturesScreen extends ConsumerWidget {
@@ -14,91 +17,104 @@ class ManageLecturesScreen extends ConsumerWidget {
     final lecturesAsync = ref.watch(adminLecturesProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manage Lectures'),
-        backgroundColor: const Color(0xFFFFF8F0),
-        elevation: 0,
+      backgroundColor: SacredColors.ink,
+      body: SacredBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.5)),
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                    const Spacer(),
+                    Text('MANAGE LECTURES', style: SacredTextStyles.sectionLabel(fontSize: 10)),
+                    const Spacer(),
+                    const SizedBox(width: 40),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: lecturesAsync.when(
+                  data: (lectures) {
+                    if (lectures.isEmpty) {
+                      return Center(child: Text('No lectures found.', style: SacredTextStyles.infoValue().copyWith(color: SacredColors.parchment.withOpacity(0.3))));
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: lectures.length,
+                      itemBuilder: (context, index) => _buildLectureCard(context, ref, lectures[index]),
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator(color: SacredColors.parchment)),
+                  error: (error, stack) => Center(child: Text('Error: $error', style: TextStyle(color: SacredColors.parchment.withOpacity(0.5)))),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
-      body: lecturesAsync.when(
-        data: (lectures) {
-          if (lectures.isEmpty) {
-            return const Center(child: Text('No lectures found.'));
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: lectures.length,
-            itemBuilder: (context, index) {
-              final lecture = lectures[index];
-              return _buildLectureCard(context, ref, lecture);
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
-        error: (error, stack) => Center(child: Text('Error: $error')),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddEditLectureDialog(context, ref),
-        backgroundColor: const Color(0xFFE65100),
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: SacredColors.parchment.withOpacity(0.3)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 12)],
+        ),
+        child: FloatingActionButton(
+          onPressed: () => _showAddEditLectureDialog(context, ref),
+          backgroundColor: SacredColors.surface,
+          child: Icon(Icons.add_rounded, color: SacredColors.parchment.withOpacity(0.7)),
+        ),
       ),
     );
   }
 
   Widget _buildLectureCard(BuildContext context, WidgetRef ref, LectureModel lecture) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: SacredDecorations.glassCard(radius: 12),
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: Image.network(
             lecture.thumbnailUrl,
-            width: 80,
-            height: 60,
-            fit: BoxFit.cover,
+            width: 72, height: 52, fit: BoxFit.cover,
             errorBuilder: (_, __, ___) => Container(
-              width: 80,
-              height: 60,
-              color: Colors.grey[300],
-              child: const Icon(Icons.video_library, color: Colors.grey),
+              width: 72, height: 52,
+              color: SacredColors.surface,
+              child: Icon(Icons.video_library_rounded, color: SacredColors.parchment.withOpacity(0.2)),
             ),
           ),
         ),
-        title: Text(
-          lecture.title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
+        title: Text(lecture.title, style: GoogleFonts.cormorantGaramond(fontSize: 14, fontWeight: FontWeight.w600, color: SacredColors.parchmentLight.withOpacity(0.8)), maxLines: 2, overflow: TextOverflow.ellipsis),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(lecture.topic, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-            Text('${lecture.durationMinutes} min • ${lecture.viewCount} views', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Text(lecture.topic, style: GoogleFonts.jost(fontSize: 10, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.3))),
+            Text('${lecture.durationMinutes} min • ${lecture.viewCount} views', style: GoogleFonts.jost(fontSize: 10, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.2))),
           ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Switch(
-              value: lecture.isActive,
-              onChanged: (value) async {
-                await ref.read(lectureServiceProvider).toggleLectureActiveStatus(lecture.lectureId, value);
-              },
-              activeColor: const Color(0xFFE65100),
+            SizedBox(
+              height: 28,
+              child: Switch(
+                value: lecture.isActive,
+                onChanged: (value) async => await ref.read(lectureServiceProvider).toggleLectureActiveStatus(lecture.lectureId, value),
+                activeColor: SacredColors.parchment,
+                activeTrackColor: SacredColors.parchment.withOpacity(0.2),
+                inactiveThumbColor: SacredColors.parchment.withOpacity(0.3),
+                inactiveTrackColor: SacredColors.parchment.withOpacity(0.06),
+              ),
             ),
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () => _showAddEditLectureDialog(context, ref, lecture: lecture),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: () => _deleteLecture(context, ref, lecture),
-            ),
+            IconButton(icon: Icon(Icons.edit_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.4)), onPressed: () => _showAddEditLectureDialog(context, ref, lecture: lecture)),
+            IconButton(icon: Icon(Icons.delete_outline_rounded, size: 18, color: SacredColors.ember.withOpacity(0.5)), onPressed: () => _deleteLecture(context, ref, lecture)),
           ],
         ),
       ),
@@ -118,17 +134,13 @@ class ManageLecturesScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Lecture'),
-        content: Text('Are you sure you want to delete "${lecture.title}"?'),
+        backgroundColor: SacredColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text('Delete Lecture', style: GoogleFonts.cormorantGaramond(color: SacredColors.parchmentLight.withOpacity(0.8))),
+        content: Text('Delete "${lecture.title}"?', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.5))),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Cancel', style: TextStyle(color: SacredColors.parchment.withOpacity(0.4)))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Delete', style: TextStyle(color: SacredColors.ember.withOpacity(0.7)))),
         ],
       ),
     );
@@ -136,15 +148,11 @@ class ManageLecturesScreen extends ConsumerWidget {
       try {
         await ref.read(lectureServiceProvider).deleteLecture(lecture.lectureId);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Lecture deleted.')),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Lecture deleted.'), backgroundColor: SacredColors.surface));
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete: $e')),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e'), backgroundColor: SacredColors.surface));
         }
       }
     }
@@ -275,9 +283,10 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: SacredColors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -293,64 +302,68 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
                   children: [
                     Text(
                       widget.lecture == null ? 'Add Lecture' : 'Edit Lecture',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.cormorantGaramond(fontSize: 22, fontWeight: FontWeight.w600, color: SacredColors.parchmentLight.withOpacity(0.8)),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(Icons.close, color: SacredColors.parchment.withOpacity(0.4), size: 20),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                const Text('Enter a YouTube Video ID or full URL. The title will be fetched automatically.', style: TextStyle(color: Colors.grey, fontSize: 13)),
                 const SizedBox(height: 12),
-                _buildTextField(_youtubeIdController, 'YouTube Video ID or URL', Icons.video_collection, required: true),
+                Text('Enter a YouTube Video ID or full URL. The title will be fetched automatically.',
+                    style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.35))),
+                const SizedBox(height: 16),
+                _buildSacredField(_youtubeIdController, 'YouTube Video ID or URL', Icons.video_collection, required: true),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _selectedCategory,
+                  dropdownColor: SacredColors.surface,
+                  style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.7)),
                   decoration: InputDecoration(
                     labelText: 'Category',
-                    prefixIcon: const Icon(Icons.category, color: Color(0xFFE65100)),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE65100), width: 2),
-                    ),
+                    labelStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.35)),
+                    prefixIcon: Icon(Icons.category, color: SacredColors.parchment.withOpacity(0.3), size: 18),
+                    filled: true,
+                    fillColor: SacredColors.parchment.withOpacity(0.04),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.2))),
                   ),
                   items: _categories.map((String category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    );
+                    return DropdownMenuItem(value: category, child: Text(category));
                   }).toList(),
                   onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedCategory = newValue;
-                      });
-                    }
+                    if (newValue != null) setState(() => _selectedCategory = newValue);
                   },
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  title: const Text('Active'),
+                  title: Text('Active', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.5))),
                   value: _isActive,
                   onChanged: (val) => setState(() => _isActive = val),
-                  activeColor: const Color(0xFFE65100),
+                  activeColor: SacredColors.ember.withOpacity(0.7),
+                  activeTrackColor: SacredColors.ember.withOpacity(0.15),
+                  inactiveThumbColor: SacredColors.parchment.withOpacity(0.2),
+                  inactiveTrackColor: SacredColors.parchment.withOpacity(0.06),
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE65100),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                GestureDetector(
+                  onTap: _isLoading ? null : _submit,
+                  child: Container(
+                    height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: SacredColors.parchment.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: SacredColors.parchment.withOpacity(0.15)),
+                    ),
+                    child: _isLoading
+                        ? SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: SacredColors.parchment.withOpacity(0.4), strokeWidth: 1.5))
+                        : Text(widget.lecture == null ? 'ADD LECTURE' : 'SAVE CHANGES',
+                            style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5, color: SacredColors.parchmentLight.withOpacity(0.6))),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text(widget.lecture == null ? 'Add Lecture' : 'Save Changes', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -360,23 +373,25 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool required = false, int maxLines = 1, bool isNumber = false}) {
+  Widget _buildSacredField(TextEditingController controller, String label, IconData icon, {bool required = false, int maxLines = 1, bool isNumber = false}) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.7)),
       validator: required ? (value) {
         if (value == null || value.trim().isEmpty) return '$label is required';
         return null;
       } : null,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFFE65100)),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE65100), width: 2),
-        ),
+        labelStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.35)),
+        prefixIcon: Icon(icon, color: SacredColors.parchment.withOpacity(0.3), size: 18),
+        filled: true,
+        fillColor: SacredColors.parchment.withOpacity(0.04),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.2))),
       ),
     );
   }

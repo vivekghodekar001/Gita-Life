@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../app/sacred_theme.dart';
 import '../../providers/gita_provider.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/sacred_widgets.dart';
 import 'gita_chapter_list_screen.dart'; // for navigation edge cases
 
 class GitaVerseListScreen extends ConsumerWidget {
@@ -23,68 +25,118 @@ class GitaVerseListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final language = ref.watch(gitaLanguageProvider);
-    final primaryOrange = const Color(0xFFEA580C);
-    
-    final chapterTitle = language == 'en' 
-        ? 'Chapter $chapterNumber · $chapterNameEn' 
-        : 'अध्याय $chapterNumber · $chapterNameHi';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
-      appBar: AppBar(
-        backgroundColor: primaryOrange,
-        foregroundColor: Colors.white,
-        title: Text(chapterTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        elevation: 0,
-        actions: [
-          // Language Switcher (reusing minimal logic)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
+      backgroundColor: const Color(0xFF080604),
+      body: SacredBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Top bar
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        width: 32, height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0x08FFFFFF),
+                          border: Border.all(color: SacredColors.parchment.withOpacity(0.12)),
+                        ),
+                        child: Icon(Icons.arrow_back_ios_new, size: 12, color: SacredColors.parchment.withOpacity(0.5)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'CHAPTER $chapterNumber',
+                            style: SacredTextStyles.sectionLabel(fontSize: 8).copyWith(
+                              color: SacredColors.parchment.withOpacity(0.4),
+                              letterSpacing: 3,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            language == 'en' ? chapterNameEn : chapterNameHi,
+                            style: SacredTextStyles.infoValue(fontSize: 14),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Language switcher
+                    Container(
+                      decoration: BoxDecoration(
+                        color: SacredColors.parchment.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: SacredColors.parchment.withOpacity(0.1)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _LangPill(
+                            text: 'EN',
+                            isActive: language == 'en',
+                            onTap: () => ref.read(gitaLanguageProvider.notifier).setLanguage('en'),
+                          ),
+                          _LangPill(
+                            text: 'हि',
+                            isActive: language == 'hi',
+                            onTap: () => ref.read(gitaLanguageProvider.notifier).setLanguage('hi'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                   _LangPill(
-                    text: 'English',
-                    isActive: language == 'en',
-                    onTap: () => ref.read(gitaLanguageProvider.notifier).setLanguage('en'),
-                    primaryColor: primaryOrange,
-                  ),
-                  _LangPill(
-                    text: 'हिंदी',
-                    isActive: language == 'hi',
-                    onTap: () => ref.read(gitaLanguageProvider.notifier).setLanguage('hi'),
-                    primaryColor: primaryOrange,
-                  ),
-                ],
+              const SizedBox(height: 8),
+              // Verse count label
+              SacredDivider(),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Text(
+                      '$versesCount VERSES',
+                      style: SacredTextStyles.sectionLabel(fontSize: 8).copyWith(
+                        color: SacredColors.parchment.withOpacity(0.3),
+                        letterSpacing: 3,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          )
-        ],
-      ),
-      // lazy load verses + 1 extra item for bottom navigation buttons
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: versesCount + 1,
-        itemBuilder: (context, index) {
-          if (index == versesCount) {
-             return _BottomNavButtons(
-               currentChapter: chapterNumber, 
-               primaryColor: primaryOrange
-             );
-          }
-          final verseNumber = index + 1;
-          return _VerseCardLoader(
-            chapterNumber: chapterNumber,
-            verseNumber: verseNumber,
-            language: language,
-            primaryColor: primaryOrange,
-          );
-        },
+              const SizedBox(height: 8),
+              // Verse list
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: versesCount + 1,
+                  itemBuilder: (context, index) {
+                    if (index == versesCount) {
+                      return _BottomNavButtons(currentChapter: chapterNumber);
+                    }
+                    final verseNumber = index + 1;
+                    return _VerseCardLoader(
+                      chapterNumber: chapterNumber,
+                      verseNumber: verseNumber,
+                      language: language,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -94,13 +146,11 @@ class _VerseCardLoader extends ConsumerWidget {
   final int chapterNumber;
   final int verseNumber;
   final String language;
-  final Color primaryColor;
 
   const _VerseCardLoader({
     required this.chapterNumber,
     required this.verseNumber,
     required this.language,
-    required this.primaryColor,
   });
 
   @override
@@ -124,29 +174,24 @@ class _VerseCardLoader extends ConsumerWidget {
 
           return Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: SacredColors.glassBg,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: primaryColor.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ],
+              border: Border.all(color: SacredColors.parchment.withOpacity(0.06)),
             ),
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
                   '$chapterNumber.$verseNumber',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
+                  style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(
+                    color: SacredColors.parchment.withOpacity(0.5),
+                    letterSpacing: 2,
                   ),
                 ),
-                Divider(color: primaryColor.withOpacity(0.2), thickness: 1, height: 24),
+                const SizedBox(height: 4),
+                SacredDivider(),
+                const SizedBox(height: 10),
                 Text(
                   slok,
                   textAlign: TextAlign.center,
@@ -154,27 +199,31 @@ class _VerseCardLoader extends ConsumerWidget {
                     'Tiro Devanagari Sanskrit',
                     fontSize: 18,
                     height: 2.0,
-                    color: Colors.black87,
+                    color: SacredColors.parchmentLight,
                   ),
                 ),
-                Divider(color: primaryColor.withOpacity(0.2), thickness: 1, height: 24),
+                const SizedBox(height: 8),
+                SacredDivider(),
+                const SizedBox(height: 8),
                 Text(
                   transliteration,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: GoogleFonts.jost(
                     fontStyle: FontStyle.italic,
-                    fontSize: 14,
-                    color: Colors.grey,
+                    fontSize: 13,
+                    color: SacredColors.parchment.withOpacity(0.35),
                   ),
                 ),
-                Divider(color: primaryColor.withOpacity(0.2), thickness: 1, height: 24),
+                const SizedBox(height: 8),
+                SacredDivider(),
+                const SizedBox(height: 8),
                 Text(
                   translation,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black87,
-                    height: 1.5,
+                  style: GoogleFonts.jost(
+                    fontSize: 15,
+                    color: SacredColors.parchment.withOpacity(0.6),
+                    height: 1.6,
                   ),
                 ),
               ],
@@ -198,9 +247,8 @@ class _VerseCardLoader extends ConsumerWidget {
 
 class _BottomNavButtons extends ConsumerWidget {
   final int currentChapter;
-  final Color primaryColor;
 
-  const _BottomNavButtons({required this.currentChapter, required this.primaryColor});
+  const _BottomNavButtons({required this.currentChapter});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -217,8 +265,8 @@ class _BottomNavButtons extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (hasPrev)
-                TextButton.icon(
-                  onPressed: () {
+                GestureDetector(
+                  onTap: () {
                     final prevCh = chapters[currentChapter - 2];
                     Navigator.pushReplacement(
                       context,
@@ -232,16 +280,30 @@ class _BottomNavButtons extends ConsumerWidget {
                       ),
                     );
                   },
-                  icon: Icon(Icons.arrow_back, color: primaryColor, size: 18),
-                  label: Text('Previous', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: SacredColors.glassBg,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: SacredColors.parchment.withOpacity(0.1)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.arrow_back_ios, size: 12, color: SacredColors.parchment.withOpacity(0.5)),
+                        const SizedBox(width: 4),
+                        Text('Previous', style: SacredTextStyles.sectionLabel(fontSize: 9).copyWith(color: SacredColors.parchment.withOpacity(0.5))),
+                      ],
+                    ),
+                  ),
                 )
               else
-                const SizedBox(width: 100), // Placeholder to maintain alignment
+                const SizedBox(width: 100),
                 
               if (hasNext)
-                TextButton.icon(
-                  onPressed: () {
-                    final nextCh = chapters[currentChapter]; // next index is currentChapter (since it's 1-based)
+                GestureDetector(
+                  onTap: () {
+                    final nextCh = chapters[currentChapter];
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
@@ -254,8 +316,22 @@ class _BottomNavButtons extends ConsumerWidget {
                       ),
                     );
                   },
-                  icon: Icon(Icons.arrow_forward, color: primaryColor, size: 18),
-                  label: Text('Next', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: SacredColors.glassBg,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: SacredColors.parchment.withOpacity(0.1)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Next', style: SacredTextStyles.sectionLabel(fontSize: 9).copyWith(color: SacredColors.parchment.withOpacity(0.5))),
+                        const SizedBox(width: 4),
+                        Icon(Icons.arrow_forward_ios, size: 12, color: SacredColors.parchment.withOpacity(0.5)),
+                      ],
+                    ),
+                  ),
                 )
                else
                 const SizedBox(width: 80),
@@ -272,13 +348,11 @@ class _LangPill extends StatelessWidget {
   final String text;
   final bool isActive;
   final VoidCallback onTap;
-  final Color primaryColor;
 
   const _LangPill({
     required this.text,
     required this.isActive,
     required this.onTap,
-    required this.primaryColor,
   });
 
   @override
@@ -286,17 +360,16 @@ class _LangPill extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? Colors.white : Colors.transparent,
+          color: isActive ? SacredColors.parchment.withOpacity(0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           text,
-          style: TextStyle(
-            color: isActive ? primaryColor : Colors.white,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            fontSize: 12,
+          style: SacredTextStyles.sectionLabel(fontSize: 9).copyWith(
+            color: isActive ? SacredColors.parchment.withOpacity(0.8) : SacredColors.parchment.withOpacity(0.3),
+            letterSpacing: 1.5,
           ),
         ),
       ),

@@ -9,8 +9,8 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return ref.watch(authServiceProvider).authStateChanges;
 });
 
-final userProfileProvider = FutureProvider<UserModel?>((ref) async {
+final userProfileProvider = StreamProvider<UserModel?>((ref) {
   final user = ref.watch(authStateProvider).valueOrNull;
-  if (user == null) return null;
-  return ref.read(authServiceProvider).getUserProfile(user.uid);
+  if (user == null) return Stream.value(null);
+  return ref.read(authServiceProvider).getUserProfileStream(user.uid);
 });

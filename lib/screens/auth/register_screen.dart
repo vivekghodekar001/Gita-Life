@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
+import '../../app/sacred_theme.dart';
+import '../../widgets/sacred_widgets.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -58,7 +61,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        SnackBar(content: Text(e.toString()), backgroundColor: SacredColors.surface),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -68,114 +71,112 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
-                    prefixIcon: Icon(Icons.person),
+      backgroundColor: SacredColors.ink,
+      body: SacredBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => context.pop(),
+                        child: Icon(Icons.arrow_back_ios_new, size: 16, color: SacredColors.parchment.withOpacity(0.4)),
+                      ),
+                      const SizedBox(width: 14),
+                      Text('Create Account', style: SacredTextStyles.sectionLabel()),
+                    ],
                   ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Please enter your name';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _rollNumberController,
-                  decoration: const InputDecoration(
-                    labelText: 'Roll Number (Optional for guests)',
-                    prefixIcon: Icon(Icons.badge),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
-                  ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Please enter email';
-                    if (!val.contains('@')) return 'Enter a valid email';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone Number',
-                    prefixIcon: Icon(Icons.phone),
-                  ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Please enter phone number';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: Icon(Icons.lock),
-                  ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Please enter password';
-                    if (val.length < 6) return 'Password must be at least 6 characters';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirm Password',
-                    prefixIcon: Icon(Icons.lock_outline),
-                  ),
-                  validator: (val) {
-                    if (val != _passwordController.text) return 'Passwords do not match';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _register,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: _isLoading 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('REGISTER', style: TextStyle(fontSize: 16)),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Already have an account?'),
-                    TextButton(
-                      onPressed: () => context.pop(),
-                      child: const Text('Login'),
+                  const SizedBox(height: 8),
+                  Text('Fill in your details to get started.',
+                      style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.3))),
+                  const SizedBox(height: 28),
+                  _sacredField(_nameController, 'Full Name', Icons.person_outline,
+                      validator: (val) => (val == null || val.isEmpty) ? 'Enter your name' : null),
+                  const SizedBox(height: 14),
+                  _sacredField(_rollNumberController, 'Roll Number (optional)', Icons.badge_outlined),
+                  const SizedBox(height: 14),
+                  _sacredField(_emailController, 'Email', Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (val) {
+                        if (val == null || val.isEmpty) return 'Enter your email';
+                        if (!val.contains('@')) return 'Enter a valid email';
+                        return null;
+                      }),
+                  const SizedBox(height: 14),
+                  _sacredField(_phoneController, 'Phone Number', Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                      validator: (val) => (val == null || val.isEmpty) ? 'Enter your phone number' : null),
+                  const SizedBox(height: 14),
+                  _sacredField(_passwordController, 'Password', Icons.lock_outline,
+                      obscure: true,
+                      validator: (val) {
+                        if (val == null || val.isEmpty) return 'Enter a password';
+                        if (val.length < 6) return 'Minimum 6 characters';
+                        return null;
+                      }),
+                  const SizedBox(height: 14),
+                  _sacredField(_confirmPasswordController, 'Confirm Password', Icons.lock_outline,
+                      obscure: true,
+                      validator: (val) => val != _passwordController.text ? 'Passwords do not match' : null),
+                  const SizedBox(height: 28),
+                  GestureDetector(
+                    onTap: _isLoading ? null : _register,
+                    child: Container(
+                      height: 48,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: SacredColors.parchment.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: SacredColors.parchment.withOpacity(0.2)),
+                      ),
+                      child: _isLoading
+                          ? SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: SacredColors.parchment.withOpacity(0.4), strokeWidth: 1.5))
+                          : Text('CREATE ACCOUNT', style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 2, color: SacredColors.parchmentLight.withOpacity(0.7))),
                     ),
-                  ],
-               ),
-              ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Already have an account? ', style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.3))),
+                      GestureDetector(
+                        onTap: () => context.pop(),
+                        child: Text('Login', style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.6), decoration: TextDecoration.underline, decorationColor: SacredColors.parchment.withOpacity(0.3))),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _sacredField(TextEditingController controller, String label, IconData icon,
+      {bool obscure = false, TextInputType? keyboardType, String? Function(String?)? validator}) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.75)),
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.35)),
+        prefixIcon: Icon(icon, color: SacredColors.parchment.withOpacity(0.3), size: 18),
+        filled: true,
+        fillColor: SacredColors.parchment.withOpacity(0.04),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.25))),
+        errorStyle: GoogleFonts.jost(fontSize: 10, color: SacredColors.ember.withOpacity(0.7)),
       ),
     );
   }

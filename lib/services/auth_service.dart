@@ -108,8 +108,8 @@ class AuthService {
               .set({
             'uid': userCredential.user!.uid,
             'email': userCredential.user!.email ?? '',
-            'name': userCredential.user!.displayName ?? '',
-            'photoUrl': userCredential.user!.photoURL ?? '',
+            'fullName': userCredential.user!.displayName ?? '',
+            'profilePhotoUrl': userCredential.user!.photoURL ?? '',
             'role': 'student',
             'status': 'pending',
             'createdAt': FieldValue.serverTimestamp(),
@@ -188,6 +188,14 @@ class AuthService {
       print('AuthService.getUserProfile error: $e\n$stack');
       rethrow;
     }
+  }
+
+  Stream<UserModel?> getUserProfileStream(String uid) {
+    return _firestore
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .map((doc) => doc.exists ? UserModel.fromFirestore(doc) : null);
   }
 
   Future<void> logout() async {

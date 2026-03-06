@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../app/sacred_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,14 +20,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1800),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
 
     _controller.forward();
@@ -57,15 +59,18 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: SacredColors.ink,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          color: SacredColors.ink,
+          gradient: RadialGradient(
+            center: Alignment.center,
+            radius: 1.2,
             colors: [
-              Color(0xFFFF9933), // Saffron
-              Color(0xFFFF6600), // Deep saffron
-              Color(0xFFD4A017), // Gold
+              SacredColors.ember.withOpacity(0.08),
+              SacredColors.ink,
             ],
           ),
         ),
@@ -77,54 +82,55 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Logo
                   Container(
-                    width: 120,
-                    height: 120,
+                    width: 96,
+                    height: 96,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(30),
+                      color: SacredColors.parchment.withOpacity(0.04),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: SacredColors.parchment.withOpacity(0.1), width: 1),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(23),
                       child: Image.asset(
                         'assets/splash.png',
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(
+                        errorBuilder: (_, __, ___) => Icon(
                           Icons.auto_stories,
-                          size: 60,
-                          color: Colors.white,
+                          size: 44,
+                          color: SacredColors.parchment.withOpacity(0.4),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const Text(
+                  const SizedBox(height: 28),
+                  Text(
                     'GitaLife',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
+                    style: GoogleFonts.cormorantSc(
+                      fontSize: 38,
+                      fontWeight: FontWeight.w600,
+                      color: SacredColors.parchment.withOpacity(0.8),
+                      letterSpacing: 4,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Your Spiritual Companion',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.8),
-                      letterSpacing: 1,
+                    style: GoogleFonts.jost(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w300,
+                      color: SacredColors.parchment.withOpacity(0.3),
+                      letterSpacing: 2,
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 56),
                   SizedBox(
-                    width: 24,
-                    height: 24,
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
+                      strokeWidth: 1,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.white.withOpacity(0.7),
+                        SacredColors.parchment.withOpacity(0.2),
                       ),
                     ),
                   ),
