@@ -18,19 +18,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       icon: Icons.auto_stories,
       title: 'Study the Gita Daily',
       subtitle: 'Read all 18 chapters of the Bhagavad Gita with Sanskrit verses, translations, and Srila Prabhupada\'s purports.',
-      gradientColors: [Color(0xFFFF9933), Color(0xFFFF6600)],
+      gradientColors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
     ),
     _OnboardingPage(
       icon: Icons.fingerprint,
       title: 'Track Your Japa',
       subtitle: 'Count your rounds with a beautiful digital counter. Track your daily progress and build a consistent sadhana streak.',
-      gradientColors: [Color(0xFFD4A017), Color(0xFFB8860B)],
+      gradientColors: [Color(0xFF00695C), Color(0xFF00897B)],
     ),
     _OnboardingPage(
       icon: Icons.headphones,
       title: 'Never Miss a Lecture',
       subtitle: 'Listen to kirtans and bhajans, watch video lectures, and stay connected with your spiritual community.',
-      gradientColors: [Color(0xFFFF6600), Color(0xFFE65100)],
+      gradientColors: [Color(0xFF1565C0), Color(0xFF00695C)],
     ),
   ];
 
@@ -168,7 +168,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             onPressed: _completeOnboarding,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFFFF6600),
+                              foregroundColor: const Color(0xFF1565C0),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24),
                               ),

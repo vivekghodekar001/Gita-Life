@@ -25,10 +25,10 @@ class EmptyState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: const Color(0xFF1565C0).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 56, color: Colors.orange.shade300),
+              child: Icon(icon, size: 56, color: const Color(0xFF1565C0).shade300),
             ),
             const SizedBox(height: 20),
             Text(
@@ -46,8 +46,8 @@ class EmptyState extends StatelessWidget {
               OutlinedButton(
                 onPressed: onAction,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFFF6600),
-                  side: const BorderSide(color: Color(0xFFFF6600)),
+                  foregroundColor: const Color(0xFF1565C0),
+                  side: const BorderSide(color: Color(0xFF1565C0)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

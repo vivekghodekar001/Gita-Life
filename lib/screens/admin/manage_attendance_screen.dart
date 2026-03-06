@@ -15,13 +15,13 @@ class ManageAttendanceScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Attendance'),
-        backgroundColor: const Color(0xFFFFF8F0),
+        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateSessionDialog(context, ref),
-        backgroundColor: const Color(0xFFE65100),
+        backgroundColor: const Color(0xFF1565C0),
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Create Session', style: TextStyle(color: Colors.white)),
       ),
@@ -58,7 +58,7 @@ class ManageAttendanceScreen extends ConsumerWidget {
           );
         },
         loading: () =>
-            const Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
+            const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -173,7 +173,7 @@ class ManageAttendanceScreen extends ConsumerWidget {
               },
               child: const Text(
                 'Create',
-                style: TextStyle(color: Color(0xFFE65100), fontWeight: FontWeight.bold),
+                style: TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -190,7 +190,7 @@ class _SessionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final color = session.isLocked ? Colors.grey : const Color(0xFFE65100);
+    final color = session.isLocked ? Colors.grey : const Color(0xFF1565C0);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -251,7 +251,7 @@ class _SessionCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 _statChip(Icons.cancel_outlined, '${session.absentCount}', Colors.red),
                 const SizedBox(width: 8),
-                _statChip(Icons.watch_later_outlined, '${session.lateCount}', Colors.orange),
+                _statChip(Icons.watch_later_outlined, '${session.lateCount}', const Color(0xFF1565C0)),
                 const SizedBox(width: 8),
                 _statChip(Icons.people_outline, '${session.totalStudents}', Colors.blue),
               ],
@@ -267,8 +267,8 @@ class _SessionCard extends ConsumerWidget {
                     icon: const Icon(Icons.how_to_reg, size: 18),
                     label: const Text('Mark Attendance'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFE65100),
-                      side: const BorderSide(color: Color(0xFFE65100)),
+                      foregroundColor: const Color(0xFF1565C0),
+                      side: const BorderSide(color: Color(0xFF1565C0)),
                     ),
                   ),
                 const SizedBox(width: 8),

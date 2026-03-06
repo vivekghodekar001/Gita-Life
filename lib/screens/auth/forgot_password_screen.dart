@@ -60,7 +60,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 32),
-                const Icon(Icons.lock_reset, size: 80, color: Color(0xFFFF6600)),
+                const Icon(Icons.lock_reset, size: 80, color: Color(0xFF1565C0)),
                 const SizedBox(height: 32),
                 const Text(
                   'Enter your email address to receive a password reset link.',

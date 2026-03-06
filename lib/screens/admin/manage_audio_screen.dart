@@ -15,17 +15,17 @@ class ManageAudioScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Audio'),
-        backgroundColor: const Color(0xFFFFF8F0),
+        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.cloud_download, color: Color(0xFFE65100)),
+            icon: const Icon(Icons.cloud_download, color: Color(0xFF1565C0)),
             tooltip: 'Bulk Import',
             onPressed: () => _showBulkImportDialog(context, ref),
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: audioAsync.when(
         data: (tracks) {
           if (tracks.isEmpty) {
@@ -40,12 +40,12 @@ class ManageAudioScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
         error: (error, stack) => Center(child: Text('Error: $error')),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEditAudioDialog(context, ref),
-        backgroundColor: const Color(0xFFE65100),
+        backgroundColor: const Color(0xFF1565C0),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -59,10 +59,10 @@ class ManageAudioScreen extends ConsumerWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
         leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE65100).withOpacity(0.1),
+          backgroundColor: const Color(0xFF1565C0).withOpacity(0.1),
           backgroundImage: track.coverImageUrl != null ? NetworkImage(track.coverImageUrl!) : null,
           child: track.coverImageUrl == null
-              ? const Icon(Icons.music_note, color: Color(0xFFE65100))
+              ? const Icon(Icons.music_note, color: Color(0xFF1565C0))
               : null,
         ),
         title: Text(
@@ -93,7 +93,7 @@ class ManageAudioScreen extends ConsumerWidget {
               onChanged: (value) async {
                 await ref.read(audioServiceProvider).toggleAudioActiveStatus(track.trackId, value);
               },
-              activeColor: const Color(0xFFE65100),
+              activeColor: const Color(0xFF1565C0),
             ),
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.blue),
@@ -109,7 +109,7 @@ class ManageAudioScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTag(String text, {Color color = Colors.orange}) {
+  Widget _buildTag(String text, {Color color = const Color(0xFF1565C0)}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -305,7 +305,7 @@ class _BulkImportDialogState extends ConsumerState<_BulkImportDialog> {
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
         ElevatedButton(
           onPressed: _isLoading ? null : _importBulk,
-          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), foregroundColor: Colors.white),
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white),
           child: _isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Import'),
         ),
       ],
@@ -509,14 +509,14 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
                   title: const Text('Active'),
                   value: _isActive,
                   onChanged: (val) => setState(() => _isActive = val),
-                  activeColor: const Color(0xFFE65100),
+                  activeColor: const Color(0xFF1565C0),
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE65100),
+                    backgroundColor: const Color(0xFF1565C0),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -549,11 +549,11 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: const Color(0xFFE65100)),
+      prefixIcon: Icon(icon, color: const Color(0xFF1565C0)),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE65100), width: 2),
+        borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
       ),
     );
   }

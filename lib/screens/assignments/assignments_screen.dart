@@ -16,10 +16,10 @@ class AssignmentsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Assignments'),
-        backgroundColor: const Color(0xFFFFF8F0),
+        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: assignmentsAsync.when(
         data: (assignments) {
           if (assignments.isEmpty) {
@@ -45,7 +45,7 @@ class AssignmentsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(
-            child: CircularProgressIndicator(color: Color(0xFFE65100))),
+            child: CircularProgressIndicator(color: Color(0xFF1565C0))),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
     );
@@ -83,7 +83,7 @@ class _AssignmentStudentCard extends ConsumerWidget {
               children: [
                 const CircleAvatar(
                   backgroundColor: Color(0x1AE65100),
-                  child: Icon(Icons.assignment, color: Color(0xFFE65100)),
+                  child: Icon(Icons.assignment, color: Color(0xFF1565C0)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -156,7 +156,7 @@ class _AssignmentStudentCard extends ConsumerWidget {
           icon: const Icon(Icons.check_circle_outline),
           label: const Text('Mark as Done (Submitted Offline)'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFE65100),
+            backgroundColor: const Color(0xFF1565C0),
             foregroundColor: Colors.white,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

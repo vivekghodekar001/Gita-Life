@@ -16,7 +16,7 @@ class JapaHistoryScreen extends ConsumerWidget {
     final monthAsync = ref.watch(monthHistoryProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(title: const Text('Japa History')),
       body: weekAsync.when(
         loading: () => ShimmerLoading.card(count: 2),
@@ -88,7 +88,7 @@ class JapaHistoryScreen extends ConsumerWidget {
                           barRods: [
                             BarChartRodData(
                               toY: e.value.totalMalas.toDouble(),
-                              color: e.value.goalReached ? Colors.green : const Color(0xFFFF9933),
+                              color: e.value.goalReached ? Colors.green : const Color(0xFF1565C0),
                               width: 20,
                               borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
                             )
@@ -130,7 +130,7 @@ class JapaHistoryScreen extends ConsumerWidget {
                          return Container(
                            width: 30, height: 30,
                            decoration: BoxDecoration(
-                             color: log.goalReached ? Colors.green : (log.totalMalas > 0 ? Colors.orange.shade300 : Colors.grey.shade300),
+                             color: log.goalReached ? Colors.green : (log.totalMalas > 0 ? const Color(0xFF64B5F6) : Colors.grey.shade300),
                              borderRadius: BorderRadius.circular(4)
                            ),
                            child: Tooltip(message: '${log.date}: ${log.totalMalas} malas', child: const SizedBox()),
@@ -164,7 +164,7 @@ class _StatCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFFF6600))),
+          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1565C0))),
           const SizedBox(height: 5),
           Text(title, style: const TextStyle(fontSize: 14, color: Colors.black54)),
         ],

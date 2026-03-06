@@ -14,13 +14,13 @@ class ManageAssignmentsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Assignments'),
-        backgroundColor: const Color(0xFFFFF8F0),
+        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateDialog(context, ref),
-        backgroundColor: const Color(0xFFE65100),
+        backgroundColor: const Color(0xFF1565C0),
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('New Assignment', style: TextStyle(color: Colors.white)),
       ),
@@ -50,7 +50,7 @@ class ManageAssignmentsScreen extends ConsumerWidget {
           );
         },
         loading: () =>
-            const Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
+            const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
     );
@@ -151,7 +151,7 @@ class ManageAssignmentsScreen extends ConsumerWidget {
               child: const Text(
                 'Create',
                 style: TextStyle(
-                    color: Color(0xFFE65100), fontWeight: FontWeight.bold),
+                    color: Color(0xFF1565C0), fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -177,7 +177,7 @@ class _AssignmentAdminCard extends ConsumerWidget {
       child: ExpansionTile(
         leading: const CircleAvatar(
           backgroundColor: Color(0x1AE65100),
-          child: Icon(Icons.assignment, color: Color(0xFFE65100)),
+          child: Icon(Icons.assignment, color: Color(0xFF1565C0)),
         ),
         title: Text(assignment.title,
             style: const TextStyle(fontWeight: FontWeight.bold)),

@@ -34,7 +34,7 @@ class ChapterListScreen extends ConsumerWidget {
     final chaptersAsync = ref.watch(chaptersProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         title: const Text('Bhagavad Gita'),
         actions: [
@@ -80,7 +80,7 @@ class ChapterListScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       gradient: const LinearGradient(
-                        colors: [Color(0xFFFF9933), Color(0xFFFF6600)],
+                        colors: [Color(0xFF1565C0), Color(0xFF00695C)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),

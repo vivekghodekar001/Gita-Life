@@ -50,7 +50,7 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
     final historyStream = ref.watch(notificationServiceProvider).getNotificationHistory();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(title: const Text('Broadcast Notification')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -77,7 +77,7 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF6600), foregroundColor: Colors.white),
+                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white),
                       onPressed: _isSending ? null : _sendNotification,
                       icon: _isSending ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white)) : const Icon(Icons.send),
                       label: Text(_isSending ? 'Sending...' : 'Send to All Students'),
@@ -105,7 +105,7 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
                       final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
                       return Card(
                         child: ListTile(
-                          leading: const Icon(Icons.notifications, color: Colors.orange),
+                          leading: const Icon(Icons.notifications, color: const Color(0xFF1565C0)),
                           title: Text(data['title'] ?? ''),
                           subtitle: Text(data['body'] ?? ''),
                           trailing: Text(createdAt != null ? DateFormat.yMMMd().format(createdAt) : ''),

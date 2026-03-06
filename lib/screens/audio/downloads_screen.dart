@@ -10,7 +10,7 @@ class DownloadsScreen extends ConsumerWidget {
     final downloads = ref.watch(downloadedTracksProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(title: const Text('Downloads')),
       body: downloads.isEmpty
           ? const Center(child: Text('No downloaded tracks yet.', style: TextStyle(color: Colors.blueGrey, fontSize: 16)))
@@ -21,7 +21,7 @@ class DownloadsScreen extends ConsumerWidget {
                 final sizeMB = (track.fileSizeBytes / (1024 * 1024)).toStringAsFixed(2);
                 
                 return ListTile(
-                  leading: const Icon(Icons.music_note, color: Color(0xFFFF6600), size: 40),
+                  leading: const Icon(Icons.music_note, color: Color(0xFF1565C0), size: 40),
                   title: Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text('\${track.artist} • \$sizeMB MB\nPath: \${track.localFilePath}', 

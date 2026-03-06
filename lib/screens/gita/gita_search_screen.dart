@@ -14,7 +14,7 @@ class GitaSearchScreen extends ConsumerWidget {
     final searchResults = ref.watch(gitaSearchProvider(query));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         title: TextField(
           autofocus: true,
@@ -62,7 +62,7 @@ class GitaSearchScreen extends ConsumerWidget {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       title: Text(
                         'BG \${verse.chapterNumber}.\${verse.verseNumber}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFF6600)),
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1565C0)),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

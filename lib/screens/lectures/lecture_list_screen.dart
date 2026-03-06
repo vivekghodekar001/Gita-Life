@@ -16,7 +16,7 @@ class LectureListScreen extends ConsumerWidget {
     final lecturesAsync = ref.watch(filteredLecturesProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         title: const Text('Multimedia Lectures'),
       ),
@@ -29,7 +29,7 @@ class LectureListScreen extends ConsumerWidget {
               onChanged: (val) => ref.read(lectureSearchQueryProvider.notifier).state = val,
               decoration: InputDecoration(
                 hintText: 'Search lectures by title or topic...',
-                prefixIcon: const Icon(Icons.search, color: Color(0xFFFF6600)),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF1565C0)),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -55,7 +55,7 @@ class LectureListScreen extends ConsumerWidget {
                   child: FilterChip(
                     label: Text(topic),
                     selected: isSelected,
-                    selectedColor: const Color(0xFFFF6600),
+                    selectedColor: const Color(0xFF1565C0),
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : Colors.black87,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -82,7 +82,7 @@ class LectureListScreen extends ConsumerWidget {
                   return const Center(child: Text('No lectures found.', style: TextStyle(color: Colors.blueGrey, fontSize: 16)));
                 }
                 return RefreshIndicator(
-                  color: const Color(0xFFFF6600),
+                  color: const Color(0xFF1565C0),
                   onRefresh: () async => ref.invalidate(filteredLecturesProvider),
                   child: ListView.builder(
                   padding: const EdgeInsets.only(bottom: 20),
@@ -150,9 +150,9 @@ class LectureListScreen extends ConsumerWidget {
     return Container(
       height: 200,
       width: double.infinity,
-      color: Colors.orange.shade100,
+      color: const Color(0xFFE8F5F9),
       child: const Center(
-        child: Icon(Icons.play_circle_fill, size: 64, color: Colors.orange),
+        child: Icon(Icons.play_circle_fill, size: 64, color: Color(0xFF1565C0)),
       ),
     );
   }

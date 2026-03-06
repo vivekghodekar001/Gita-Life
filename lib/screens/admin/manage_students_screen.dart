@@ -18,7 +18,7 @@ class ManageStudentsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Students'),
-        backgroundColor: const Color(0xFFFFF8F0),
+        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
         actions: [
           IconButton(
@@ -46,7 +46,7 @@ class ManageStudentsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       body: Column(
         children: [
           _buildFilterChips(ref, currentFilter),
@@ -65,7 +65,7 @@ class ManageStudentsScreen extends ConsumerWidget {
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFE65100))),
+              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
               error: (error, stack) => Center(child: Text('Error: $error')),
             ),
           ),
@@ -100,10 +100,10 @@ class ManageStudentsScreen extends ConsumerWidget {
       onSelected: (_) {
         ref.read(studentFilterProvider.notifier).state = value;
       },
-      selectedColor: const Color(0xFFE65100).withOpacity(0.2),
-      checkmarkColor: const Color(0xFFE65100),
+      selectedColor: const Color(0xFF1565C0).withOpacity(0.2),
+      checkmarkColor: const Color(0xFF1565C0),
       labelStyle: TextStyle(
-        color: isSelected ? const Color(0xFFE65100) : Colors.black87,
+        color: isSelected ? const Color(0xFF1565C0) : Colors.black87,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );
@@ -116,7 +116,7 @@ class ManageStudentsScreen extends ConsumerWidget {
         statusColor = Colors.green;
         break;
       case 'pending':
-        statusColor = Colors.orange;
+        statusColor = const Color(0xFF1565C0);
         break;
       case 'suspended':
         statusColor = Colors.red;
@@ -131,12 +131,12 @@ class ManageStudentsScreen extends ConsumerWidget {
       elevation: 2,
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE65100).withOpacity(0.1),
+          backgroundColor: const Color(0xFF1565C0).withOpacity(0.1),
           backgroundImage: user.profilePhotoUrl.isNotEmpty ? NetworkImage(user.profilePhotoUrl) : null,
           child: user.profilePhotoUrl.isEmpty
               ? Text(
                   user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
-                  style: const TextStyle(color: Color(0xFFE65100), fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.bold),
                 )
               : null,
         ),

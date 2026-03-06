@@ -86,7 +86,7 @@ class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Loading...')),
-        body: const Center(child: CircularProgressIndicator(color: Color(0xFFFF6600))),
+        body: const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
       );
     }
 
@@ -112,7 +112,7 @@ class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
       player: YoutubePlayer(
         controller: _controller!,
         showVideoProgressIndicator: true,
-        progressIndicatorColor: const Color(0xFFFF6600),
+        progressIndicatorColor: const Color(0xFF1565C0),
         topActions: <Widget>[
           const SizedBox(width: 8.0),
           Expanded(
@@ -132,7 +132,7 @@ class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
       ),
       builder: (context, player) {
         return Scaffold(
-          backgroundColor: const Color(0xFFFFF8F0),
+          backgroundColor: const Color(0xFFE8F5F9),
           appBar: AppBar(
             title: const Text('Multimedia Player'),
             actions: [

@@ -11,7 +11,7 @@ class BookmarksScreen extends ConsumerWidget {
     final bookmarksAsync = ref.watch(bookmarkedVersesProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         title: const Text('Bookmarked Verses'),
       ),
@@ -58,7 +58,7 @@ class BookmarksScreen extends ConsumerWidget {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   title: Text(
                     'Chapter ${verse.chapterNumber}, Verse ${verse.verseNumber}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFF6600)),
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1565C0)),
                   ),
                   subtitle: Text(
                     verse.textEnglish,

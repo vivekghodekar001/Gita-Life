@@ -62,7 +62,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -143,9 +143,9 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen> {
               // Progress Slider
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: const Color(0xFFFF6600),
-                  inactiveTrackColor: Colors.orange.shade100,
-                  thumbColor: const Color(0xFFFF6600),
+                  activeTrackColor: const Color(0xFF1565C0),
+                  inactiveTrackColor: const Color(0xFFE8F5F9),
+                  thumbColor: const Color(0xFF1565C0),
                   trackHeight: 6,
                   overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
                   thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
@@ -177,7 +177,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.shuffle, color: isShuffle ? const Color(0xFFFF6600) : Colors.blueGrey),
+                    icon: Icon(Icons.shuffle, color: isShuffle ? const Color(0xFF1565C0) : Colors.blueGrey),
                     onPressed: () => ref.read(audioPlayerControllerProvider).toggleShuffle(),
                   ),
                   IconButton(
@@ -188,7 +188,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen> {
                     onTap: () => ref.read(audioPlayerControllerProvider).togglePlay(),
                     child: Container(
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFF6600),
+                        color: Color(0xFF1565C0),
                         shape: BoxShape.circle,
                       ),
                       padding: const EdgeInsets.all(16),
@@ -202,7 +202,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen> {
                   IconButton(
                     icon: Icon(
                       loopMode == LoopMode.one ? Icons.repeat_one : Icons.repeat,
-                      color: loopMode != LoopMode.off ? const Color(0xFFFF6600) : Colors.blueGrey,
+                      color: loopMode != LoopMode.off ? const Color(0xFF1565C0) : Colors.blueGrey,
                     ),
                     onPressed: () => ref.read(audioPlayerControllerProvider).toggleLoop(),
                   ),
@@ -245,8 +245,8 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen> {
 
   Widget _placeholderImage() {
     return Container(
-      color: Colors.orange.shade100,
-      child: const Icon(Icons.music_note, color: Colors.orange, size: 100),
+      color: const Color(0xFFE8F5F9),
+      child: const Icon(Icons.music_note, color: Color(0xFF1565C0), size: 100),
     );
   }
 }

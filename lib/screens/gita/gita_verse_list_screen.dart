@@ -30,7 +30,7 @@ class GitaVerseListScreen extends ConsumerWidget {
         : 'अध्याय $chapterNumber · $chapterNameHi';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         backgroundColor: primaryOrange,
         foregroundColor: Colors.white,

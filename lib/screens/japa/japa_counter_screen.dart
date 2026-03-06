@@ -15,7 +15,7 @@ class JapaCounterScreen extends ConsumerWidget {
     final soundEnabled = ref.watch(japaSoundProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFE8F5F9),
       appBar: AppBar(
         title: const Text('Japa Counter'),
         actions: [
@@ -59,7 +59,7 @@ class JapaCounterScreen extends ConsumerWidget {
                       children: [
                         const Text('Daily Goal', style: TextStyle(fontSize: 16, color: Colors.black54)),
                         Text('${log.totalMalas} / ${log.targetMalas} Malas', 
-                             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFFF6600))),
+                             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1565C0))),
                       ],
                     ),
                     IconButton(
@@ -91,14 +91,14 @@ class JapaCounterScreen extends ConsumerWidget {
                       child: CircularProgressIndicator(
                         value: progress,
                         strokeWidth: 15,
-                        backgroundColor: const Color(0xFFFF9933).withOpacity(0.2),
-                        color: const Color(0xFFFF6600),
+                        backgroundColor: const Color(0xFF1565C0).withOpacity(0.2),
+                        color: const Color(0xFF1565C0),
                       ),
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('${log.totalBeads}', style: const TextStyle(fontSize: 72, fontWeight: FontWeight.bold, color: Color(0xFFFF6600))),
+                        Text('${log.totalBeads}', style: const TextStyle(fontSize: 72, fontWeight: FontWeight.bold, color: Color(0xFF1565C0))),
                         const Text('/ 108 beads', style: TextStyle(fontSize: 18, color: Colors.black54)),
                       ],
                     )
@@ -122,10 +122,10 @@ class JapaCounterScreen extends ConsumerWidget {
                     height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFFFF6600),
+                      color: const Color(0xFF1565C0),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF6600).withOpacity(0.4),
+                          color: const Color(0xFF1565C0).withOpacity(0.4),
                           blurRadius: 20,
                           spreadRadius: 5,
                         )
@@ -143,7 +143,7 @@ class JapaCounterScreen extends ConsumerWidget {
                     const Icon(Icons.vibration, color: Colors.blueGrey),
                     Switch(
                       value: vibrationEnabled,
-                      activeColor: const Color(0xFFFF6600),
+                      activeColor: const Color(0xFF1565C0),
                       onChanged: (val) {
                         ref.read(japaVibrationProvider.notifier).toggle();
                       },
@@ -152,7 +152,7 @@ class JapaCounterScreen extends ConsumerWidget {
                     const Icon(Icons.volume_up, color: Colors.blueGrey),
                     Switch(
                       value: soundEnabled,
-                      activeColor: const Color(0xFFFF6600),
+                      activeColor: const Color(0xFF1565C0),
                       onChanged: (val) {
                         ref.read(japaSoundProvider.notifier).toggle();
                       },
