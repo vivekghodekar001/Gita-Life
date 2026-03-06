@@ -204,10 +204,11 @@ class AuthService {
     await _firestore.collection('users').doc(uid).update(data);
   }
 
-  Future<String> uploadProfilePhoto(String uid, File file) async {
+  Future<String> uploadProfilePhoto(String uid, Uint8List bytes) async {
     _ensureFirebase();
     final refStorage = FirebaseStorage.instanceFor(app: Firebase.app()).ref().child('profile_photos/$uid.jpg');
-    await refStorage.putFile(file);
+    final metadata = SettableMetadata(contentType: 'image/jpeg');
+    await refStorage.putData(bytes, metadata);
     return await refStorage.getDownloadURL();
   }
 }

@@ -89,9 +89,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     setState(() => _isLoading = true);
     
     try {
-      final file = File(pickedFile.path);
+      final bytes = await pickedFile.readAsBytes();
       final authService = ref.read(authServiceProvider);
-      final url = await authService.uploadProfilePhoto(uid, file);
+      final url = await authService.uploadProfilePhoto(uid, bytes);
       
       await authService.updateProfile(uid, {
         'profilePhotoUrl': url,
