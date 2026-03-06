@@ -85,7 +85,6 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
       );
     }
 
-<<<<<<< HEAD
     // Get recommendations (other tracks from same provider)
     final allTracks = ref.watch(audioTracksProvider(null));
     final recommendations = allTracks.whenData((tracks) {
@@ -101,107 +100,6 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
           child: Column(
             children: [
               // Top bar
-=======
-    return Scaffold(
-      backgroundColor: const Color(0xFFE8F5F9),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down, size: 32, color: Colors.blueGrey),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-           if (isDownloaded)
-             const Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.offline_pin, color: Colors.green))
-           else if (!isYouTube)
-             IconButton(
-               icon: const Icon(Icons.download, color: Colors.blueGrey),
-               onPressed: () {
-                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Downloading ${activeTrack.title}...')));
-                 ref.read(downloadedTracksProvider.notifier).downloadTrack(activeTrack);
-               },
-             ),
-           IconButton(
-             icon: const Icon(Icons.share, color: Colors.blueGrey),
-             onPressed: () {
-               Share.share('Check out ${activeTrack.title} on GitaLife!');
-             },
-           )
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-        child: Column(
-          children: [
-            // Cover Art / Video
-            Container(
-              height: isYouTube ? 220 : 300,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 15, offset: const Offset(0, 8))],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: isYouTube && _ytController != null
-                  ? YoutubePlayer(
-                      controller: _ytController!,
-                      showVideoProgressIndicator: true,
-                      onReady: () {
-                        // Pause just_audio if it was playing
-                        ref.read(audioPlayerControllerProvider).stop();
-                      },
-                    )
-                  : (activeTrack.coverImageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: activeTrack.coverImageUrl!,
-                        fit: BoxFit.cover,
-                        errorWidget: (context, url, err) => _placeholderImage(),
-                      )
-                    : _placeholderImage()),
-              ),
-            ),
-            const SizedBox(height: 30),
-            
-            // Info
-            Text(
-              activeTrack.title,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blueGrey),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              activeTrack.artist,
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: isYouTube ? 20 : 30),
-
-            if (!isYouTube) ...[
-              // Progress Slider
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: const Color(0xFF1565C0),
-                  inactiveTrackColor: const Color(0xFFE8F5F9),
-                  thumbColor: const Color(0xFF1565C0),
-                  trackHeight: 6,
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                ),
-                child: Slider(
-                  min: 0,
-                  max: duration.inMilliseconds > 0 ? duration.inMilliseconds.toDouble() : 1,
-                  value: position.inMilliseconds.toDouble().clamp(0, duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1),
-                  onChanged: (val) {
-                    ref.read(audioPlayerControllerProvider).seek(Duration(milliseconds: val.toInt()));
-                  },
-                ),
-              ),
-              // Time Labels
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                 child: Row(
@@ -221,7 +119,6 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                 ),
               ),
 
-<<<<<<< HEAD
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -259,26 +156,6 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-=======
-              // Controls
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.shuffle, color: isShuffle ? const Color(0xFF1565C0) : Colors.blueGrey),
-                    onPressed: () => ref.read(audioPlayerControllerProvider).toggleShuffle(),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.skip_previous, size: 40, color: Colors.blueGrey),
-                    onPressed: () => ref.read(audioPlayerControllerProvider).previous(),
-                  ),
-                  GestureDetector(
-                    onTap: () => ref.read(audioPlayerControllerProvider).togglePlay(),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1565C0),
-                        shape: BoxShape.circle,
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -488,22 +365,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                       const SizedBox(height: 20),
                     ],
                   ),
-<<<<<<< HEAD
                 ),
-=======
-                  IconButton(
-                    icon: const Icon(Icons.skip_next, size: 40, color: Colors.blueGrey),
-                    onPressed: () => ref.read(audioPlayerControllerProvider).next(),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      loopMode == LoopMode.one ? Icons.repeat_one : Icons.repeat,
-                      color: loopMode != LoopMode.off ? const Color(0xFF1565C0) : Colors.blueGrey,
-                    ),
-                    onPressed: () => ref.read(audioPlayerControllerProvider).toggleLoop(),
-                  ),
-                ],
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
               ),
             ],
           ),
@@ -599,13 +461,8 @@ class _RotatingDisc extends StatelessWidget {
 
   Widget _discCenter() {
     return Container(
-<<<<<<< HEAD
       color: SacredColors.surface,
       child: Icon(Icons.music_note_rounded, size: 40, color: SacredColors.parchment.withOpacity(0.2)),
-=======
-      color: const Color(0xFFE8F5F9),
-      child: const Icon(Icons.music_note, color: Color(0xFF1565C0), size: 100),
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
     );
   }
 }

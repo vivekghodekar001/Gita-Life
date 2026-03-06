@@ -16,58 +16,9 @@ class ManageAttendanceScreen extends ConsumerWidget {
     final sessionsAsync = ref.watch(sessionListProvider);
 
     return Scaffold(
-<<<<<<< HEAD
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
-=======
-      appBar: AppBar(
-        title: const Text('Manage Attendance'),
-        elevation: 0,
-      ),
-      backgroundColor: const Color(0xFFE8F5F9),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateSessionDialog(context, ref),
-        backgroundColor: const Color(0xFF1565C0),
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Create Session', style: TextStyle(color: Colors.white)),
-      ),
-      body: sessionsAsync.when(
-        data: (sessions) {
-          if (sessions.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.event_busy, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'No attendance sessions yet.',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Tap "+ Create Session" to get started.',
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                  ),
-                ],
-              ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: () => ref.refresh(sessionListProvider.future),
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-              itemCount: sessions.length,
-              itemBuilder: (context, index) =>
-                  _SessionCard(session: sessions[index]),
-            ),
-          );
-        },
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0))),
-        error: (error, stack) => Center(
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
           child: Column(
             children: [
               // ── Top Bar ──
@@ -238,7 +189,6 @@ class ManageAttendanceScreen extends ConsumerWidget {
                   }
                 }
               },
-<<<<<<< HEAD
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                 decoration: BoxDecoration(
@@ -247,11 +197,6 @@ class ManageAttendanceScreen extends ConsumerWidget {
                   border: Border.all(color: SacredColors.parchment.withOpacity(0.15)),
                 ),
                 child: Text('CREATE', style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 1, color: SacredColors.parchmentLight.withOpacity(0.6))),
-=======
-              child: const Text(
-                'Create',
-                style: TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.bold),
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
               ),
             ),
           ],
@@ -285,11 +230,7 @@ class _SessionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-<<<<<<< HEAD
     final isLocked = session.isLocked;
-=======
-    final color = session.isLocked ? Colors.grey : const Color(0xFF1565C0);
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -320,54 +261,9 @@ class _SessionCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: (isLocked ? SacredColors.parchment : SacredColors.ember).withOpacity(0.15)),
                 ),
-<<<<<<< HEAD
                 child: Text(
                   isLocked ? 'LOCKED' : 'OPEN',
                   style: GoogleFonts.jost(fontSize: 9, fontWeight: FontWeight.w500, letterSpacing: 0.8, color: (isLocked ? SacredColors.parchment : SacredColors.ember).withOpacity(0.5)),
-=======
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _statChip(Icons.check_circle_outline, '${session.presentCount}', Colors.green),
-                const SizedBox(width: 8),
-                _statChip(Icons.cancel_outlined, '${session.absentCount}', Colors.red),
-                const SizedBox(width: 8),
-                _statChip(Icons.watch_later_outlined, '${session.lateCount}', const Color(0xFF1565C0)),
-                const SizedBox(width: 8),
-                _statChip(Icons.people_outline, '${session.totalStudents}', Colors.blue),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (!session.isLocked)
-                  OutlinedButton.icon(
-                    onPressed: () => context
-                        .push('/admin/attendance/mark/${session.sessionId}'),
-                    icon: const Icon(Icons.how_to_reg, size: 18),
-                    label: const Text('Mark Attendance'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF1565C0),
-                      side: const BorderSide(color: Color(0xFF1565C0)),
-                    ),
-                  ),
-                const SizedBox(width: 8),
-                OutlinedButton.icon(
-                  onPressed: () =>
-                      _toggleLock(context, ref, session),
-                  icon: Icon(
-                    session.isLocked ? Icons.lock_open : Icons.lock_outline,
-                    size: 18,
-                  ),
-                  label: Text(session.isLocked ? 'Unlock' : 'Lock'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: color,
-                    side: BorderSide(color: color),
-                  ),
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                 ),
               ),
             ],

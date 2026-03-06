@@ -18,7 +18,6 @@ class GitaChapterListScreen extends ConsumerWidget {
     final chaptersAsync = ref.watch(gitaApiChaptersProvider);
     
     return Scaffold(
-<<<<<<< HEAD
       backgroundColor: const Color(0xFF080604),
       body: SacredBackground(
         child: SafeArea(
@@ -39,73 +38,6 @@ class GitaChapterListScreen extends ConsumerWidget {
                           border: Border.all(color: SacredColors.parchment.withOpacity(0.12)),
                         ),
                         child: Icon(Icons.arrow_back_ios_new, size: 12, color: SacredColors.parchment.withOpacity(0.5)),
-=======
-      backgroundColor: const Color(0xFFE8F5F9), // Warm background
-      appBar: AppBar(
-        backgroundColor: primaryOrange,
-        foregroundColor: Colors.white,
-        title: const Text('Bhagavad Gita', style: TextStyle(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        actions: [
-          // Language Switcher Pills
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _LangPill(
-                    text: 'English',
-                    isActive: language == 'en',
-                    onTap: () {
-                      if (language != 'en') ref.read(gitaLanguageProvider.notifier).toggle();
-                    },
-                    primaryColor: primaryOrange,
-                  ),
-                  _LangPill(
-                    text: 'हिंदी',
-                    isActive: language == 'hi',
-                    onTap: () {
-                      if (language != 'hi') ref.read(gitaLanguageProvider.notifier).toggle();
-                    },
-                    primaryColor: primaryOrange,
-                  ),
-                ],
-              ),
-            ),
-          )
-        ],
-      ),
-      body: chaptersAsync.when(
-        data: (chapters) {
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.85,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: chapters.length,
-            itemBuilder: (context, index) {
-              final chapter = chapters[index];
-              return _ChapterCard(
-                chapter: chapter, 
-                primaryColor: primaryOrange,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => GitaVerseListScreen(
-                        chapterNumber: chapter['chapter_number'] ?? 0,
-                        chapterNameEn: chapter['name_translated'] ?? chapter['name_meaning'] ?? '',
-                        chapterNameHi: chapter['name'] ?? '',
-                        versesCount: chapter['verses_count'] ?? 0,
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                       ),
                     ),
                     const SizedBox(width: 12),

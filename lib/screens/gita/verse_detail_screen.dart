@@ -28,7 +28,6 @@ class VerseDetailScreen extends ConsumerWidget {
     final fontSize = ref.watch(fontSizeProvider);
 
     return Scaffold(
-<<<<<<< HEAD
       backgroundColor: const Color(0xFF080604),
       body: SacredBackground(
         child: versesAsync.when(
@@ -37,17 +36,6 @@ class VerseDetailScreen extends ConsumerWidget {
               strokeWidth: 1.5,
               color: SacredColors.parchment.withOpacity(0.4),
             ),
-=======
-      backgroundColor: const Color(0xFFE8F5F9),
-      appBar: AppBar(
-        title: Text('BG $chapterNum.$verseNum'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.remove_circle_outline),
-            onPressed: () {
-              if (fontSize > 12) ref.read(fontSizeProvider.notifier).state -= 2;
-            },
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
           ),
           error: (err, stack) => Center(
             child: Text('Error: $err', style: SacredTextStyles.infoValue()),
@@ -66,7 +54,6 @@ class VerseDetailScreen extends ConsumerWidget {
               );
             }
 
-<<<<<<< HEAD
             final verse = verses[index];
             final hasNext = index < verses.length - 1;
             final hasPrev = index > 0;
@@ -261,96 +248,6 @@ class VerseDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 40),
                         ],
                       ),
-=======
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Action row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        verse.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                        color: const Color(0xFF1565C0),
-                        size: 30,
-                      ),
-                      onPressed: () async {
-                        await ref.read(gitaServiceProvider).toggleBookmark(verse.id);
-                        ref.invalidate(versesByChapterProvider(chapterNum));
-                        ref.invalidate(bookmarkedVersesProvider);
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.share, color: Colors.blueGrey, size: 28),
-                      onPressed: () {
-                        Share.share(
-                          'Bhagavad Gita ${verse.chapterNumber}.${verse.verseNumber}\n\n${verse.textDevanagari}\n\n${verse.textEnglish}\n\nShared via GitaLife App',
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                
-                // Devanagari
-                Text(
-                  verse.textDevanagari.replaceAll('\\r\\n', '\\n'),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: fontSize + 6,
-                    color: const Color(0xFF1565C0),
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'NotoSerifDevanagari',
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 24),
-
-                // Transliteration
-                Text(
-                  verse.textTransliteration.replaceAll('\\r\\n', '\\n'),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.black87,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 24),
-
-                // English Translation
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Translation',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  verse.textEnglish,
-                  style: TextStyle(fontSize: fontSize, height: 1.6),
-                ),
-                const SizedBox(height: 24),
-
-                // Purport (if exists)
-                if (verse.purport.isNotEmpty) ...[
-                  const Divider(),
-                  const SizedBox(height: 24),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Purport',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey),
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                     ),
                   ),
 

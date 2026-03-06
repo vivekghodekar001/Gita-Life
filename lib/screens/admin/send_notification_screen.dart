@@ -53,7 +53,6 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
     final historyStream = ref.watch(notificationServiceProvider).getNotificationHistory();
 
     return Scaffold(
-<<<<<<< HEAD
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
@@ -67,46 +66,12 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Icon(Icons.arrow_back_ios_new, size: 16, color: SacredColors.parchment.withOpacity(0.4)),
-=======
-      backgroundColor: const Color(0xFFE8F5F9),
-      appBar: AppBar(title: const Text('Broadcast Notification')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
-                    validator: (v) => v!.isEmpty ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _bodyController,
-                    decoration: const InputDecoration(labelText: 'Message Body', border: OutlineInputBorder()),
-                    maxLines: 3,
-                    validator: (v) => v!.isEmpty ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white),
-                      onPressed: _isSending ? null : _sendNotification,
-                      icon: _isSending ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white)) : const Icon(Icons.send),
-                      label: Text(_isSending ? 'Sending...' : 'Send to All Students'),
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                     ),
                     const SizedBox(width: 14),
                     Expanded(child: Text('Broadcast Notification', style: SacredTextStyles.sectionLabel())),
                   ],
                 ),
               ),
-<<<<<<< HEAD
               // ── Form + History ──
               Expanded(
                 child: Padding(
@@ -155,32 +120,6 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
                               ),
                             ),
                           ],
-=======
-            ),
-            const SizedBox(height: 24),
-            const Divider(),
-            const Text('Notification History', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: historyStream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return const Center(child: Text('No history'));
-
-                  return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      final doc = snapshot.data!.docs[index];
-                      final data = doc.data() as Map<String, dynamic>;
-                      final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
-                      return Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.notifications, color: Color(0xFF1565C0)),
-                          title: Text(data['title'] ?? ''),
-                          subtitle: Text(data['body'] ?? ''),
-                          trailing: Text(createdAt != null ? DateFormat.yMMMd().format(createdAt) : ''),
->>>>>>> 99ad060b4b09886d59c8fea80b57098b146f9ed0
                         ),
                       ),
                       const SizedBox(height: 20),
