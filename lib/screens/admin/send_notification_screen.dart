@@ -105,7 +105,7 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
                       final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
                       return Card(
                         child: ListTile(
-                          leading: const Icon(Icons.notifications, color: const Color(0xFF1565C0)),
+                          leading: const Icon(Icons.notifications, color: Color(0xFF1565C0)),
                           title: Text(data['title'] ?? ''),
                           subtitle: Text(data['body'] ?? ''),
                           trailing: Text(createdAt != null ? DateFormat.yMMMd().format(createdAt) : ''),

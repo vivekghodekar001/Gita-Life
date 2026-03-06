@@ -14,7 +14,6 @@ class ManageAssignmentsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Assignments'),
-        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
       ),
       backgroundColor: const Color(0xFFE8F5F9),
@@ -176,7 +175,7 @@ class _AssignmentAdminCard extends ConsumerWidget {
       elevation: 2,
       child: ExpansionTile(
         leading: const CircleAvatar(
-          backgroundColor: Color(0x1AE65100),
+          backgroundColor: Color(0x1A1565C0),
           child: Icon(Icons.assignment, color: Color(0xFF1565C0)),
         ),
         title: Text(assignment.title,

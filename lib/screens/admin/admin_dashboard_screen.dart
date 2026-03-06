@@ -79,7 +79,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       appBar: AppBar(
         title: const Text('Admin Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
-        backgroundColor: const Color(0xFFE8F5F9),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Color(0xFF0D47A1), Color(0xFF00695C)],
+            ),
+          ),
+        ),
         elevation: 0,
       ),
       backgroundColor: const Color(0xFFE8F5F9),

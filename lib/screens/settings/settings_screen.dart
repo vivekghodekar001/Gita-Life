@@ -61,7 +61,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
-        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
       ),
       backgroundColor: const Color(0xFFE8F5F9),

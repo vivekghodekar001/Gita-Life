@@ -16,7 +16,6 @@ class ManageLecturesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Lectures'),
-        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
       ),
       backgroundColor: const Color(0xFFE8F5F9),

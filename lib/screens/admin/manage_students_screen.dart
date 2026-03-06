@@ -18,7 +18,6 @@ class ManageStudentsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Students'),
-        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
         actions: [
           IconButton(

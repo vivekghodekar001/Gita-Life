@@ -148,7 +148,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
         actions: [
           userAsync.maybeWhen(

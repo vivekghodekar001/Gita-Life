@@ -15,7 +15,6 @@ class ManageAttendanceScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Attendance'),
-        backgroundColor: const Color(0xFFE8F5F9),
         elevation: 0,
       ),
       backgroundColor: const Color(0xFFE8F5F9),
