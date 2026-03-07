@@ -10,6 +10,10 @@ build/
 .env.local
 .env*.local
 
+# Firebase config files (contain API keys)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
 # Logs
 logs
 *.log
