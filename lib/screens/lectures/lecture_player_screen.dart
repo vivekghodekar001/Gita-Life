@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../models/lecture_model.dart';
@@ -57,11 +58,13 @@ class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
     _controller = YoutubePlayerController.fromVideoId(
       videoId: cleanId,
       autoPlay: true,
-      params: const YoutubePlayerParams(
+      params: YoutubePlayerParams(
         showFullscreenButton: true,
         showControls: true,
         mute: false,
         playsInline: true,
+        enableJavaScript: true,
+        origin: kIsWeb ? Uri.base.origin : 'https://www.youtube.com',
       ),
     );
     if (mounted) setState(() {});

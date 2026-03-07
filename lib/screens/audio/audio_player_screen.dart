@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -110,11 +111,13 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
       _ytController = YoutubePlayerController.fromVideoId(
         videoId: activeTrack.streamUrl ?? '',
         autoPlay: true,
-        params: const YoutubePlayerParams(
+        params: YoutubePlayerParams(
           showFullscreenButton: false,
           showControls: true,
           mute: false,
           playsInline: true,
+          enableJavaScript: true,
+          origin: kIsWeb ? Uri.base.origin : 'https://www.youtube.com',
         ),
       );
     }
