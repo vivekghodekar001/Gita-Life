@@ -63,9 +63,7 @@ class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
         mute: false,
         playsInline: false,
         enableJavaScript: true,
-        desktopMode: true,
-        privacyEnhanced: false,
-        useHybridComposition: true,
+        strictRelatedVideos: false,
       ),
     );
     if (mounted) setState(() {});

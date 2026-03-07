@@ -116,9 +116,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
           mute: false,
           playsInline: false,
           enableJavaScript: true,
-          desktopMode: true,
-          privacyEnhanced: false,
-          useHybridComposition: true,
+          strictRelatedVideos: false,
         ),
       );
     }
