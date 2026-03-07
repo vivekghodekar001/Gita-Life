@@ -39,9 +39,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     if (!mounted) return;
 
     final prefs = await SharedPreferences.getInstance();
-    // Reset flag so the new onboarding screens are always shown for preview
-    await prefs.setBool('onboarding_complete', false);
-    final onboardingComplete = false;
+    final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
 
     if (mounted) {
       if (onboardingComplete) {
