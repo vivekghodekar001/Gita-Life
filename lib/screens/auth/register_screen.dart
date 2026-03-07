@@ -93,7 +93,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text('Fill in your details to get started.',
-                      style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.3))),
+                      style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.68))),
                   const SizedBox(height: 28),
                   _sacredField(_nameController, 'Full Name', Icons.person_outline,
                       validator: (val) => (val == null || val.isEmpty) ? 'Enter your name' : null),
@@ -143,7 +143,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Already have an account? ', style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.3))),
+                      Text('Already have an account? ', style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.68))),
                       GestureDetector(
                         onTap: () => context.pop(),
                         child: Text('Login', style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.6), decoration: TextDecoration.underline, decorationColor: SacredColors.parchment.withOpacity(0.3))),
@@ -165,17 +165,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
-      style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.75)),
+      style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w500, color: SacredColors.parchmentLight.withOpacity(0.90)),
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.35)),
-        prefixIcon: Icon(icon, color: SacredColors.parchment.withOpacity(0.3), size: 18),
+        labelStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.65)),
+        prefixIcon: Icon(icon, color: SacredColors.parchment.withOpacity(0.60), size: 18),
         filled: true,
-        fillColor: SacredColors.parchment.withOpacity(0.04),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.25))),
+        fillColor: SacredColors.parchment.withOpacity(0.06),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.20))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.20))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.45))),
         errorStyle: GoogleFonts.jost(fontSize: 10, color: SacredColors.ember.withOpacity(0.7)),
       ),
     );

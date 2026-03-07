@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/gita_provider.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/error_retry.dart';
+import '../../app/sacred_theme.dart';
 
 class ChapterListScreen extends ConsumerWidget {
   const ChapterListScreen({super.key});
@@ -34,7 +35,7 @@ class ChapterListScreen extends ConsumerWidget {
     final chaptersAsync = ref.watch(chaptersProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5F9),
+      backgroundColor: SacredColors.ink,
       appBar: AppBar(
         title: const Text('Bhagavad Gita'),
         actions: [

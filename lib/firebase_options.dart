@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAraydbR82KyKnSu2qDpWGiLlnC4sKs-5g',
+    apiKey: 'AIzaSyCql8GbEzoHV34zL1wVrCCap1lORB78Qjg',
     appId: '1:273830910501:web:0a2dad27714146a2883dcc',
     messagingSenderId: '273830910501',
     projectId: 'gita-life-b713a',

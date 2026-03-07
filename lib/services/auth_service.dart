@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'dart:typed_data';
 
 class AuthService {
   void _ensureFirebase() {
@@ -64,6 +64,23 @@ class AuthService {
         email: email,
         password: password,
       );
+    } on FirebaseAuthException catch (e) {
+      // If login failed, check if this email is registered via Google
+      if (e.code == 'wrong-password' ||
+          e.code == 'invalid-credential' ||
+          e.code == 'user-not-found') {
+        try {
+          // ignore: deprecated_member_use
+          final methods = await _auth.fetchSignInMethodsForEmail(email);
+          if (methods.contains('google.com')) {
+            // Account exists with Google — sign in automatically
+            await signInWithGoogle();
+            return;
+          }
+        } catch (_) {}
+      }
+      print('AuthService.loginWithEmail error: $e');
+      rethrow;
     } catch (e, stack) {
       print('AuthService.loginWithEmail error: $e\n$stack');
       rethrow;

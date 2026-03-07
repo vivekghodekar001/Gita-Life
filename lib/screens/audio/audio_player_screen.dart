@@ -26,6 +26,10 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
   YoutubePlayerController? _ytController;
   late AnimationController _discController;
 
+  // Cached recommendations — only shuffled once per track
+  List<AudioTrackModel> _recommendations = [];
+  String? _cachedTrackId;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +37,25 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
       vsync: this,
       duration: const Duration(seconds: 8),
     );
+    // Build recommendations after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshRecommendations());
+  }
+
+  void _refreshRecommendations() {
+    final activeTrack = ref.read(activeTrackProvider);
+    if (activeTrack == null) return;
+    if (_cachedTrackId == activeTrack.trackId) return; // already cached
+    final allTracks = ref.read(audioTracksProvider(null));
+    allTracks.whenData((tracks) {
+      final others = tracks.where((t) => t.trackId != activeTrack.trackId).toList();
+      others.shuffle(Random());
+      if (mounted) {
+        setState(() {
+          _cachedTrackId = activeTrack.trackId;
+          _recommendations = others.take(6).toList();
+        });
+      }
+    });
   }
 
   @override
@@ -71,11 +94,16 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
     final isDownloaded = downloads.any((d) => d.trackId == activeTrack.trackId);
     final isYouTube = activeTrack.sourceType == 'youtube';
 
-    // Control disc rotation
+    // Control disc rotation — only change state when needed to avoid glitch
     if (isPlaying && !isYouTube) {
-      _discController.repeat();
+      if (!_discController.isAnimating) _discController.repeat();
     } else {
-      _discController.stop();
+      if (_discController.isAnimating) _discController.stop();
+    }
+
+    // Refresh recommendations when track changes
+    if (activeTrack.trackId != _cachedTrackId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _refreshRecommendations());
     }
 
     if (isYouTube && _ytController == null) {
@@ -85,13 +113,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
       );
     }
 
-    // Get recommendations (other tracks from same provider)
-    final allTracks = ref.watch(audioTracksProvider(null));
-    final recommendations = allTracks.whenData((tracks) {
-      final others = tracks.where((t) => t.trackId != activeTrack.trackId).toList();
-      others.shuffle(Random());
-      return others.take(6).toList();
-    });
+
 
     return Scaffold(
       backgroundColor: SacredColors.ink,
@@ -162,8 +184,8 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                         activeTrack.artist,
                         style: GoogleFonts.jost(
                           fontSize: 13,
-                          fontWeight: FontWeight.w300,
-                          color: SacredColors.parchment.withOpacity(0.35),
+                          fontWeight: FontWeight.w500,
+                          color: SacredColors.parchment.withOpacity(0.65),
                           letterSpacing: 1,
                         ),
                         textAlign: TextAlign.center,
@@ -194,8 +216,8 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(_formatDuration(position), style: GoogleFonts.jost(fontSize: 11, color: SacredColors.parchment.withOpacity(0.25), fontWeight: FontWeight.w300)),
-                              Text(_formatDuration(duration), style: GoogleFonts.jost(fontSize: 11, color: SacredColors.parchment.withOpacity(0.25), fontWeight: FontWeight.w300)),
+                              Text(_formatDuration(position), style: GoogleFonts.jost(fontSize: 11, color: SacredColors.parchment.withOpacity(0.60), fontWeight: FontWeight.w500)),
+                              Text(_formatDuration(duration), style: GoogleFonts.jost(fontSize: 11, color: SacredColors.parchment.withOpacity(0.60), fontWeight: FontWeight.w500)),
                             ],
                           ),
                         ),
@@ -270,8 +292,8 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                                     '${s}x',
                                     style: GoogleFonts.jost(
                                       fontSize: 11,
-                                      fontWeight: FontWeight.w300,
-                                      color: isActive ? SacredColors.parchmentLight.withOpacity(0.8) : SacredColors.parchment.withOpacity(0.25),
+                                      fontWeight: FontWeight.w500,
+                                      color: isActive ? SacredColors.parchmentLight.withOpacity(0.9) : SacredColors.parchment.withOpacity(0.55),
                                     ),
                                   ),
                                 ),
@@ -293,11 +315,9 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
 
                       const SizedBox(height: 28),
 
-                      // Recommendations section
-                      recommendations.when(
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                        data: (tracks) {
+                      // Recommendations section (cached — only reshuffled when track changes)
+                      Builder(builder: (context) {
+                          final tracks = _recommendations;
                           if (tracks.isEmpty) return const SizedBox.shrink();
                           return Column(
                             children: [
@@ -347,8 +367,8 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                                               textAlign: TextAlign.center,
                                               style: GoogleFonts.jost(
                                                 fontSize: 9,
-                                                fontWeight: FontWeight.w300,
-                                                color: SacredColors.parchment.withOpacity(0.4),
+                                                fontWeight: FontWeight.w500,
+                                                color: SacredColors.parchment.withOpacity(0.70),
                                               ),
                                             ),
                                           ],
@@ -360,8 +380,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                               ),
                             ],
                           );
-                        },
-                      ),
+                        }),
                       const SizedBox(height: 20),
                     ],
                   ),

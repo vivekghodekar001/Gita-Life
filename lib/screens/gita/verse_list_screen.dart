@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/gita_provider.dart';
+import '../../app/sacred_theme.dart';
 
 class VerseListScreen extends ConsumerWidget {
   final String chapterId;
@@ -14,7 +15,7 @@ class VerseListScreen extends ConsumerWidget {
     final versesAsync = ref.watch(versesByChapterProvider(chapterNum));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5F9),
+      backgroundColor: SacredColors.ink,
       appBar: AppBar(
         title: Text('Chapter $chapterNum'),
       ),

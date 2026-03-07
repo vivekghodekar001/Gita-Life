@@ -224,7 +224,7 @@ class SacredDivider extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             Colors.transparent,
-            SacredColors.parchment.withOpacity(0.12),
+            SacredColors.parchment.withOpacity(0.35),
             Colors.transparent,
           ],
         ),
@@ -285,37 +285,79 @@ class SacredBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF080604),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFEDE3CC), // light cream top-left
+            Color(0xFFE0D0B0), // warm tan center
+            Color(0xFFD4C49A), // deeper tan bottom-right
+          ],
+          stops: [0.0, 0.5, 1.0],
+        ),
       ),
       child: Stack(
         children: [
-          // Ambient warm radial gradients
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(-0.6, 0.2),
-                  radius: 1.0,
-                  colors: [
-                    const Color(0xFF783C0A).withOpacity(0.12),
-                    Colors.transparent,
-                  ],
+          // All static background layers isolated in one RepaintBoundary
+          // so they never repaint when the child rebuilds
+          RepaintBoundary(
+            child: Stack(
+              children: [
+                // Radial glow overlays
+                Positioned(
+                  top: -80,
+                  left: -60,
+                  child: _ParchmentGlowBlob(
+                    color: const Color(0xFFF5EDD8).withOpacity(0.6),
+                    size: 350,
+                  ),
                 ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(0.5, -0.4),
-                  radius: 1.2,
-                  colors: [
-                    const Color(0xFF50280A).withOpacity(0.08),
-                    Colors.transparent,
-                  ],
+                Positioned(
+                  top: 180,
+                  right: -80,
+                  child: _ParchmentGlowBlob(
+                    color: const Color(0xFFDCC898).withOpacity(0.35),
+                    size: 280,
+                  ),
                 ),
-              ),
+                Positioned(
+                  bottom: 100,
+                  left: 20,
+                  child: _ParchmentGlowBlob(
+                    color: const Color(0xFFF0E6C8).withOpacity(0.45),
+                    size: 320,
+                  ),
+                ),
+                Positioned(
+                  bottom: -60,
+                  right: 30,
+                  child: _ParchmentGlowBlob(
+                    color: const Color(0xFFD4B878).withOpacity(0.25),
+                    size: 260,
+                  ),
+                ),
+                // Scratch texture lines
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _ParchmentScratchPainter(),
+                  ),
+                ),
+                // Vignette edges
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: Alignment.center,
+                        radius: 1.2,
+                        colors: [
+                          Colors.transparent,
+                          const Color(0xFFA08040).withOpacity(0.18),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           child,
@@ -323,6 +365,72 @@ class SacredBackground extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ParchmentGlowBlob extends StatelessWidget {
+  final Color color;
+  final double size;
+  const _ParchmentGlowBlob({required this.color, required this.size});
+  @override
+  Widget build(BuildContext context) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: [color, Colors.transparent]),
+        ),
+      );
+}
+
+class _ParchmentScratchPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF8B6914).withOpacity(0.22)
+      ..strokeWidth = 0.7
+      ..style = PaintingStyle.stroke;
+
+    final lines = [
+      [0.10, 0.05, 0.25, 0.12],
+      [0.60, 0.03, 0.80, 0.08],
+      [0.05, 0.22, 0.18, 0.28],
+      [0.70, 0.18, 0.90, 0.23],
+      [0.15, 0.45, 0.30, 0.50],
+      [0.55, 0.40, 0.75, 0.44],
+      [0.08, 0.65, 0.22, 0.70],
+      [0.65, 0.60, 0.88, 0.66],
+      [0.20, 0.80, 0.38, 0.85],
+      [0.50, 0.75, 0.72, 0.80],
+      [0.10, 0.92, 0.28, 0.96],
+      [0.62, 0.88, 0.82, 0.93],
+    ];
+    for (final l in lines) {
+      canvas.drawLine(
+        Offset(l[0] * size.width, l[1] * size.height),
+        Offset(l[2] * size.width, l[3] * size.height),
+        paint,
+      );
+    }
+
+    final arcPaint = Paint()
+      ..color = const Color(0xFF7A5C10).withOpacity(0.16)
+      ..strokeWidth = 0.9
+      ..style = PaintingStyle.stroke;
+
+    final arcs = [
+      Rect.fromLTWH(size.width * 0.05, size.height * 0.05, size.width * 0.25, size.height * 0.20),
+      Rect.fromLTWH(size.width * 0.65, size.height * 0.02, size.width * 0.28, size.height * 0.18),
+      Rect.fromLTWH(size.width * 0.02, size.height * 0.35, size.width * 0.22, size.height * 0.20),
+      Rect.fromLTWH(size.width * 0.10, size.height * 0.60, size.width * 0.24, size.height * 0.20),
+      Rect.fromLTWH(size.width * 0.60, size.height * 0.55, size.width * 0.30, size.height * 0.22),
+    ];
+    for (final rect in arcs) {
+      canvas.drawArc(rect, 0.3, 1.2, false, arcPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ParchmentScratchPainter oldDelegate) => false;
 }
 
 // ═══════════════════════════════════════════════════════════════

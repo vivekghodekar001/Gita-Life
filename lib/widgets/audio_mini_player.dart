@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/audio_provider.dart';
+import '../app/sacred_theme.dart';
 
 class AudioMiniPlayer extends ConsumerWidget {
   const AudioMiniPlayer({super.key});
@@ -21,7 +22,7 @@ class AudioMiniPlayer extends ConsumerWidget {
       child: Container(
         height: 70,
         decoration: BoxDecoration(
-          color: const Color(0xFFE8F5F9),
+          color: SacredColors.ink,
           boxShadow: [
             BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, -2))
           ],
@@ -61,7 +62,7 @@ class AudioMiniPlayer extends ConsumerWidget {
             ),
             IconButton(
               icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow, size: 32),
-              color: const Color(0xFF1565C0),
+              color: const Color(0xFF8B4513),
               onPressed: () {
                 ref.read(audioPlayerControllerProvider).togglePlay();
               },
@@ -77,8 +78,8 @@ class AudioMiniPlayer extends ConsumerWidget {
     return Container(
       width: 70,
       height: 70,
-      color: const Color(0xFFE8F5F9),
-      child: const Icon(Icons.music_note, color: Color(0xFF1565C0), size: 30),
+      color: SacredColors.ink,
+      child: const Icon(Icons.music_note, color: Color(0xFF8B4513), size: 30),
     );
   }
 }

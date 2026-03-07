@@ -22,7 +22,7 @@ class OfflineBanner extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
+                colors: [Color(0xFF6B3410), Color(0xFF8B4513)],
               ),
             ),
             child: SafeArea(

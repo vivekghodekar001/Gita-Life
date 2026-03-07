@@ -1,29 +1,114 @@
 {
-    "project_info": {
-        "project_number": "273830910501",
-        "project_id": "gita-life-b713a",
-        "storage_bucket": "gita-life-b713a.firebasestorage.app"
-    },
-    "client": [
-        {
-            "client_info": {
-                "mobilesdk_app_id": "1:273830910501:android:22c634d5c5061148883dcc",
-                "android_client_info": {
-                    "package_name": "com.gitalife"
-                }
-            },
-            "oauth_client": [],
-            "api_key": [
-                {
-                    "current_key": "AIzaSyCql8GbEzoHV34zL1wVrCCap1lORB78Qjg"
-                }
-            ],
-            "services": {
-                "appinvite_service": {
-                    "other_platform_oauth_client": []
-                }
-            }
+  "project_info": {
+    "project_number": "273830910501",
+    "project_id": "gita-life-b713a",
+    "storage_bucket": "gita-life-b713a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273830910501:android:5fc657d168c3cc81883dcc",
+        "android_client_info": {
+          "package_name": "com.bhakticonnect"
         }
-    ],
-    "configuration_version": "1"
+      },
+      "oauth_client": [
+        {
+          "client_id": "273830910501-lrp3v70tp1hf83gqeho2ah7j68fp87eo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCql8GbEzoHV34zL1wVrCCap1lORB78Qjg"
+        },
+        {
+          "current_key": "AIzaSyAkfpFdyZRG0mWhbW_kEcrMw2bM0SKnUcQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "273830910501-lrp3v70tp1hf83gqeho2ah7j68fp87eo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273830910501:android:61a574003f024901883dcc",
+        "android_client_info": {
+          "package_name": "com.gitalife"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "273830910501-l96c0gh89f5f4t2rgkdrc3q4nvcbdn17.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gitalife",
+            "certificate_hash": "c189e501c2a291bb57906578b23ca4fd05662383"
+          }
+        },
+        {
+          "client_id": "273830910501-lrp3v70tp1hf83gqeho2ah7j68fp87eo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCql8GbEzoHV34zL1wVrCCap1lORB78Qjg"
+        },
+        {
+          "current_key": "AIzaSyAkfpFdyZRG0mWhbW_kEcrMw2bM0SKnUcQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "273830910501-lrp3v70tp1hf83gqeho2ah7j68fp87eo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273830910501:android:22c634d5c5061148883dcc",
+        "android_client_info": {
+          "package_name": "com.iskcon.portal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "273830910501-lrp3v70tp1hf83gqeho2ah7j68fp87eo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCql8GbEzoHV34zL1wVrCCap1lORB78Qjg"
+        },
+        {
+          "current_key": "AIzaSyAkfpFdyZRG0mWhbW_kEcrMw2bM0SKnUcQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "273830910501-lrp3v70tp1hf83gqeho2ah7j68fp87eo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
 }

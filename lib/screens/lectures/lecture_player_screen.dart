@@ -5,6 +5,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../models/lecture_model.dart';
 import '../../providers/lecture_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../app/sacred_theme.dart';
 
 class LecturePlayerScreen extends ConsumerStatefulWidget {
   final String lectureId;
@@ -132,7 +133,7 @@ class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
       ),
       builder: (context, player) {
         return Scaffold(
-          backgroundColor: const Color(0xFFE8F5F9),
+          backgroundColor: SacredColors.ink,
           appBar: AppBar(
             title: const Text('Multimedia Player'),
             actions: [

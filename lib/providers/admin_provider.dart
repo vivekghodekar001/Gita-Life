@@ -19,40 +19,47 @@ final adminStatsProvider = StreamProvider<Map<String, dynamic>>((ref) async* {
     };
     return;
   }
-  
+
   if (Firebase.apps.isEmpty) return;
   final firestore = FirebaseFirestore.instanceFor(app: Firebase.app());
 
-  // We will yield a map containing our stats
-  
-  // Total students
-  final usersSnapshot = await firestore.collection('users').get();
-  final totalStudents = usersSnapshot.docs.length;
-  final pendingApprovals = usersSnapshot.docs.where((d) => d.data()['status'] == 'pending').length;
+  // Real-time listener on users collection — re-emits stats on every change
+  await for (final usersSnap in firestore.collection('users').snapshots()) {
+    final totalStudents = usersSnap.docs.length;
+    final pendingApprovals =
+        usersSnap.docs.where((d) => (d.data()['status'] ?? '') == 'pending').length;
 
-  // Active today (Japa or app open - let's check japa logs for today)
-  final today = DateTime.now();
-  final startOfDay = DateTime(today.year, today.month, today.day);
-  final japaLogsSnapshot = await firestore.collection('japa_logs')
-      .where('date', isGreaterThanOrEqualTo: startOfDay)
-      .get();
-  
-  // unique users doing japa today
-  final activeToday = japaLogsSnapshot.docs.map((d) => d.data()['userId']).toSet().length;
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
 
-  // Sessions this week
-  final startOfWeek = today.subtract(Duration(days: today.weekday - 1));
-  final sessionsSnapshot = await firestore.collection('attendance_sessions')
-      .where('lectureDate', isGreaterThanOrEqualTo: startOfWeek)
-      .get();
-  final sessionsThisWeek = sessionsSnapshot.docs.length;
+    int activeToday = 0;
+    int sessionsThisWeek = 0;
 
-  yield {
-    'totalStudents': totalStudents,
-    'pendingApprovals': pendingApprovals,
-    'activeToday': activeToday,
-    'sessionsThisWeek': sessionsThisWeek,
-  };
+    try {
+      // japa logs are stored at /japa_logs/{uid}/logs/{docId} — use collectionGroup
+      final japaSnap = await firestore
+          .collectionGroup('logs')
+          .where('date', isGreaterThanOrEqualTo: startOfDay)
+          .get();
+      activeToday = japaSnap.docs.map((d) => d.reference.parent.parent?.id).toSet().length;
+    } catch (_) {}
+
+    try {
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final sessSnap = await firestore
+          .collection('attendance_sessions')
+          .where('lectureDate', isGreaterThanOrEqualTo: startOfWeek)
+          .get();
+      sessionsThisWeek = sessSnap.docs.length;
+    } catch (_) {}
+
+    yield {
+      'totalStudents': totalStudents,
+      'pendingApprovals': pendingApprovals,
+      'activeToday': activeToday,
+      'sessionsThisWeek': sessionsThisWeek,
+    };
+  }
 });
 
 final usersProvider = StreamProvider.family<List<UserModel>, String>((ref, statusFilter) {

@@ -13,7 +13,7 @@ class SuspendedScreen extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF1565C0), Color(0xFFE8F5F9)],
+            colors: [Color(0xFF8B4513), Color(0xFF6B3410)],
           ),
         ),
         child: SafeArea(

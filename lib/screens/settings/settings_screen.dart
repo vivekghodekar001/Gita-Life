@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../app/sacred_theme.dart';
 
 final settingsProvider = StateNotifierProvider<SettingsNotifier, Map<String, dynamic>>((ref) {
   return SettingsNotifier();
@@ -63,7 +64,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: const Text('Settings'),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFE8F5F9),
+      backgroundColor: SacredColors.ink,
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

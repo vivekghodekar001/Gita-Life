@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/audio_provider.dart';
+import '../../app/sacred_theme.dart';
 
 class DownloadsScreen extends ConsumerWidget {
   const DownloadsScreen({super.key});
@@ -10,7 +11,7 @@ class DownloadsScreen extends ConsumerWidget {
     final downloads = ref.watch(downloadedTracksProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5F9),
+      backgroundColor: SacredColors.ink,
       appBar: AppBar(title: const Text('Downloads')),
       body: downloads.isEmpty
           ? const Center(child: Text('No downloaded tracks yet.', style: TextStyle(color: Colors.blueGrey, fontSize: 16)))

@@ -29,11 +29,11 @@ class AssignmentsScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.5)),
+                      icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.6)),
                       onPressed: () => Navigator.of(context).maybePop(),
                     ),
                     const Spacer(),
-                    Text('ASSIGNMENTS', style: SacredTextStyles.sectionLabel(fontSize: 10)),
+                    Text('ASSIGNMENTS', style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(color: SacredColors.parchment.withOpacity(0.6))),
                     const Spacer(),
                     const SizedBox(width: 40),
                   ],
@@ -48,10 +48,10 @@ class AssignmentsScreen extends ConsumerWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.assignment_outlined, size: 48, color: SacredColors.parchment.withOpacity(0.15)),
+                            Icon(Icons.assignment_outlined, size: 48, color: SacredColors.parchment.withOpacity(0.25)),
                             const SizedBox(height: 14),
-                            Text('No assignments yet.', style: SacredTextStyles.infoValue().copyWith(
-                              color: SacredColors.parchment.withOpacity(0.3),
+                            Text('No assignments yet.', style: GoogleFonts.cormorantGaramond(
+                              fontSize: 16, color: SacredColors.parchment.withOpacity(0.45),
                             )),
                           ],
                         ),
@@ -60,14 +60,29 @@ class AssignmentsScreen extends ConsumerWidget {
                     return ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: assignments.length,
-                      itemBuilder: (context, index) => _AssignmentStudentCard(
+                      itemBuilder: (context, index) => _ParchmentAssignmentCard(
                         assignment: assignments[index],
                         userProfile: userProfile,
                       ),
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator(color: SacredColors.parchment)),
-                  error: (err, _) => Center(child: Text('Error: $err', style: TextStyle(color: SacredColors.parchment.withOpacity(0.5)))),
+                  loading: () => Center(child: CircularProgressIndicator(color: const Color(0xFF8B4513).withOpacity(0.6))),
+                  error: (err, _) => Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.lock_outline_rounded, size: 36, color: SacredColors.parchment.withOpacity(0.25)),
+                        const SizedBox(height: 12),
+                        Text(
+                          err.toString().contains('permission-denied')
+                              ? 'Assignments will appear once your account is approved.'
+                              : 'Could not load assignments. Please try again.',
+                          style: TextStyle(color: SacredColors.parchment.withOpacity(0.45), fontSize: 13),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -78,11 +93,11 @@ class AssignmentsScreen extends ConsumerWidget {
   }
 }
 
-class _AssignmentStudentCard extends ConsumerWidget {
+class _ParchmentAssignmentCard extends ConsumerWidget {
   final Assignment assignment;
   final dynamic userProfile;
 
-  const _AssignmentStudentCard({required this.assignment, required this.userProfile});
+  const _ParchmentAssignmentCard({required this.assignment, required this.userProfile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -95,91 +110,111 @@ class _AssignmentStudentCard extends ConsumerWidget {
     final isOverdue = assignment.dueDate.isBefore(DateTime.now());
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: SacredDecorations.glassCard(radius: 14),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF5EDDA), Color(0xFFEDE0C4), Color(0xFFE4D4B0)],
+        ),
+        border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.2), width: 1),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFF4A2C0A).withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: SacredColors.parchment.withOpacity(0.08),
-                        border: Border.all(color: SacredColors.parchment.withOpacity(0.15)),
-                      ),
-                      child: Icon(Icons.assignment_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.5)),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [const Color(0xFF8B4513).withOpacity(0.15), const Color(0xFFC8722A).withOpacity(0.1)],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.25)),
+                  ),
+                  child: Icon(Icons.assignment_rounded, size: 18, color: const Color(0xFF8B4513).withOpacity(0.7)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        assignment.title,
+                        style: GoogleFonts.cormorantGaramond(
+                          fontSize: 17, fontWeight: FontWeight.w600,
+                          color: const Color(0xFF3A2010),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
                         children: [
+                          Icon(Icons.calendar_today_rounded, size: 11,
+                              color: isOverdue ? SacredColors.ember : const Color(0xFF8B6914).withOpacity(0.5)),
+                          const SizedBox(width: 4),
                           Text(
-                            assignment.title,
-                            style: GoogleFonts.cormorantGaramond(
-                              fontSize: 16, fontWeight: FontWeight.w600,
-                              color: SacredColors.parchmentLight.withOpacity(0.85),
+                            'Due: ${DateFormat('MMM d, yyyy').format(assignment.dueDate)}',
+                            style: GoogleFonts.jost(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w400,
+                              color: isOverdue ? SacredColors.ember : const Color(0xFF5C4033).withOpacity(0.6),
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.calendar_today_rounded, size: 11,
-                                  color: isOverdue ? SacredColors.ember.withOpacity(0.7) : SacredColors.parchment.withOpacity(0.3)),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Due: ${DateFormat('MMM d, yyyy').format(assignment.dueDate)}',
-                                style: GoogleFonts.jost(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w300,
-                                  color: isOverdue ? SacredColors.ember.withOpacity(0.7) : SacredColors.parchment.withOpacity(0.3),
-                                ),
-                              ),
-                              if (isOverdue) ...[
-                                const SizedBox(width: 4),
-                                Text('(Overdue)',
-                                    style: GoogleFonts.jost(fontSize: 10, color: SacredColors.ember.withOpacity(0.7))),
-                              ],
-                            ],
-                          ),
+                          if (isOverdue) ...[
+                            const SizedBox(width: 4),
+                            Text('(Overdue)',
+                                style: GoogleFonts.jost(fontSize: 10, fontWeight: FontWeight.w600, color: SacredColors.ember)),
+                          ],
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                if (assignment.description.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    assignment.description,
-                    style: GoogleFonts.cormorantGaramond(
-                      fontSize: 14,
-                      color: SacredColors.parchment.withOpacity(0.5),
-                    ),
+                    ],
                   ),
-                ],
-                const SizedBox(height: 16),
-                if (submissionAsync != null)
-                  submissionAsync.when(
-                    data: (submission) => _buildSubmissionStatus(context, ref, submission),
-                    loading: () => const Center(child: CircularProgressIndicator(color: SacredColors.parchment)),
-                    error: (e, _) => Text('Error: $e', style: TextStyle(color: SacredColors.ember.withOpacity(0.6))),
-                  )
-                else
-                  Text('Log in to submit assignments.',
-                      style: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.3))),
+                ),
               ],
             ),
-          ),
+            if (assignment.description.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                assignment.description,
+                style: GoogleFonts.cormorantGaramond(
+                  fontSize: 14,
+                  color: const Color(0xFF5C4033).withOpacity(0.7),
+                  height: 1.5,
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            // Separator
+            Container(
+              height: 1,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.transparent, const Color(0xFF8B6914).withOpacity(0.2), Colors.transparent],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (submissionAsync != null)
+              submissionAsync.when(
+                data: (submission) => _buildSubmissionStatus(context, ref, submission),
+                loading: () => Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: const Color(0xFF8B4513).withOpacity(0.5), strokeWidth: 1.5))),
+                error: (e, _) => Text(
+                    e.toString().contains('permission-denied') ? 'Pending approval.' : 'Could not load.',
+                    style: TextStyle(color: SacredColors.ember.withOpacity(0.7), fontSize: 12)),
+              )
+            else
+              Text('Log in to submit assignments.',
+                  style: GoogleFonts.jost(fontSize: 12, color: const Color(0xFF5C4033).withOpacity(0.5))),
+          ],
         ),
       ),
     );
@@ -188,7 +223,6 @@ class _AssignmentStudentCard extends ConsumerWidget {
   Widget _buildSubmissionStatus(BuildContext context, WidgetRef ref,
       AssignmentSubmission? submission) {
     if (submission == null) {
-      // Not yet submitted
       return SizedBox(
         width: double.infinity,
         child: GestureDetector(
@@ -196,20 +230,24 @@ class _AssignmentStudentCard extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: SacredColors.parchment.withOpacity(0.1),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF8B4513), Color(0xFFC8722A)],
+              ),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: SacredColors.parchment.withOpacity(0.2)),
+              boxShadow: [
+                BoxShadow(color: const Color(0xFF8B4513).withOpacity(0.25), blurRadius: 8, offset: const Offset(0, 3)),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_outline_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.6)),
+                const Icon(Icons.check_circle_outline_rounded, size: 18, color: Color(0xFFF5E8D0)),
                 const SizedBox(width: 8),
                 Text(
                   'MARK AS DONE',
                   style: GoogleFonts.jost(
-                    fontSize: 11, fontWeight: FontWeight.w300, letterSpacing: 2,
-                    color: SacredColors.parchment.withOpacity(0.6),
+                    fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 2,
+                    color: const Color(0xFFF5E8D0),
                   ),
                 ),
               ],
@@ -219,33 +257,31 @@ class _AssignmentStudentCard extends ConsumerWidget {
       );
     }
 
-    // Show progress only if admin has completed the review
     if (submission.status == 'completed') {
       return Row(
         children: [
-          Icon(Icons.verified_rounded, size: 18, color: const Color(0xFF4CAF50).withOpacity(0.7)),
+          const Icon(Icons.verified_rounded, size: 18, color: Color(0xFF4A8B4A)),
           const SizedBox(width: 8),
           Text(
             'Completed — Verified by admin',
             style: GoogleFonts.jost(
-              fontSize: 12, fontWeight: FontWeight.w300,
-              color: const Color(0xFF4CAF50).withOpacity(0.7),
+              fontSize: 12, fontWeight: FontWeight.w400,
+              color: const Color(0xFF4A8B4A),
             ),
           ),
         ],
       );
     }
 
-    // Pending review
     return Row(
       children: [
-        Icon(Icons.hourglass_top_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.4)),
+        Icon(Icons.hourglass_top_rounded, size: 18, color: const Color(0xFF8B6914).withOpacity(0.6)),
         const SizedBox(width: 8),
         Text(
           'Submitted — Awaiting admin review',
           style: GoogleFonts.jost(
-            fontSize: 12, fontWeight: FontWeight.w300,
-            color: SacredColors.parchment.withOpacity(0.4),
+            fontSize: 12, fontWeight: FontWeight.w400,
+            color: const Color(0xFF8B6914).withOpacity(0.6),
           ),
         ),
       ],
@@ -263,16 +299,13 @@ class _AssignmentStudentCard extends ConsumerWidget {
           );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Assignment marked as done! Admin will review.'),
-            backgroundColor: SacredColors.surface,
-          ),
+          const SnackBar(content: Text('Assignment marked as done! Admin will review.')),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit: $e'), backgroundColor: SacredColors.surface),
+          SnackBar(content: Text('Failed to submit: $e')),
         );
       }
     }

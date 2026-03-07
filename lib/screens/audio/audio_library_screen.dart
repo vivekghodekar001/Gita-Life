@@ -19,9 +19,20 @@ class AudioLibraryScreen extends StatefulWidget {
   State<AudioLibraryScreen> createState() => _AudioLibraryScreenState();
 }
 
+// Category keys must match exactly what's stored in Firestore
+const _audioCategoryKeys = ['all', 'bhajan', 'kirtan', 'lecture_audio', 'meditation', 'other'];
+const _audioCategoryLabels = {
+  'all': 'All',
+  'bhajan': 'Bhajans',
+  'kirtan': 'Kirtans',
+  'lecture_audio': 'Lectures',
+  'meditation': 'Meditation',
+  'other': 'Other',
+};
+
 class _AudioLibraryScreenState extends State<AudioLibraryScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final categories = ['All', 'Bhajans', 'Kirtans', 'Lectures'];
+  final categories = _audioCategoryKeys;
   int _selectedIndex = 0;
 
   @override
@@ -95,14 +106,14 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> with SingleTick
                           ),
                           child: Center(
                             child: Text(
-                              categories[index].toUpperCase(),
+                              (_audioCategoryLabels[categories[index]] ?? categories[index]).toUpperCase(),
                               style: GoogleFonts.jost(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w300,
+                                fontWeight: FontWeight.w500,
                                 letterSpacing: 1.5,
                                 color: isSelected
                                     ? SacredColors.parchmentLight.withOpacity(0.9)
-                                    : SacredColors.parchment.withOpacity(0.35),
+                                    : SacredColors.parchment.withOpacity(0.65),
                               ),
                             ),
                           ),
@@ -134,7 +145,7 @@ class _TrackList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final queryCategory = category == 'All' ? null : category;
+    final queryCategory = category == 'all' ? null : category;
     final tracksAsync = ref.watch(audioTracksProvider(queryCategory));
     final downloads = ref.watch(downloadedTracksProvider);
 
@@ -144,7 +155,15 @@ class _TrackList extends ConsumerWidget {
         message: 'Failed to load audio tracks',
         onRetry: () => ref.invalidate(audioTracksProvider(queryCategory)),
       ),
-      data: (tracks) {
+        data: (rawTracks) {
+        // Sort: when viewing All, group by category; within same category sort by title
+        final tracks = category == 'all'
+            ? ([...rawTracks]..sort((a, b) {
+                final catOrder = {'bhajan': 0, 'kirtan': 1, 'lecture_audio': 2, 'meditation': 3, 'other': 4};
+                final catCmp = (catOrder[a.category] ?? 9).compareTo(catOrder[b.category] ?? 9);
+                return catCmp != 0 ? catCmp : a.title.compareTo(b.title);
+              }))
+            : rawTracks;
         if (tracks.isEmpty) {
           return Center(
             child: Text(
@@ -200,8 +219,8 @@ class _TrackList extends ConsumerWidget {
                   track.artist,
                   style: GoogleFonts.jost(
                     fontSize: 11,
-                    fontWeight: FontWeight.w300,
-                    color: SacredColors.parchment.withOpacity(0.3),
+                    fontWeight: FontWeight.w500,
+                    color: SacredColors.parchment.withOpacity(0.65),
                   ),
                 ),
                 trailing: isDownloaded

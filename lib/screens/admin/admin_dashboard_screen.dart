@@ -1,5 +1,3 @@
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,18 +6,19 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/admin_provider.dart';
 import '../../providers/firebase_provider.dart';
-import '../../app/sacred_theme.dart';
 import '../../widgets/sacred_widgets.dart';
+import '../../app/sacred_theme.dart';
 
 // Provider for recent admin activity
-final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final recentActivityProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final status = ref.watch(firebaseInitStatusProvider);
-  if (status != FirebaseInitStatus.initialized || Firebase.apps.isEmpty) return [];
+  if (status != FirebaseInitStatus.initialized || Firebase.apps.isEmpty)
+    return [];
 
   final firestore = FirebaseFirestore.instanceFor(app: Firebase.app());
   final results = <Map<String, dynamic>>[];
 
-  // Fetch last 5 attendance sessions
   final sessionsSnap = await firestore
       .collection('attendance_sessions')
       .orderBy('createdAt', descending: true)
@@ -28,15 +27,11 @@ final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) 
   for (final doc in sessionsSnap.docs) {
     final data = doc.data();
     results.add({
-      'type': 'session',
-      'icon': Icons.event_available,
-      'color': Colors.purple,
-      'text': 'Session created: ${data['title'] ?? 'Untitled'}',
+      'text': 'Session: ${data['title'] ?? 'Untitled'}',
       'timestamp': (data['createdAt'] as Timestamp?)?.toDate(),
     });
   }
 
-  // Fetch last 5 new user registrations
   final usersSnap = await firestore
       .collection('users')
       .orderBy('enrollmentDate', descending: true)
@@ -45,15 +40,11 @@ final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) 
   for (final doc in usersSnap.docs) {
     final data = doc.data();
     results.add({
-      'type': 'user',
-      'icon': Icons.person_add_alt_1,
-      'color': Colors.blue,
-      'text': 'New student registered: ${data['fullName'] ?? 'Unknown'}',
+      'text': 'New student: ${data['fullName'] ?? 'Unknown'}',
       'timestamp': (data['enrollmentDate'] as Timestamp?)?.toDate(),
     });
   }
 
-  // Sort all by timestamp descending and take the 10 most recent
   results.sort((a, b) {
     final ta = a['timestamp'] as DateTime?;
     final tb = b['timestamp'] as DateTime?;
@@ -66,15 +57,26 @@ final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) 
   return results.take(10).toList();
 });
 
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  Admin Dashboard Screen
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   bool _showAllActivity = false;
+  int _navIndex = -1;
+
+  static const _bgPage = Color(0xFFE8E0CC);
+  static const _inkDark = Color(0xBF32230A);
+  static const _inkMid = Color(0x80503710);
+  static const _inkFaint = Color(0x4D644B14);
 
   @override
   Widget build(BuildContext context) {
@@ -85,279 +87,320 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       body: SacredBackground(
         child: SafeArea(
           child: statsAsync.when(
+            loading: () => const Center(
+                child: CircularProgressIndicator(color: Color(0xFF8B6914))),
+            error: (e, _) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline,
+                      color: Color(0xFFC85010), size: 48),
+                  const SizedBox(height: 12),
+                  Text('Error loading stats',
+                      style: GoogleFonts.cinzel(fontSize: 11, color: _inkMid)),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () => ref.refresh(adminStatsProvider),
+                    child: Text('RETRY',
+                        style: GoogleFonts.cinzel(
+                            fontSize: 9, letterSpacing: 2, color: _inkFaint)),
+                  ),
+                ],
+              ),
+            ),
             data: (stats) => RefreshIndicator(
-              color: SacredColors.parchment,
-              backgroundColor: SacredColors.surface,
+              color: const Color(0xFF8B6914),
+              backgroundColor: Colors.white,
               onRefresh: () => ref.refresh(adminStatsProvider.future),
               child: ListView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(28, 20, 28, 40),
                 children: [
-                  _buildTopBar(context),
-                  const SizedBox(height: 20),
+                  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  _buildHeader(context),
+                  const SizedBox(height: 36),
+
+                  // â”€â”€ Stat Circles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                   _buildStatCircles(stats),
-                  const SizedBox(height: 28),
-                  SacredSectionLabel(text: 'Quick Actions'),
-                  const SizedBox(height: 12),
-                  _buildQuickActionsGrid(context),
-                  const SizedBox(height: 28),
-                  SacredSectionLabel(text: 'Recent Activity'),
+                  const SizedBox(height: 40),
+
+                  // â”€â”€ Section header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  _buildSectionHeader('Quick Actions'),
+                  const SizedBox(height: 16),
+
+                  // â”€â”€ Action Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  _buildActionGrid(context),
+                  const SizedBox(height: 32),
+
+                  // â”€â”€ Recent Activity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  _buildSectionHeader('Recent Activity'),
                   const SizedBox(height: 12),
                   _buildRecentActivity(ref),
                 ],
               ),
             ),
-            loading: () => const Center(child: CircularProgressIndicator(color: SacredColors.parchment)),
-            error: (error, stack) => Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: SacredColors.ember.withOpacity(0.6), size: 48),
-                  const SizedBox(height: 16),
-                  Text('Error loading stats', style: SacredTextStyles.infoValue()),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () => ref.refresh(adminStatsProvider),
-                    child: Text('RETRY', style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(color: SacredColors.parchment.withOpacity(0.5))),
-                  ),
-                ],
-              ),
-            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTopBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.5)),
-            onPressed: () => context.canPop() ? context.pop() : null,
+  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      children: [
+        // Back button
+        GestureDetector(
+          onTap: () => context.canPop() ? context.pop() : null,
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0x80F0E4C3),
+              border: Border.all(color: const Color(0x59B48C28), width: 1),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2))
+              ],
+            ),
+            child: Icon(Icons.chevron_left_rounded, size: 20, color: _inkMid),
           ),
-          const Spacer(),
-          Text('ADMIN PANEL', style: SacredTextStyles.sectionLabel(fontSize: 10)),
-          const Spacer(),
-          const SizedBox(width: 40),
-        ],
-      ),
+        ),
+        const Spacer(),
+        Text('ADMIN PANEL',
+            style: GoogleFonts.cinzel(
+                fontSize: 11, letterSpacing: 4.5, color: _inkMid)),
+        const Spacer(),
+        // Invisible spacer to keep title perfectly centred
+        const SizedBox(width: 36, height: 36),
+      ],
     );
   }
 
+  // â”€â”€ Stat Circles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildStatCircles(Map<String, dynamic> stats) {
     final items = [
-      _StatItem('Total\nStudents', stats['totalStudents'] ?? 0, SacredColors.parchment),
-      _StatItem('Pending\nApprovals', stats['pendingApprovals'] ?? 0, SacredColors.ember),
-      _StatItem('Active\nToday', stats['activeToday'] ?? 0, const Color(0xFF4CAF50)),
-      _StatItem('Sessions\nThis Week', stats['sessionsThisWeek'] ?? 0, const Color(0xFF7E57C2)),
+      _StatDef(
+          'Total\nStudents', '${stats['totalStudents'] ?? 0}', _ConicType.gold),
+      _StatDef('Pending\nApprovals', '${stats['pendingApprovals'] ?? 0}',
+          _ConicType.coral),
+      _StatDef(
+          'Active\nStudents', '${stats['activeToday'] ?? 0}', _ConicType.sage),
+      _StatDef(
+          'Total\nChapters',
+          '${stats['totalChapters'] ?? stats['sessionsThisWeek'] ?? 0}',
+          _ConicType.lavender),
     ];
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: items.map((item) {
-        return Column(
-          children: [
-            Container(
-              width: 68,
-              height: 68,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: item.color.withOpacity(0.06),
-                border: Border.all(color: item.color.withOpacity(0.25), width: 2),
-              ),
-              child: Center(
-                child: Text(
-                  '${item.value}',
-                  style: GoogleFonts.cormorantSc(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w500,
-                    color: item.color.withOpacity(0.8),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              item.label.toUpperCase(),
-              textAlign: TextAlign.center,
-              style: GoogleFonts.jost(
-                fontSize: 8,
-                fontWeight: FontWeight.w200,
-                letterSpacing: 1.5,
-                color: SacredColors.parchment.withOpacity(0.3),
-              ),
-            ),
-          ],
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildQuickActionsGrid(BuildContext context) {
-    final actions = [
-      _ActionItem('Students', Icons.group_add_rounded, '/admin/students', SacredColors.parchment),
-      _ActionItem('Lectures', Icons.video_library_rounded, '/admin/lectures', SacredColors.ember),
-      _ActionItem('Audio', Icons.library_music_rounded, '/admin/audio', const Color(0xFF4CAF50)),
-      _ActionItem('Notifications', Icons.notifications_active_rounded, '/admin/notifications', const Color(0xFF7E57C2)),
-      _ActionItem('Attendance', Icons.how_to_reg_rounded, '/admin/attendance', const Color(0xFF29B6F6)),
-      _ActionItem('Assignments', Icons.assignment_rounded, '/admin/assignments', const Color(0xFFFFB74D)),
-    ];
-
-    return GridView.count(
-      crossAxisCount: 3,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.0,
-      children: actions.map((action) {
-        return GestureDetector(
-          onTap: () => context.push(action.route),
-          child: Container(
-            decoration: BoxDecoration(
-              color: action.color.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: action.color.withOpacity(0.12)),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: action.color.withOpacity(0.08),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: action.color.withOpacity(0.12)),
-                  ),
-                  child: Icon(action.icon, size: 22, color: action.color.withOpacity(0.7)),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  action.label.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.jost(
+      children: items.asMap().entries.map((e) {
+        final i = e.key;
+        final item = e.value;
+        return TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: Duration(milliseconds: 400 + i * 100),
+          curve: Curves.easeOutCubic,
+          builder: (context, v, child) => Opacity(
+            opacity: v,
+            child: Transform.translate(
+                offset: Offset(0, 12 * (1 - v)), child: child),
+          ),
+          child: Column(
+            children: [
+              _ConicCircle(value: item.value, type: item.type),
+              const SizedBox(height: 10),
+              Text(
+                item.label.toUpperCase(),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.cinzel(
                     fontSize: 8,
-                    fontWeight: FontWeight.w200,
-                    letterSpacing: 1.5,
-                    color: action.color.withOpacity(0.6),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+                    letterSpacing: 2.5,
+                    color: _inkFaint,
+                    height: 1.5),
+              ),
+            ],
           ),
         );
       }).toList(),
     );
   }
 
+  // â”€â”€ Section Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      children: [
+        Text(title.toUpperCase(),
+            style: GoogleFonts.cinzel(
+                fontSize: 9, letterSpacing: 3.5, color: _inkFaint)),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Container(
+            height: 1,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Color(0x40B48C28), Colors.transparent]),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // â”€â”€ Action Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildActionGrid(BuildContext context) {
+    final actions = [
+      _ActionDef('Students', _CardColor.neutral, Icons.people_outline_rounded,
+          '/admin/students'),
+      _ActionDef('Lectures', _CardColor.coral, Icons.videocam_outlined,
+          '/admin/lectures'),
+      _ActionDef(
+          'Audio', _CardColor.sage, Icons.music_note_outlined, '/admin/audio'),
+      _ActionDef('Assignments', _CardColor.lavender, Icons.assignment_outlined,
+          '/admin/assignments'),
+      _ActionDef('Attendance', _CardColor.sky, Icons.how_to_reg_outlined,
+          '/admin/attendance'),
+      _ActionDef('Notifications', _CardColor.neutral,
+          Icons.notifications_none_rounded, '/admin/notifications'),
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 14,
+        mainAxisSpacing: 14,
+        childAspectRatio: 0.85,
+      ),
+      itemCount: actions.length,
+      itemBuilder: (context, i) {
+        final a = actions[i];
+        return TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: Duration(milliseconds: 400 + i * 100),
+          curve: Curves.easeOutCubic,
+          builder: (context, v, child) => Opacity(
+            opacity: v,
+            child: Transform.translate(
+                offset: Offset(0, 14 * (1 - v)), child: child),
+          ),
+          child: _ActionCard(action: a, onTap: () => context.push(a.route)),
+        );
+      },
+    );
+  }
+
+  // â”€â”€ Recent Activity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildRecentActivity(WidgetRef ref) {
     final activityAsync = ref.watch(recentActivityProvider);
     return Container(
-      decoration: SacredDecorations.glassCard(radius: 14),
+      decoration: BoxDecoration(
+        color: const Color(0x33F0E8D0),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0x26B48C28)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12)
+        ],
+      ),
       child: activityAsync.when(
+        loading: () => const Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(
+              child: CircularProgressIndicator(
+                  color: Color(0xFF8B6914), strokeWidth: 1.5)),
+        ),
+        error: (_, __) => Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+              child: Text('Failed to load activity',
+                  style: GoogleFonts.cormorantGaramond(
+                      fontSize: 13, color: _inkFaint))),
+        ),
         data: (activities) {
           if (activities.isEmpty) {
             return Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(28),
               child: Center(
-                child: Column(
-                  children: [
-                    Icon(Icons.history_rounded, size: 36, color: SacredColors.parchment.withOpacity(0.12)),
-                    const SizedBox(height: 12),
-                    Text('No recent activity', style: SacredTextStyles.infoValue().copyWith(
-                      color: SacredColors.parchment.withOpacity(0.25),
-                    )),
-                  ],
-                ),
-              ),
+                  child: Text('No recent activity',
+                      style: GoogleFonts.cormorantGaramond(
+                          fontSize: 14, color: _inkFaint))),
             );
           }
-          final displayActivities = _showAllActivity ? activities : activities.take(3).toList();
+          final shown =
+              _showAllActivity ? activities : activities.take(4).toList();
           return Column(
             children: [
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: displayActivities.length,
-                separatorBuilder: (_, __) => SacredDivider(margin: const EdgeInsets.symmetric(horizontal: 16)),
-                itemBuilder: (context, index) {
-                  final item = displayActivities[index];
-                  final timestamp = item['timestamp'] as DateTime?;
-                  final timeText = timestamp != null ? _formatTimestamp(timestamp) : '';
-                  final color = (item['color'] as Color).withOpacity(0.6);
-                  return ListTile(
-                    dense: true,
-                    leading: Container(
-                      width: 34, height: 34,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: (item['color'] as Color).withOpacity(0.08),
-                        border: Border.all(color: (item['color'] as Color).withOpacity(0.15)),
+              ...shown.asMap().entries.map((e) {
+                final item = e.value;
+                final ts = item['timestamp'] as DateTime?;
+                final timeStr = ts != null ? _formatTs(ts) : '';
+                return Column(
+                  children: [
+                    if (e.key > 0)
+                      Divider(
+                          color: const Color(0x1AB48C28),
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16),
+                    ListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 4),
+                      leading: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0x1AD4AF37),
+                          border: Border.all(color: const Color(0x26B48C28)),
+                        ),
+                        child: Icon(Icons.history_rounded,
+                            size: 14, color: _inkFaint),
                       ),
-                      child: Icon(item['icon'] as IconData, color: color, size: 16),
+                      title: Text(item['text'] as String,
+                          style: GoogleFonts.cormorantGaramond(
+                              fontSize: 13, color: _inkDark.withOpacity(0.7))),
+                      trailing: timeStr.isNotEmpty
+                          ? Text(timeStr,
+                              style: GoogleFonts.jost(
+                                  fontSize: 10, color: _inkFaint))
+                          : null,
                     ),
-                    title: Text(
-                      item['text'] as String,
-                      style: GoogleFonts.cormorantGaramond(
-                        fontSize: 13, color: SacredColors.parchmentLight.withOpacity(0.7),
-                      ),
-                    ),
-                    subtitle: timeText.isNotEmpty
-                        ? Text(timeText, style: GoogleFonts.jost(
-                            fontSize: 10, fontWeight: FontWeight.w300,
-                            color: SacredColors.parchment.withOpacity(0.2),
-                          ))
-                        : null,
-                  );
-                },
-              ),
-              if (!_showAllActivity && activities.length > 3)
+                  ],
+                );
+              }),
+              if (!_showAllActivity && activities.length > 4)
                 GestureDetector(
                   onTap: () => setState(() => _showAllActivity = true),
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text('SHOW MORE', style: SacredTextStyles.sectionLabel(fontSize: 9).copyWith(
-                      color: SacredColors.parchment.withOpacity(0.4),
-                    )),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text('SHOW MORE',
+                        style: GoogleFonts.cinzel(
+                            fontSize: 8, letterSpacing: 2.5, color: _inkFaint)),
                   ),
                 ),
-              if (_showAllActivity && activities.length > 3)
+              if (_showAllActivity && activities.length > 4)
                 GestureDetector(
                   onTap: () => setState(() => _showAllActivity = false),
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text('SHOW LESS', style: SacredTextStyles.sectionLabel(fontSize: 9).copyWith(
-                      color: SacredColors.parchment.withOpacity(0.4),
-                    )),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text('SHOW LESS',
+                        style: GoogleFonts.cinzel(
+                            fontSize: 8, letterSpacing: 2.5, color: _inkFaint)),
                   ),
                 ),
             ],
           );
         },
-        loading: () => Padding(
-          padding: const EdgeInsets.all(24),
-          child: Center(child: CircularProgressIndicator(color: SacredColors.parchment.withOpacity(0.5))),
-        ),
-        error: (_, __) => Padding(
-          padding: const EdgeInsets.all(24),
-          child: Center(
-            child: Text('Failed to load activity', style: SacredTextStyles.infoValue().copyWith(
-              color: SacredColors.parchment.withOpacity(0.25),
-            )),
-          ),
-        ),
       ),
     );
   }
 
-  String _formatTimestamp(DateTime dt) {
-    final now = DateTime.now();
-    final diff = now.difference(dt);
+  String _formatTs(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
     if (diff.inMinutes < 1) return 'Just now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
@@ -366,18 +409,465 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 }
 
-class _StatItem {
-  final String label;
-  final int value;
-  final Color color;
-  const _StatItem(this.label, this.value, this.color);
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  Conic-gradient stat circle
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+enum _ConicType { gold, coral, sage, lavender }
+
+class _ConicCircle extends StatelessWidget {
+  final String value;
+  final _ConicType type;
+  const _ConicCircle({required this.value, required this.type});
+
+  static const _rings = {
+    _ConicType.gold: [
+      Color(0x99D4AF37),
+      Color(0xCCF0C850),
+      Color(0x4DD4AF37),
+      Color(0x80B48C1E)
+    ],
+    _ConicType.coral: [
+      Color(0x80D27850),
+      Color(0xB3E69664),
+      Color(0x33D27850),
+      Color(0x66BE643C)
+    ],
+    _ConicType.sage: [
+      Color(0x8064A06E),
+      Color(0xB382B982),
+      Color(0x3364A06E),
+      Color(0x66508C5A)
+    ],
+    _ConicType.lavender: [
+      Color(0x80966EBE),
+      Color(0xB3B48CD2),
+      Color(0x33966EBE),
+      Color(0x66825AAA)
+    ],
+  };
+
+  static const _textColors = {
+    _ConicType.gold: Color(0xFF7A5008),
+    _ConicType.coral: Color(0xFFA04020),
+    _ConicType.sage: Color(0xFF2D6B3A),
+    _ConicType.lavender: Color(0xFF5A2D8A),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final stops = _rings[type]!;
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: SweepGradient(colors: [...stops, stops[0]]),
+        boxShadow: [
+          BoxShadow(
+              color: stops[0].withOpacity(0.35),
+              blurRadius: 14,
+              spreadRadius: 1),
+        ],
+      ),
+      child: Center(
+        child: Container(
+          width: 62,
+          height: 62,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFF5EEDB), Color(0xFFEDE0C0)],
+            ),
+          ),
+          child: Center(
+            child: Text(
+              value,
+              style: GoogleFonts.cormorantGaramond(
+                fontSize: 28,
+                fontWeight: FontWeight.w300,
+                color: _textColors[type],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _ActionItem {
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  Action Card
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+enum _CardColor { neutral, coral, sage, lavender, sky }
+
+class _ActionDef {
   final String label;
+  final _CardColor color;
   final IconData icon;
   final String route;
-  final Color color;
-  const _ActionItem(this.label, this.icon, this.route, this.color);
+  const _ActionDef(this.label, this.color, this.icon, this.route);
 }
 
+class _ActionCard extends StatefulWidget {
+  final _ActionDef action;
+  final VoidCallback onTap;
+  const _ActionCard({required this.action, required this.onTap});
+
+  @override
+  State<_ActionCard> createState() => _ActionCardState();
+}
+
+class _ActionCardState extends State<_ActionCard> {
+  bool _hovering = false;
+
+  static const _gradients = {
+    _CardColor.neutral: [Color(0xB2EDE5CE), Color(0xCCD7CDB2)],
+    _CardColor.coral: [Color(0xA6F0D2BE), Color(0xBFE1BEA5)],
+    _CardColor.sage: [Color(0xA6CDEAD5), Color(0xBFB9D2BE)],
+    _CardColor.lavender: [Color(0xA6DCD2EB), Color(0xBFC8BEDC)],
+    _CardColor.sky: [Color(0xA6C3DCE8), Color(0xBFAFCDE1)],
+  };
+
+  static const _borders = {
+    _CardColor.neutral: Color(0x40B49C3C),
+    _CardColor.coral: Color(0x33C87850),
+    _CardColor.sage: Color(0x3364A06E),
+    _CardColor.lavender: Color(0x33966EBE),
+    _CardColor.sky: Color(0x33508CBE),
+  };
+
+  static const _iconBg = {
+    _CardColor.neutral: [Color(0x40D4AF37), Color(0x26B48C1E)],
+    _CardColor.coral: [Color(0x40D27850), Color(0x26BE643C)],
+    _CardColor.sage: [Color(0x4064A06E), Color(0x2650885A)],
+    _CardColor.lavender: [Color(0x40966EBE), Color(0x26825AAA)],
+    _CardColor.sky: [Color(0x40508CBE), Color(0x26326EAA)],
+  };
+
+  static const _iconBorder = {
+    _CardColor.neutral: Color(0x73B48C28),
+    _CardColor.coral: Color(0x66C8643C),
+    _CardColor.sage: Color(0x665A9664),
+    _CardColor.lavender: Color(0x66906EBA),
+    _CardColor.sky: Color(0x66468CBE),
+  };
+
+  static const _iconColor = {
+    _CardColor.neutral: Color(0xFF8B5E0A),
+    _CardColor.coral: Color(0xFFA04020),
+    _CardColor.sage: Color(0xFF2D6B3A),
+    _CardColor.lavender: Color(0xFF5A2D8A),
+    _CardColor.sky: Color(0xFF1A5A8A),
+  };
+
+  static const _labelColor = {
+    _CardColor.neutral: Color(0x99644615),
+    _CardColor.coral: Color(0x99904623),
+    _CardColor.sage: Color(0x992D6B3A),
+    _CardColor.lavender: Color(0x995A3282),
+    _CardColor.sky: Color(0x991E5082),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.action.color;
+    final gradColors = _gradients[c]!;
+    final iconBgColors = _iconBg[c]!;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: const Cubic(0.34, 1.56, 0.64, 1),
+          transform: Matrix4.translationValues(0, _hovering ? -4 : 0, 0)
+            ..scale(_hovering ? 1.01 : 1.0),
+          transformAlignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: const Alignment(-0.7, -0.7),
+              end: const Alignment(0.7, 0.7),
+              colors: gradColors,
+            ),
+            border: Border.all(color: _borders[c]!),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_hovering ? 0.12 : 0.06),
+                blurRadius: _hovering ? 28 : 16,
+                offset: const Offset(0, 4),
+              ),
+              if (_hovering)
+                BoxShadow(
+                    color: _borders[c]!.withOpacity(0.6),
+                    blurRadius: 0,
+                    spreadRadius: 1.5),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // â”€â”€ Corner decoration (top-left) â”€â”€
+              Positioned(
+                top: 14,
+                left: 14,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      top: BorderSide(color: Color(0x33D4AF37)),
+                      left: BorderSide(color: Color(0x33D4AF37)),
+                    ),
+                    borderRadius:
+                        BorderRadius.only(topLeft: Radius.circular(3)),
+                  ),
+                ),
+              ),
+              // â”€â”€ Corner decoration (bottom-right) â”€â”€
+              Positioned(
+                bottom: 14,
+                right: 14,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Color(0x33D4AF37)),
+                      right: BorderSide(color: Color(0x33D4AF37)),
+                    ),
+                    borderRadius:
+                        BorderRadius.only(bottomRight: Radius.circular(3)),
+                  ),
+                ),
+              ),
+              // â”€â”€ Content â”€â”€
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: const Cubic(0.34, 1.56, 0.64, 1),
+                      width: 52,
+                      height: 52,
+                      transform:
+                          Matrix4.translationValues(0, _hovering ? -2 : 0, 0)
+                            ..scale(_hovering ? 1.12 : 1.0),
+                      transformAlignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: iconBgColors,
+                        ),
+                        border: Border.all(color: _iconBorder[c]!, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                              color: _iconBorder[c]!.withOpacity(0.6),
+                              blurRadius: 14,
+                              spreadRadius: 4),
+                          BoxShadow(
+                              color: Colors.black.withOpacity(0.12),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4)),
+                        ],
+                      ),
+                      child: Icon(widget.action.icon,
+                          size: 20, color: _iconColor[c]),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      widget.action.label.toUpperCase(),
+                      style: GoogleFonts.cinzel(
+                        fontSize: 9,
+                        letterSpacing: 2,
+                        color: _labelColor[c],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// â”€â”€ Data classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+class _StatDef {
+  final String label;
+  final String value;
+  final _ConicType type;
+  const _StatDef(this.label, this.value, this.type);
+}
+
+class _GlassBottomBar extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  const _GlassBottomBar({required this.currentIndex, required this.onTap});
+
+  static const _items = [
+    _BarItem(icon: Icons.radio_button_checked_rounded, label: 'Japa'),
+    _BarItem(icon: Icons.play_circle_outline_rounded, label: 'Video'),
+    _BarItem(icon: Icons.headphones_rounded, label: 'Audio'),
+    _BarItem(icon: Icons.assignment_rounded, label: 'Assignment'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment(-0.7, -1),
+            end: Alignment(0.7, 1),
+            colors: [Color(0xD9F0E4C3), Color(0xE6DCD5A5)],
+          ),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: const Color(0x80B48C28), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.22),
+                blurRadius: 28,
+                offset: const Offset(0, 8)),
+            BoxShadow(
+                color: const Color(0xFFD4AF37).withOpacity(0.18),
+                blurRadius: 10,
+                spreadRadius: 1),
+            const BoxShadow(
+                color: Color(0x55FFE678), blurRadius: 1, offset: Offset(0, -1)),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(_items.length * 2 - 1, (idx) {
+              if (idx.isOdd) {
+                // Vertical gold divider
+                return Container(
+                  width: 1,
+                  height: 26,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Color(0x408B6914),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                );
+              }
+              final i = idx ~/ 2;
+              final item = _items[i];
+              final isActive = i == currentIndex;
+              return GestureDetector(
+                onTap: () => onTap(i),
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: const Cubic(0.34, 1.56, 0.64, 1),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: isActive
+                      ? BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0x40D4AF37), Color(0x26B48C1E)],
+                          ),
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(
+                              color: const Color(0x66B48C28), width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFA07814).withOpacity(0.22),
+                              blurRadius: 12,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        )
+                      : null,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            item.icon,
+                            size: 19,
+                            color: isActive
+                                ? const Color(0xFF8B5E0A)
+                                : const Color(0xFF64461A).withOpacity(0.42),
+                          ),
+                          if (isActive)
+                            Positioned(
+                              bottom: -5,
+                              child: Container(
+                                width: 3,
+                                height: 3,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFD4AF37),
+                                      Color(0xFFF0C040)
+                                    ],
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFD4AF37)
+                                          .withOpacity(0.8),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        item.label.toUpperCase(),
+                        style: GoogleFonts.cinzel(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 1.2,
+                          color: isActive
+                              ? const Color(0xFF7A5008)
+                              : const Color(0xFF64461A).withOpacity(0.45),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BarItem {
+  final IconData icon;
+  final String label;
+  const _BarItem({required this.icon, required this.label});
+}

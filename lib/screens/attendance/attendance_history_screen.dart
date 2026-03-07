@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/attendance_provider.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/error_retry.dart';
+import '../../app/sacred_theme.dart';
 
 class AttendanceHistoryScreen extends ConsumerStatefulWidget {
   const AttendanceHistoryScreen({super.key});
@@ -51,7 +52,7 @@ class _AttendanceHistoryScreenState extends ConsumerState<AttendanceHistoryScree
           )
         ],
       ),
-      backgroundColor: const Color(0xFFE8F5F9),
+      backgroundColor: SacredColors.ink,
       body: historyAsync.when(
         loading: () => ShimmerLoading.listItem(),
         error: (error, _) => ErrorRetry(

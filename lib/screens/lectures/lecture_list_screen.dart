@@ -109,11 +109,11 @@ class LectureListScreen extends ConsumerWidget {
                               topic,
                               style: GoogleFonts.jost(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w300,
+                                fontWeight: FontWeight.w500,
                                 letterSpacing: 1,
                                 color: isSelected
                                     ? SacredColors.parchmentLight.withOpacity(0.9)
-                                    : SacredColors.parchment.withOpacity(0.4),
+                                    : SacredColors.parchment.withOpacity(0.65),
                               ),
                             ),
                           ),

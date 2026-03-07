@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/gita_provider.dart';
+import '../../app/sacred_theme.dart';
 
 final gitaSearchQueryProvider = StateProvider<String>((ref) => '');
 
@@ -14,7 +15,7 @@ class GitaSearchScreen extends ConsumerWidget {
     final searchResults = ref.watch(gitaSearchProvider(query));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5F9),
+      backgroundColor: SacredColors.ink,
       appBar: AppBar(
         title: TextField(
           autofocus: true,

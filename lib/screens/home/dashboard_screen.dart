@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,7 +30,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         : '?';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080604),
+      backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
           child: Column(
@@ -119,15 +118,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               // ── Book fills remaining space ──
               Expanded(
                 child: Center(
-                  child: AncientBookWidget(
-                    width: 220,
-                    height: 300,
-                    onTap: () => context.push('/gita'),
+                  child: RepaintBoundary(
+                    child: AncientBookWidget(
+                      width: 270,
+                      height: 365,
+                      onTap: () => context.push('/gita'),
+                    ),
                   ),
                 ),
               ),
 
-              // ── 3D Glass Bottom Bar ──
+              // ── Pill Bottom Bar ──
               _GlassBottomBar(
                 currentIndex: _navIndex,
                 onTap: (index) {
@@ -149,7 +150,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  3D Glassmorphism Bottom Bar
+//  Warm Parchment Pill Bottom Bar
 // ═══════════════════════════════════════════════════════════════
 
 class _GlassBottomBar extends StatelessWidget {
@@ -159,132 +160,136 @@ class _GlassBottomBar extends StatelessWidget {
   const _GlassBottomBar({required this.currentIndex, required this.onTap});
 
   static const _items = [
-    _BarItem(icon: Icons.radio_button_checked, label: 'Japa'),
-    _BarItem(icon: Icons.play_circle_outline_rounded, label: 'Videos'),
-    _BarItem(icon: Icons.headphones_rounded, label: 'Audios'),
-    _BarItem(icon: Icons.assignment_rounded, label: 'Tasks'),
+    _BarItem(icon: Icons.radio_button_checked_rounded, label: 'Japa'),
+    _BarItem(icon: Icons.play_circle_outline_rounded, label: 'Video'),
+    _BarItem(icon: Icons.headphones_rounded, label: 'Audio'),
+    _BarItem(icon: Icons.assignment_rounded, label: 'Assignment'),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: Stack(
-            children: [
-              // 3D top highlight strip
-              Positioned(
-                top: 0, left: 0, right: 0,
-                child: Container(
-                  height: 1,
-                  decoration: BoxDecoration(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment(-0.7, -1),
+            end: Alignment(0.7, 1),
+            colors: [Color(0xD9F0E4C3), Color(0xE6DCD5A5)],
+          ),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: const Color(0x80B48C28), width: 1.5),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.22), blurRadius: 28, offset: const Offset(0, 8)),
+            BoxShadow(color: const Color(0xFFD4AF37).withOpacity(0.18), blurRadius: 10, spreadRadius: 1),
+            const BoxShadow(color: Color(0x55FFE678), blurRadius: 1, offset: Offset(0, -1)),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(_items.length * 2 - 1, (idx) {
+              if (idx.isOdd) {
+                // Vertical gold divider
+                return Container(
+                  width: 1,
+                  height: 26,
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.white.withOpacity(0.18),
+                        Color(0x408B6914),
                         Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-              // Multi-layer 3D glass
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0x20FFFFFF),
-                  Color(0x0AFFFFFF),
-                  Color(0x06FFFFFF),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.12), width: 0.6),
-              boxShadow: [
-                // Outer glow
-                BoxShadow(
-                  color: SacredColors.parchment.withOpacity(0.04),
-                  blurRadius: 30,
-                  spreadRadius: 2,
-                ),
-                // Bottom depth shadow
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-                // Inner top highlight
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.04),
-                  blurRadius: 1,
-                  spreadRadius: -1,
-                  offset: const Offset(0, -1),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(_items.length, (i) {
-                final item = _items[i];
-                final isActive = i == currentIndex;
-                return GestureDetector(
-                  onTap: () => onTap(i),
-                  behavior: HitTestBehavior.opaque,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: isActive
-                        ? BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                SacredColors.parchment.withOpacity(0.18),
-                                SacredColors.parchment.withOpacity(0.06),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: SacredColors.parchment.withOpacity(0.25)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: SacredColors.parchment.withOpacity(0.08),
-                                blurRadius: 12,
-                              ),
-                            ],
-                          )
-                        : null,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          item.icon,
-                          size: 20,
-                          color: SacredColors.parchment.withOpacity(isActive ? 0.95 : 0.35),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.label.toUpperCase(),
-                          style: SacredTextStyles.sectionLabel(fontSize: 7).copyWith(
-                            color: SacredColors.parchment.withOpacity(isActive ? 0.85 : 0.3),
-                            letterSpacing: 1.8,
-                          ),
-                        ),
                       ],
                     ),
                   ),
                 );
-              }),
-            ),
+              }
+              final i = idx ~/ 2;
+              final item = _items[i];
+              final isActive = i == currentIndex;
+              return GestureDetector(
+                onTap: () => onTap(i),
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: const Cubic(0.34, 1.56, 0.64, 1),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: isActive
+                      ? BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0x40D4AF37), Color(0x26B48C1E)],
+                          ),
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: const Color(0x66B48C28), width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFA07814).withOpacity(0.22),
+                              blurRadius: 12,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        )
+                      : null,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            item.icon,
+                            size: 19,
+                            color: isActive
+                                ? const Color(0xFF8B5E0A)
+                                : const Color(0xFF64461A).withOpacity(0.42),
+                          ),
+                          if (isActive)
+                            Positioned(
+                              bottom: -5,
+                              child: Container(
+                                width: 3,
+                                height: 3,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFD4AF37), Color(0xFFF0C040)],
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFD4AF37).withOpacity(0.8),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        item.label.toUpperCase(),
+                        style: GoogleFonts.cinzel(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 1.2,
+                          color: isActive
+                              ? const Color(0xFF7A5008)
+                              : const Color(0xFF64461A).withOpacity(0.45),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
           ),
-            ], // Stack children
-          ), // Stack
         ),
       ),
     );

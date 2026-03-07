@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../providers/japa_provider.dart';
 import '../../app/sacred_theme.dart';
 import '../../widgets/sacred_widgets.dart';
@@ -26,7 +27,14 @@ class JapaCounterScreen extends ConsumerWidget {
       body: SacredBackground(
         child: japaAsync.when(
           loading: () => const Center(child: CircularProgressIndicator(color: SacredColors.parchment)),
-          error: (err, stack) => Center(child: Text('Error: $err', style: TextStyle(color: SacredColors.parchment.withOpacity(0.6)))),
+          error: (err, stack) => Center(
+            child: Text(
+              err.toString().contains('permission-denied')
+                  ? 'Your account is pending approval.'
+                  : 'Could not load Japa counter. Please restart.',
+              style: TextStyle(color: SacredColors.parchment.withOpacity(0.6)),
+            ),
+          ),
           data: (log) {
             if (log == null) return Center(child: Text('Could not load Japa Log', style: SacredTextStyles.infoValue()));
 
@@ -48,6 +56,13 @@ class JapaCounterScreen extends ConsumerWidget {
                 }
                 await ref.read(japaServiceProvider).recordBead(log.date);
                 ref.invalidate(todayJapaLogProvider);
+                ref.invalidate(weekHistoryProvider);
+                ref.invalidate(monthHistoryProvider);
+                // Sync to Firestore
+                final user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  ref.read(japaServiceProvider).syncToFirestore(user.uid);
+                }
               },
               child: SafeArea(
                 child: Column(
@@ -79,8 +94,8 @@ class JapaCounterScreen extends ConsumerWidget {
                       '${log.totalMalas}',
                       style: GoogleFonts.cormorantSc(
                         fontSize: 96,
-                        fontWeight: FontWeight.w300,
-                        color: SacredColors.parchment.withOpacity(0.85),
+                        fontWeight: FontWeight.w400,
+                        color: SacredColors.parchment.withOpacity(0.90),
                         letterSpacing: 4,
                       ),
                     ),
@@ -88,7 +103,7 @@ class JapaCounterScreen extends ConsumerWidget {
                       'OF $_totalMalaTarget MALAS',
                       style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(
                         letterSpacing: 6,
-                        color: SacredColors.parchment.withOpacity(0.25),
+                        color: SacredColors.parchment.withOpacity(0.62),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -98,7 +113,7 @@ class JapaCounterScreen extends ConsumerWidget {
                       style: GoogleFonts.cormorantGaramond(
                         fontSize: 14,
                         fontStyle: FontStyle.italic,
-                        color: SacredColors.parchment.withOpacity(0.35),
+                        color: SacredColors.parchment.withOpacity(0.70),
                       ),
                     ),
 
@@ -256,8 +271,8 @@ class _MalaBeadBar extends StatelessWidget {
                     '${i + 1}',
                     style: GoogleFonts.jost(
                       fontSize: 9,
-                      fontWeight: FontWeight.w300,
-                      color: SacredColors.parchment.withOpacity(0.15),
+                      fontWeight: FontWeight.w500,
+                      color: SacredColors.parchment.withOpacity(0.55),
                     ),
                   ),
                 ),

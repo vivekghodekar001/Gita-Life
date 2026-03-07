@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../providers/assignment_provider.dart';
 import '../../models/assignment.dart';
+import '../../app/sacred_theme.dart';
 
 class ManageAssignmentsScreen extends ConsumerWidget {
   const ManageAssignmentsScreen({super.key});
@@ -16,10 +17,10 @@ class ManageAssignmentsScreen extends ConsumerWidget {
         title: const Text('Manage Assignments'),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFE8F5F9),
+      backgroundColor: SacredColors.ink,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateDialog(context, ref),
-        backgroundColor: const Color(0xFF1565C0),
+        backgroundColor: const Color(0xFF8B4513),
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('New Assignment', style: TextStyle(color: Colors.white)),
       ),

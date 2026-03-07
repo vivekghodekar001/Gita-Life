@@ -39,7 +39,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     if (!mounted) return;
 
     final prefs = await SharedPreferences.getInstance();
-    final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+    // Reset flag so the new onboarding screens are always shown for preview
+    await prefs.setBool('onboarding_complete', false);
+    final onboardingComplete = false;
 
     if (mounted) {
       if (onboardingComplete) {
@@ -63,14 +65,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          color: SacredColors.ink,
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 1.2,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              SacredColors.ember.withOpacity(0.08),
-              SacredColors.ink,
+              Color(0xFFEDE3CC),
+              Color(0xFFE0D0B0),
+              Color(0xFFD4C49A),
             ],
           ),
         ),
@@ -86,9 +88,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     width: 96,
                     height: 96,
                     decoration: BoxDecoration(
-                      color: SacredColors.parchment.withOpacity(0.04),
+                      color: const Color(0xFF8B6914).withOpacity(0.08),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: SacredColors.parchment.withOpacity(0.1), width: 1),
+                      border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.2), width: 1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF8B6914).withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(23),
@@ -98,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.auto_stories,
                           size: 44,
-                          color: SacredColors.parchment.withOpacity(0.4),
+                          color: const Color(0xFF4A2C0A).withOpacity(0.5),
                         ),
                       ),
                     ),
@@ -109,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     style: GoogleFonts.cormorantSc(
                       fontSize: 38,
                       fontWeight: FontWeight.w600,
-                      color: SacredColors.parchment.withOpacity(0.8),
+                      color: const Color(0xFF4A2C0A).withOpacity(0.85),
                       letterSpacing: 4,
                     ),
                   ),
@@ -118,8 +127,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     'Your Spiritual Companion',
                     style: GoogleFonts.jost(
                       fontSize: 13,
-                      fontWeight: FontWeight.w300,
-                      color: SacredColors.parchment.withOpacity(0.3),
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF4A2C0A).withOpacity(0.65),
                       letterSpacing: 2,
                     ),
                   ),
@@ -128,9 +137,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
-                      strokeWidth: 1,
+                      strokeWidth: 1.5,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        SacredColors.parchment.withOpacity(0.2),
+                        const Color(0xFF8B4513).withOpacity(0.5),
                       ),
                     ),
                   ),

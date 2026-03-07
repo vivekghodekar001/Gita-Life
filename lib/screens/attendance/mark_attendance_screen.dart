@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/attendance_provider.dart';
 import '../../models/attendance_session.dart';
+import '../../app/sacred_theme.dart';
 
 class MarkAttendanceScreen extends ConsumerStatefulWidget {
   final String sessionId;
@@ -123,7 +124,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
            IconButton(icon: const Icon(Icons.lock), onPressed: _submitSession),
         ],
       ),
-      backgroundColor: const Color(0xFFE8F5F9),
+      backgroundColor: SacredColors.ink,
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator()) 
         : Column(

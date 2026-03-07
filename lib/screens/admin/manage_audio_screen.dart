@@ -1,6 +1,9 @@
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:html/parser.dart' as html_parser;
 import '../../services/audio_service.dart';
 import '../../models/audio_track.dart';
 import '../../app/sacred_theme.dart';
@@ -46,7 +49,7 @@ class ManageAudioScreen extends ConsumerWidget {
                 child: audioAsync.when(
                   data: (tracks) {
                     if (tracks.isEmpty) {
-                      return Center(child: Text('No audio tracks found.', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.3))));
+                      return Center(child: Text('No audio tracks found.', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.60))));
                     }
                     return ListView.builder(
                       padding: const EdgeInsets.all(16),
@@ -98,7 +101,7 @@ class ManageAudioScreen extends ConsumerWidget {
                 Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.cormorantGaramond(fontSize: 15, fontWeight: FontWeight.w600, color: SacredColors.parchmentLight.withOpacity(0.7))),
                 const SizedBox(height: 2),
-                Text(track.artist, style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.35))),
+                Text(track.artist, style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.65))),
                 const SizedBox(height: 4),
                 Row(children: [
                   _buildTag(track.category.toUpperCase()),
@@ -163,7 +166,7 @@ class ManageAudioScreen extends ConsumerWidget {
         backgroundColor: SacredColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text('Delete Track', style: GoogleFonts.cormorantGaramond(color: SacredColors.parchmentLight.withOpacity(0.8))),
-        content: Text('Delete "${track.title}"?', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.5))),
+        content: Text('Delete "${track.title}"?', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.75))),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Cancel', style: TextStyle(color: SacredColors.parchment.withOpacity(0.4)))),
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Delete', style: TextStyle(color: SacredColors.ember.withOpacity(0.7)))),
@@ -185,156 +188,464 @@ class ManageAudioScreen extends ConsumerWidget {
   }
 }
 
+// ── Internal data class for crawled tracks ───────────────────────
+class _CrawledTrack {
+  final String title;
+  final String artist;
+  final String folder;
+  final String streamUrl;
+  const _CrawledTrack({required this.title, required this.artist, required this.folder, required this.streamUrl});
+}
+
+// ── Bulk Import Dialog ────────────────────────────────────────────
 class _BulkImportDialog extends ConsumerStatefulWidget {
   @override
   ConsumerState<_BulkImportDialog> createState() => _BulkImportDialogState();
 }
 
 class _BulkImportDialogState extends ConsumerState<_BulkImportDialog> {
+  static const String _baseUrl = 'https://audio.iskcondesiretree.com';
+
   final _urlController = TextEditingController();
-  bool _isLoading = false;
+  bool _isCrawling = false;
+  bool _isImporting = false;
+  String _status = '';
+  List<_CrawledTrack> _crawledTracks = [];
+  String _selectedCategory = 'kirtan';
 
-  Future<void> _importBulk() async {
-    final input = _urlController.text.trim();
-    if (input.isEmpty) return;
+  final List<String> _categories = ['bhajan', 'kirtan', 'lecture_audio', 'meditation', 'other'];
+  bool _isAddingCategory = false;
+  final _newCatController = TextEditingController();
 
-    setState(() => _isLoading = true);
+  bool get _isIskconFolderUrl {
+    final t = _urlController.text.trim();
+    return t.contains('iskcondesiretree.com') && (t.contains('q=f') || t.contains('q=d'));
+  }
+
+  String _getFolderLabel(String url) {
     try {
-      int count = 0;
-      final audioService = ref.read(audioServiceProvider);
-      
-      // Split input into individual URL lines
-      final lines = input.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
-      
-      if (lines.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No valid URLs found. Please paste one URL per line.')),
-          );
-        }
-        return;
-      }
+      final f = Uri.parse(url).queryParameters['f'] ?? '';
+      final parts = Uri.decodeFull(f).split('/').where((s) => s.isNotEmpty).toList();
+      return parts.isNotEmpty ? parts.last.replaceAll('_', ' ') : url;
+    } catch (_) {
+      return url;
+    }
+  }
 
-      final invalidLines = lines.where((l) => !l.startsWith('http')).toList();
-      if (invalidLines.isNotEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Invalid URL(s) found. Each line must start with https://')),
-          );
-        }
-        return;
-      }
+  String _buildAbsoluteUrl(String href) {
+    if (href.startsWith('http')) return href;
+    if (href.startsWith('/')) return '$_baseUrl$href';
+    return '$_baseUrl/$href';
+  }
 
-      // Direct URL list mode: each line is a direct audio URL
-      for (final url in lines) {
-        final pathSegment = url.split('/').last.split('?').first;
-        final fileName = Uri.decodeFull(pathSegment);
-        var title = fileName
-            .replaceAll(RegExp(r'\.mp3$', caseSensitive: false), '')
-            .replaceAll('_', ' ');
-        
-        // Automatic Title Cleaning
-        final prefixes = [
-          'LNS Bhajans - ',
-          'LNS - ',
-          'Lecture - ',
-          'Radhe Radhe - ',
-          'HH Lokanath Swami - ',
-          '16 Hours Kirtan-',
-          'Hare Krishna Kirtan-'
-        ];
-        for (var p in prefixes) {
-          if (title.toLowerCase().startsWith(p.toLowerCase())) {
-            title = title.substring(p.length);
+  String _toStreamUrl(String href) {
+    // ISKCON uses q=d for download — swap to q=s for streaming
+    if (href.contains('q=d&')) return href.replaceFirst('q=d', 'q=s');
+    return href;
+  }
+
+  Future<void> _startCrawl() async {
+    final startUrl = _urlController.text.trim();
+    if (startUrl.isEmpty) return;
+
+    setState(() {
+      _isCrawling = true;
+      _crawledTracks = [];
+      _status = 'Starting crawl…';
+    });
+
+    try {
+      final tracks = await _crawlRecursive(startUrl);
+      if (mounted) {
+        setState(() {
+          _crawledTracks = tracks;
+          _status = 'Done — found ${tracks.length} tracks.';
+          _isCrawling = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _status = 'Crawl failed: $e';
+          _isCrawling = false;
+        });
+      }
+    }
+  }
+
+  Future<List<_CrawledTrack>> _crawlRecursive(String startUrl) async {
+    final visited = <String>{};
+    final queue = Queue<String>();
+    final tracks = <_CrawledTrack>[];
+    final client = http.Client();
+
+    queue.add(startUrl);
+    visited.add(startUrl);
+
+    try {
+      while (queue.isNotEmpty) {
+        final url = queue.removeFirst();
+
+        if (mounted) {
+          setState(() => _status = 'Scanning: ${_getFolderLabel(url)}…  Found ${tracks.length} tracks');
+        }
+
+        try {
+          final response = await client.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
+          if (response.statusCode != 200) continue;
+
+          final document = html_parser.parse(response.body);
+          final links = document.querySelectorAll('a[href]');
+
+          for (final link in links) {
+            final rawHref = link.attributes['href'] ?? '';
+            if (rawHref.isEmpty || rawHref.startsWith('#') || rawHref.startsWith('mailto:')) continue;
+
+            final absHref = _buildAbsoluteUrl(rawHref);
+
+            // ── Sub-folder ──
+            if (rawHref.contains('q=f&') && !visited.contains(absHref)) {
+              visited.add(absHref);
+              queue.add(absHref);
+              continue;
+            }
+
+            // ── Audio file ──
+            final isDownloadLink = rawHref.contains('q=d&');
+            final isDirectAudio = rawHref.toLowerCase().endsWith('.mp3') || rawHref.toLowerCase().endsWith('.ogg');
+
+            if (isDownloadLink || isDirectAudio) {
+              final streamUrl = _buildAbsoluteUrl(_toStreamUrl(rawHref));
+              if (tracks.any((t) => t.streamUrl == streamUrl)) continue;
+
+              // Extract file path for metadata
+              String filePath;
+              if (isDownloadLink) {
+                filePath = Uri.parse(rawHref).queryParameters['f'] ?? rawHref;
+              } else {
+                filePath = rawHref;
+              }
+
+              final segments = Uri.decodeFull(filePath).split('/').where((s) => s.isNotEmpty).toList();
+              final filename = segments.isNotEmpty ? segments.last : filePath;
+              final artist = segments.length >= 2 ? segments[segments.length - 2].replaceAll('_', ' ').trim() : 'ISKCON';
+              final folder = artist;
+              final title = filename
+                  .replaceAll(RegExp(r'\.(mp3|ogg)$', caseSensitive: false), '')
+                  .replaceAll('_', ' ')
+                  .trim();
+
+              tracks.add(_CrawledTrack(
+                title: title.isEmpty ? 'Audio Track' : title,
+                artist: artist,
+                folder: folder,
+                streamUrl: streamUrl,
+              ));
+            }
           }
+        } catch (e) {
+          // Log and skip failing folders
+          debugPrint('[Crawler] Skip $url — $e');
         }
-        title = title.trim();
-        if (title.isEmpty) title = 'Audio Track';
-        
+
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+    } finally {
+      client.close();
+    }
+
+    return tracks;
+  }
+
+  Future<void> _importTracks() async {
+    if (_crawledTracks.isEmpty) return;
+    setState(() => _isImporting = true);
+
+    try {
+      final audioService = ref.read(audioServiceProvider);
+      int count = 0;
+
+      for (final t in _crawledTracks) {
+        if (mounted) {
+          setState(() => _status = 'Saving ${count + 1} / ${_crawledTracks.length}…');
+        }
         final track = AudioTrackModel(
-          trackId: DateTime.now().millisecondsSinceEpoch.toString() + count.toString(),
-          title: title,
-          artist: 'Lokanath Swami',
-          category: 'kirtan',
+          trackId: '${DateTime.now().millisecondsSinceEpoch}$count',
+          title: t.title,
+          artist: t.artist,
+          category: _selectedCategory,
           sourceType: 'direct_url',
-          streamUrl: url,
+          streamUrl: t.streamUrl,
           durationSeconds: 0,
           fileSizeBytes: 0,
-          coverImageUrl: 'https://iskcondesiretree.com/wp-content/uploads/2018/06/Lokanath-Swami-Maharaja.jpg',
+          coverImageUrl: null,
           isActive: true,
           playCount: 0,
           addedBy: 'admin',
           createdAt: DateTime.now().toIso8601String(),
         );
-        
         await audioService.addAudioTrack(track);
         count++;
-        // Small delay to ensure unique trackIds
-        await Future.delayed(const Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 20));
       }
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Bulk Import Complete: Added $count tracks')),
-        );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+      if (mounted) setState(() { _status = 'Import error: $e'; _isImporting = false; });
+    }
+  }
+
+  Future<void> _importDirectUrls() async {
+    final lines = _urlController.text.trim().split('\n').map((l) => l.trim()).where((l) => l.startsWith('http')).toList();
+    if (lines.isEmpty) return;
+    setState(() => _isImporting = true);
+
+    try {
+      final audioService = ref.read(audioServiceProvider);
+      int count = 0;
+      for (final url in lines) {
+        final filename = Uri.decodeFull(url.split('/').last.split('?').first);
+        final title = filename.replaceAll(RegExp(r'\.(mp3|ogg)$', caseSensitive: false), '').replaceAll('_', ' ').trim();
+        final track = AudioTrackModel(
+          trackId: '${DateTime.now().millisecondsSinceEpoch}$count',
+          title: title.isEmpty ? 'Audio Track' : title,
+          artist: 'Unknown',
+          category: _selectedCategory,
+          sourceType: 'direct_url',
+          streamUrl: url,
+          durationSeconds: 0, fileSizeBytes: 0,
+          coverImageUrl: null, isActive: true, playCount: 0,
+          addedBy: 'admin', createdAt: DateTime.now().toIso8601String(),
         );
+        await audioService.addAudioTrack(track);
+        count++;
+        await Future.delayed(const Duration(milliseconds: 20));
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) setState(() { _status = 'Error: $e'; _isImporting = false; });
     }
   }
 
   @override
+  void dispose() {
+    _urlController.dispose();
+    _newCatController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isBusy = _isCrawling || _isImporting;
+    final hasCrawledResults = _crawledTracks.isNotEmpty;
+    final isIskcon = _isIskconFolderUrl;
+
     return AlertDialog(
       backgroundColor: SacredColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      title: Text('Bulk Audio Import', style: GoogleFonts.cormorantGaramond(fontSize: 20, fontWeight: FontWeight.w600, color: SacredColors.parchmentLight.withOpacity(0.8))),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('Paste audio URLs (one per line). Titles will be auto-generated from file names.',
-              style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.35))),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _urlController,
-            maxLines: 5,
-            style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.7)),
-            decoration: InputDecoration(
-              hintText: 'https://example.com/audio1.mp3\nhttps://example.com/audio2.mp3',
-              hintStyle: GoogleFonts.jost(fontSize: 12, color: SacredColors.parchment.withOpacity(0.2)),
-              filled: true,
-              fillColor: SacredColors.parchment.withOpacity(0.04),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.08))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.2))),
+      title: Text('Bulk Audio Import', style: GoogleFonts.cormorantGaramond(fontSize: 20, fontWeight: FontWeight.w600, color: SacredColors.parchmentLight.withOpacity(0.85))),
+      content: SizedBox(
+        width: 480,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isIskcon
+                  ? 'ISKCON Desire Tree folder URL detected. Tap "Scan Folders" to recursively find all audio files.'
+                  : 'Paste one audio URL per line for direct import, or paste an ISKCON Desire Tree folder URL for recursive crawl.',
+              style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.65)),
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+            // URL input
+            TextField(
+              controller: _urlController,
+              maxLines: 3,
+              enabled: !isBusy,
+              style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w500, color: SacredColors.parchmentLight.withOpacity(0.85)),
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                hintText: 'https://audio.iskcondesiretree.com/index.php?q=f&f=...\nor paste direct MP3 URLs (one per line)',
+                hintStyle: GoogleFonts.jost(fontSize: 11, color: SacredColors.parchment.withOpacity(0.35)),
+                filled: true,
+                fillColor: SacredColors.parchment.withOpacity(0.06),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.20))),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.20))),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.45))),
+              ),
+            ),
+            const SizedBox(height: 14),
+            // Category picker + Add new
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _categories.contains(_selectedCategory) ? _selectedCategory : _categories.first,
+                    dropdownColor: SacredColors.surface,
+                    style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w500, color: SacredColors.parchmentLight.withOpacity(0.85)),
+                    decoration: InputDecoration(
+                      labelText: 'Category',
+                      labelStyle: GoogleFonts.jost(fontSize: 11, color: SacredColors.parchment.withOpacity(0.55)),
+                      filled: true,
+                      fillColor: SacredColors.parchment.withOpacity(0.06),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.20))),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.20))),
+                    ),
+                    items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.toUpperCase()))).toList(),
+                    onChanged: isBusy ? null : (val) => setState(() => _selectedCategory = val!),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: isBusy ? null : () => setState(() => _isAddingCategory = !_isAddingCategory),
+                  child: Container(
+                    width: 40, height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: SacredColors.parchment.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: SacredColors.parchment.withOpacity(0.20)),
+                    ),
+                    child: Icon(_isAddingCategory ? Icons.close : Icons.add, size: 18, color: SacredColors.parchment.withOpacity(0.5)),
+                  ),
+                ),
+              ],
+            ),
+            if (_isAddingCategory) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _newCatController,
+                      style: GoogleFonts.jost(fontSize: 13, color: SacredColors.parchmentLight.withOpacity(0.85)),
+                      decoration: InputDecoration(
+                        hintText: 'New category name',
+                        hintStyle: GoogleFonts.jost(fontSize: 11, color: SacredColors.parchment.withOpacity(0.35)),
+                        filled: true,
+                        fillColor: SacredColors.parchment.withOpacity(0.06),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.20))),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: SacredColors.parchment.withOpacity(0.20))),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      final cat = _newCatController.text.trim().toLowerCase().replaceAll(' ', '_');
+                      if (cat.isNotEmpty && !_categories.contains(cat)) {
+                        setState(() {
+                          _categories.add(cat);
+                          _selectedCategory = cat;
+                          _isAddingCategory = false;
+                          _newCatController.clear();
+                        });
+                      }
+                    },
+                    child: Container(
+                      width: 40, height: 48,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFF8B4513), Color(0xFFC8722A)]),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.check, size: 18, color: Colors.white.withOpacity(0.9)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            // Progress / status
+            if (_status.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: SacredColors.parchment.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: SacredColors.parchment.withOpacity(0.15)),
+                ),
+                child: Row(
+                  children: [
+                    if (isBusy) ...[
+                      SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 1.5, color: SacredColors.parchment.withOpacity(0.5))),
+                      const SizedBox(width: 10),
+                    ],
+                    Expanded(
+                      child: Text(_status, style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.75))),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            if (hasCrawledResults) ...[
+              const SizedBox(height: 8),
+              Text(
+                '${_crawledTracks.length} tracks ready to import',
+                style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w600, color: SacredColors.gold.withOpacity(0.85)),
+              ),
+            ],
+          ],
+        ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: SacredColors.parchment.withOpacity(0.4)))),
-        GestureDetector(
-          onTap: _isLoading ? null : _importBulk,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: SacredColors.parchment.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: SacredColors.parchment.withOpacity(0.15)),
-            ),
-            child: _isLoading
-                ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 1.5, color: SacredColors.parchment.withOpacity(0.4)))
-                : Text('IMPORT', style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 1, color: SacredColors.parchmentLight.withOpacity(0.6))),
-          ),
+        TextButton(
+          onPressed: isBusy ? null : () => Navigator.pop(context),
+          child: Text('Cancel', style: TextStyle(color: SacredColors.parchment.withOpacity(0.45))),
         ),
+        if (isIskcon && !hasCrawledResults)
+          _actionButton(
+            label: 'SCAN FOLDERS',
+            icon: Icons.folder_open_rounded,
+            loading: _isCrawling,
+            onTap: isBusy ? null : _startCrawl,
+          ),
+        if (hasCrawledResults)
+          _actionButton(
+            label: 'IMPORT ${_crawledTracks.length}',
+            icon: Icons.download_done_rounded,
+            loading: _isImporting,
+            onTap: isBusy ? null : _importTracks,
+          ),
+        if (!isIskcon && !hasCrawledResults)
+          _actionButton(
+            label: 'IMPORT',
+            icon: Icons.add_rounded,
+            loading: _isImporting,
+            onTap: isBusy ? null : _importDirectUrls,
+          ),
       ],
+    );
+  }
+
+  Widget _actionButton({required String label, required IconData icon, required bool loading, required VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: onTap != null
+              ? const LinearGradient(colors: [Color(0xFF8B4513), Color(0xFFC8722A)])
+              : null,
+          color: onTap == null ? SacredColors.parchment.withOpacity(0.08) : null,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: loading
+            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 1.5, color: Colors.white70))
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 14, color: onTap != null ? Colors.white : SacredColors.parchment.withOpacity(0.35)),
+                  const SizedBox(width: 6),
+                  Text(label, style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: onTap != null ? Colors.white : SacredColors.parchment.withOpacity(0.35))),
+                ],
+              ),
+      ),
     );
   }
 }
@@ -354,14 +665,20 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
   String _category = 'kirtan';
   bool _isActive = true;
   bool _isLoading = false;
+  bool _isAddingCategory = false;
+  final _newCatController = TextEditingController();
 
-  final List<String> _categories = ['bhajan', 'kirtan', 'lecture_audio', 'other'];
+  final List<String> _categories = ['bhajan', 'kirtan', 'lecture_audio', 'meditation', 'other'];
+  late TextEditingController _titleController;
+  late TextEditingController _artistController;
 
   @override
   void initState() {
     super.initState();
     _isActive = widget.track?.isActive ?? true;
     _category = widget.track?.category ?? 'kirtan';
+    _titleController = TextEditingController(text: widget.track?.title ?? '');
+    _artistController = TextEditingController(text: widget.track?.artist ?? '');
 
     String initialUrl = '';
     if (widget.track != null) {
@@ -373,6 +690,9 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
   @override
   void dispose() {
     _urlController.dispose();
+    _titleController.dispose();
+    _artistController.dispose();
+    _newCatController.dispose();
     super.dispose();
   }
 
@@ -389,9 +709,13 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
       String? streamUrl;
       String? driveId;
       String? storageRef;
-      String title = isEditing ? widget.track!.title : 'Loading...';
+      String title = _titleController.text.trim().isNotEmpty
+          ? _titleController.text.trim()
+          : (isEditing ? widget.track!.title : 'Loading...');
       String? coverUrl = isEditing ? widget.track!.coverImageUrl : null;
-      String artist = isEditing ? widget.track!.artist : 'Unknown';
+      String artist = _artistController.text.trim().isNotEmpty
+          ? _artistController.text.trim()
+          : (isEditing ? widget.track!.artist : 'Unknown');
 
       if (url.contains('youtube.com') || url.contains('youtu.be')) {
         sourceType = 'youtube';
@@ -519,19 +843,83 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text('Paste a YouTube, Google Drive, or MP3 link. Metadata will be fetched automatically.',
+                Text('Paste a YouTube, Google Drive, or MP3 link. Title/artist auto-detected but can be overridden.',
                     style: GoogleFonts.jost(fontSize: 12, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.35))),
                 const SizedBox(height: 16),
                 _buildSacredField(_urlController, 'Audio Link / URL', Icons.link, required: true),
+                const SizedBox(height: 12),
+                _buildSacredField(_titleController, 'Title (optional override)', Icons.title_rounded),
+                const SizedBox(height: 12),
+                _buildSacredField(_artistController, 'Artist (optional override)', Icons.person_outline_rounded),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: _category,
-                  dropdownColor: SacredColors.surface,
-                  style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.7)),
-                  decoration: _sacredInputDecoration('Category', Icons.category),
-                  items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.toUpperCase()))).toList(),
-                  onChanged: (val) => setState(() => _category = val!),
+                // Category row with + new category button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _categories.contains(_category) ? _category : _categories.first,
+                        dropdownColor: SacredColors.surface,
+                        style: GoogleFonts.jost(fontSize: 14, fontWeight: FontWeight.w300, color: SacredColors.parchmentLight.withOpacity(0.7)),
+                        decoration: _sacredInputDecoration('Category', Icons.category),
+                        items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.toUpperCase()))).toList(),
+                        onChanged: (val) => setState(() => _category = val!),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => setState(() => _isAddingCategory = !_isAddingCategory),
+                      child: Container(
+                        width: 40, height: 48,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: SacredColors.parchment.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: SacredColors.parchment.withOpacity(0.15)),
+                        ),
+                        child: Icon(_isAddingCategory ? Icons.close : Icons.add,
+                            size: 18, color: SacredColors.parchment.withOpacity(0.4)),
+                      ),
+                    ),
+                  ],
                 ),
+                if (_isAddingCategory) ...[  
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _newCatController,
+                          style: GoogleFonts.jost(fontSize: 13, color: SacredColors.parchmentLight.withOpacity(0.8)),
+                          decoration: _sacredInputDecoration('New category name', Icons.label_outline_rounded),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          final cat = _newCatController.text.trim().toLowerCase().replaceAll(' ', '_');
+                          if (cat.isNotEmpty && !_categories.contains(cat)) {
+                            setState(() {
+                              _categories.add(cat);
+                              _category = cat;
+                              _isAddingCategory = false;
+                              _newCatController.clear();
+                            });
+                          }
+                        },
+                        child: Container(
+                          width: 40, height: 48,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Color(0xFF8B4513), Color(0xFFC8722A)]),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(Icons.check, size: 18, color: Colors.white.withOpacity(0.9)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 16),
                 SwitchListTile(
                   title: Text('Active', style: GoogleFonts.jost(fontSize: 13, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.5))),

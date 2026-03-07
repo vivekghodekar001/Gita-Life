@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -154,7 +153,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final userAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080604),
+      backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: userAsync.when(
           data: (user) {
@@ -530,7 +529,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             assignmentId: assignments[i].assignmentId,
             studentUid: uid,
           ))).valueOrNull;
-          if (sub != null && (sub.status == 'submitted' || sub.status == 'completed')) {
+          // Only count admin-approved submissions (status == 'completed')
+          if (sub != null && sub.status == 'completed') {
             completedAssignments++;
           }
         }
@@ -696,7 +696,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             top: -20,
             left: 0,
             right: 0,
-            child: Center(child: _MandalaWatermark()),
+            child: Center(child: RepaintBoundary(child: _MandalaWatermark())),
           ),
           Column(
             children: [
@@ -756,8 +756,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Outer dharma ring (rotating)
-                    _DharmaRing(),
+                    // dharma ring (rotating)
+                    RepaintBoundary(child: _DharmaRing()),
                     // Inner avatar circle
                     Container(
                       width: 66, height: 66,
@@ -782,7 +782,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             Text('ॐ', style: TextStyle(fontSize: 38, color: SacredColors.parchment.withOpacity(0.06))),
                             // Photo or initials
                             if (user.profilePhotoUrl.isNotEmpty)
-                              Image.network(user.profilePhotoUrl, fit: BoxFit.cover, width: 66, height: 66,
+                              Image.network(
+                                user.profilePhotoUrl,
+                                fit: BoxFit.cover,
+                                width: 66,
+                                height: 66,
+                                cacheWidth: 200,
+                                cacheHeight: 200,
                                 loadingBuilder: (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Center(
@@ -791,7 +797,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     ),
                                   );
                                 },
-                                errorBuilder: (_, __, ___) => Text(initials, style: GoogleFonts.cormorantSc(fontSize: 22, color: SacredColors.parchment.withOpacity(0.65), letterSpacing: 3)))
+                                errorBuilder: (_, __, ___) => Text(initials, style: GoogleFonts.cormorantSc(fontSize: 22, color: SacredColors.parchment.withOpacity(0.65), letterSpacing: 3)),
+                              )
                             else
                               Text(initials, style: GoogleFonts.cormorantSc(fontSize: 22, color: SacredColors.parchment.withOpacity(0.65), letterSpacing: 3)),
                             if (_isLoading)

@@ -28,7 +28,7 @@ class VerseDetailScreen extends ConsumerWidget {
     final fontSize = ref.watch(fontSizeProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080604),
+      backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: versesAsync.when(
           loading: () => Center(

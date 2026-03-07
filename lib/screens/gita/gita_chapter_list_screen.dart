@@ -18,7 +18,7 @@ class GitaChapterListScreen extends ConsumerWidget {
     final chaptersAsync = ref.watch(gitaApiChaptersProvider);
     
     return Scaffold(
-      backgroundColor: const Color(0xFF080604),
+      backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
           child: Column(
@@ -34,21 +34,21 @@ class GitaChapterListScreen extends ConsumerWidget {
                         width: 32, height: 32,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0x08FFFFFF),
-                          border: Border.all(color: SacredColors.parchment.withOpacity(0.12)),
+                          color: const Color(0xFF8B6914).withOpacity(0.08),
+                          border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.2)),
                         ),
-                        child: Icon(Icons.arrow_back_ios_new, size: 12, color: SacredColors.parchment.withOpacity(0.5)),
+                        child: Icon(Icons.arrow_back_ios_new, size: 12, color: SacredColors.parchment.withOpacity(0.6)),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text('BHAGAVAD GITA', style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(color: SacredColors.parchment.withOpacity(0.5), letterSpacing: 4)),
+                    Text('BHAGAVAD GITA', style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(color: SacredColors.parchment.withOpacity(0.6), letterSpacing: 4)),
                     const Spacer(),
                     // Language switcher
                     Container(
                       decoration: BoxDecoration(
-                        color: SacredColors.parchment.withOpacity(0.05),
+                        color: const Color(0xFF8B6914).withOpacity(0.08),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: SacredColors.parchment.withOpacity(0.1)),
+                        border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.2)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -77,18 +77,12 @@ class GitaChapterListScreen extends ConsumerWidget {
               Expanded(
                 child: chaptersAsync.when(
                   data: (chapters) {
-                    return GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.85,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       itemCount: chapters.length,
                       itemBuilder: (context, index) {
                         final chapter = chapters[index];
-                        return _ChapterCard(
+                        return _ChapterListTile(
                           chapter: chapter,
                           onTap: () {
                             Navigator.push(
@@ -107,16 +101,10 @@ class GitaChapterListScreen extends ConsumerWidget {
                       },
                     );
                   },
-                  loading: () => GridView.builder(
+                  loading: () => ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.85,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
                     itemCount: 8,
-                    itemBuilder: (context, index) => ShimmerLoading.grid(),
+                    itemBuilder: (context, index) => ShimmerLoading.card(),
                   ),
                   error: (err, stack) => Center(
                     child: ErrorRetry(
@@ -149,16 +137,19 @@ class _LangPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? SacredColors.parchment.withOpacity(0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
+          gradient: isActive
+              ? const LinearGradient(colors: [Color(0xFF8B4513), Color(0xFFC8722A)])
+              : null,
         ),
         child: Text(
           text,
           style: SacredTextStyles.sectionLabel(fontSize: 9).copyWith(
-            color: isActive ? SacredColors.parchment.withOpacity(0.8) : SacredColors.parchment.withOpacity(0.3),
+            color: isActive ? const Color(0xFFF5E8D0) : SacredColors.parchment.withOpacity(0.4),
             letterSpacing: 1.5,
           ),
         ),
@@ -167,11 +158,11 @@ class _LangPill extends StatelessWidget {
   }
 }
 
-class _ChapterCard extends StatelessWidget {
+class _ChapterListTile extends StatelessWidget {
   final Map<String, dynamic> chapter;
   final VoidCallback onTap;
 
-  const _ChapterCard({
+  const _ChapterListTile({
     required this.chapter,
     required this.onTap,
   });
@@ -186,60 +177,97 @@ class _ChapterCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: SacredColors.glassBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: SacredColors.parchment.withOpacity(0.08)),
+          borderRadius: BorderRadius.circular(14),
+          gradient: const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [Color(0xFFF5EDDA), Color(0xFFEDE0C4)],
+          ),
+          border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.18), width: 1),
+          boxShadow: [
+            BoxShadow(color: const Color(0xFF4A2C0A).withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 3)),
+          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                chNum,
-                style: GoogleFonts.cormorantSc(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w500,
-                  color: SacredColors.parchment.withOpacity(0.7),
+        child: Row(
+          children: [
+            // Chapter number circle
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF8B4513), Color(0xFFC8722A)],
                 ),
+                boxShadow: [
+                  BoxShadow(color: const Color(0xFF8B4513).withOpacity(0.25), blurRadius: 6, offset: const Offset(0, 2)),
+                ],
               ),
-              const SizedBox(height: 6),
-              Text(
-                nameEn,
-                textAlign: TextAlign.center,
-                style: SacredTextStyles.infoValue(fontSize: 12),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 3),
-              Text(
-                nameSa,
-                textAlign: TextAlign.center,
-                style: SacredTextStyles.greeting(fontSize: 11).copyWith(
-                  color: SacredColors.parchment.withOpacity(0.35),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(
-                  color: SacredColors.parchment.withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: SacredColors.parchment.withOpacity(0.1)),
-                ),
+              child: Center(
                 child: Text(
-                  '$verses verses',
-                  style: SacredTextStyles.sectionLabel(fontSize: 7).copyWith(
-                    color: SacredColors.parchment.withOpacity(0.4),
-                    letterSpacing: 1.5,
+                  chNum,
+                  style: GoogleFonts.cormorantSc(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFF5E8D0),
                   ),
                 ),
-              )
-            ],
-          ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            // Chapter details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nameEn,
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF3A2010),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    nameSa,
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      color: const Color(0xFF8B6914).withOpacity(0.6),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Verse count badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B6914).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.2)),
+              ),
+              child: Text(
+                '$verses',
+                style: GoogleFonts.jost(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF8B4513).withOpacity(0.7),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right_rounded, size: 20, color: const Color(0xFF8B6914).withOpacity(0.4)),
+          ],
         ),
       ),
     );

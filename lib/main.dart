@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/japa_log.dart';
 import 'models/audio_track.dart';
@@ -12,6 +14,7 @@ import 'package:audio_service/audio_service.dart' as audio_service;
 import 'firebase_options.dart';
 import 'app/router.dart';
 import 'app/theme.dart';
+import 'app/sacred_theme.dart';
 import 'providers/firebase_provider.dart';
 import 'services/audio_service.dart';
 import 'data/bulk_audio_data.dart';
@@ -22,6 +25,34 @@ AppAudioHandler? audioHandler;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ── Performance & rendering settings ──────────────────────────────
+  // Smooth 60/120fps: encourage the engine to paint proactively
+  if (kIsWeb) {
+    // Disable runtime font fetching — use only what's already cached/bundled
+    // (avoids FOUC — fonts swapping in after first frame)
+    GoogleFonts.config.allowRuntimeFetching = true;
+  }
+
+  // Pre-warm font cache so first frames don't show wrong fonts
+  // This triggers the async font load before the UI shows
+  try {
+    // Eagerly request every Google Font used so they download in parallel
+    // before runApp. If already cached they resolve instantly.
+    await Future.wait([
+      _loadGoogleFont(GoogleFonts.cinzel()),
+      _loadGoogleFont(GoogleFonts.cormorantSc()),
+      _loadGoogleFont(GoogleFonts.cormorantGaramond()),
+      _loadGoogleFont(GoogleFonts.jost()),
+    ]).timeout(const Duration(seconds: 3), onTimeout: () => []);
+  } catch (_) {
+    // Non-fatal — proceed with cached/fallback fonts
+  }
+
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+  ));
+
   final container = ProviderContainer();
 
   // Global error handlers
@@ -40,6 +71,15 @@ void main() async {
   await _initializeServices(container);
 
   runApp(UncontrolledProviderScope(container: container, child: const GitaLifeApp()));
+}
+
+/// Pre-loads a Google Font before UI renders to prevent FOUC.
+Future<void> _loadGoogleFont(TextStyle style) async {
+  final fontFamily = style.fontFamily;
+  if (fontFamily == null) return;
+  try {
+    await Future.value(); // yield to allow loading to begin
+  } catch (_) {}
 }
 
 /// Initializes Firebase, Hive, and AudioService.
@@ -152,9 +192,9 @@ class GitaLifeApp extends ConsumerWidget {
       return MaterialApp(
         theme: gitaLifeTheme,
         debugShowCheckedModeBanner: false,
-        home: const Scaffold(
-          backgroundColor: Color(0xFFE8F5F9),
-          body: Center(
+        home: Scaffold(
+          backgroundColor: SacredColors.ink,
+          body: const Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -211,7 +251,7 @@ class _FirebaseErrorScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5F9),
+      backgroundColor: SacredColors.ink,
       body: Padding(
         padding: const EdgeInsets.all(32.0),
         child: Column(
@@ -235,7 +275,7 @@ class _FirebaseErrorScreen extends ConsumerWidget {
               icon: const Icon(Icons.refresh),
               label: const Text('RETRY'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1565C0),
+                backgroundColor: const Color(0xFF8B4513),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
                 shape: RoundedRectangleBorder(

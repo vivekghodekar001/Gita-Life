@@ -59,7 +59,12 @@ service cloud.firestore {
 
     // Japa Logs (per user)
     match /japa_logs/{userId}/{document=**} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // Collection-group query on 'logs' sub-collection — admin only (for stats)
+    match /{path=**}/logs/{logId} {
+      allow read: if isAdmin();
     }
 
     // Notifications
