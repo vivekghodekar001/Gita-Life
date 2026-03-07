@@ -1,13 +1,11 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/audio_provider.dart';
 import '../../models/audio_track.dart';
@@ -112,13 +110,15 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
       _ytController = YoutubePlayerController.fromVideoId(
         videoId: activeTrack.streamUrl ?? '',
         autoPlay: true,
-        params: YoutubePlayerParams(
+        params: const YoutubePlayerParams(
           showFullscreenButton: false,
           showControls: true,
           mute: false,
-          playsInline: true,
+          playsInline: false,
           enableJavaScript: true,
-          origin: kIsWeb ? Uri.base.origin : 'https://www.youtube.com',
+          desktopMode: true,
+          privacyEnhanced: false,
+          useHybridComposition: true,
         ),
       );
     }
@@ -160,37 +160,12 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
 
                       // Rotating Disc or YouTube player
                       if (isYouTube && _ytController != null)
-                        Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: YoutubePlayer(
-                                controller: _ytController!,
-                                aspectRatio: 16 / 9,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            OutlinedButton.icon(
-                              icon: const Icon(Icons.open_in_new, size: 16),
-                              label: const Text('Open in YouTube App'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF1565C0),
-                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                              ),
-                              onPressed: () async {
-                                final url = Uri.parse('https://youtu.be/${activeTrack.streamUrl ?? ''}');
-                                if (await canLaunchUrl(url)) {
-                                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                                } else {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Could not open YouTube')),
-                                    );
-                                  }
-                                }
-                              },
-                            ),
-                          ],
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: YoutubePlayer(
+                            controller: _ytController!,
+                            aspectRatio: 16 / 9,
+                          ),
                         )
                       else
                         _RotatingDisc(
