@@ -9,7 +9,7 @@ import '../../models/audio_track.dart';
 import '../../app/sacred_theme.dart';
 import '../../widgets/sacred_widgets.dart';
 import 'package:dio/dio.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class ManageAudioScreen extends ConsumerWidget {
   const ManageAudioScreen({super.key});
@@ -142,7 +142,7 @@ class ManageAudioScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(3),
         border: Border.all(color: c.withOpacity(0.15)),
       ),
-      child: Text(text, style: GoogleFonts.jost(fontSize: 8, fontWeight: FontWeight.w500, letterSpacing: 0.5, color: c.withOpacity(0.5))),
+      child: Text(text, style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 0.5, color: c.withOpacity(0.5))),
     );
   }
 
@@ -719,7 +719,7 @@ class _AddEditAudioFormState extends ConsumerState<_AddEditAudioForm> {
 
       if (url.contains('youtube.com') || url.contains('youtu.be')) {
         sourceType = 'youtube';
-        final id = YoutubePlayer.convertUrlToId(url) ?? url;
+        final id = YoutubePlayerController.convertUrlToId(url) ?? url;
         streamUrl = id;
         coverUrl = 'https://img.youtube.com/vi/$id/hqdefault.jpg';
         

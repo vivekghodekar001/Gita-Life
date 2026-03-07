@@ -133,4 +133,43 @@ class JapaService {
     
     await batch.commit();
   }
+
+  /// Pull japa history from Firestore into local Hive (two-way sync)
+  Future<void> syncFromFirestore(String userId) async {
+    if (userId.isEmpty) return;
+
+    try {
+      final firestore = _firestore;
+      final snapshot = await firestore
+          .collection('japa_logs')
+          .doc(userId)
+          .collection('logs')
+          .get();
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final date = data['date'] as String? ?? doc.id;
+        final existing = _japaBox.get(date);
+
+        // If local doesn't have it, or Firestore has a newer version, overwrite
+        final remoteMalas = data['totalMalas'] as int? ?? 0;
+        final remoteBeads = data['totalBeads'] as int? ?? 0;
+
+        if (existing == null || remoteMalas > existing.totalMalas ||
+            (remoteMalas == existing.totalMalas && remoteBeads > existing.totalBeads)) {
+          final log = JapaLog(
+            date: date,
+            totalMalas: remoteMalas,
+            totalBeads: remoteBeads,
+            targetMalas: data['targetMalas'] as int? ?? getDailyTarget(),
+            goalReached: data['goalReached'] as bool? ?? false,
+            lastUpdated: data['lastUpdated'] as String? ?? DateTime.now().toIso8601String(),
+          );
+          await _japaBox.put(date, log);
+        }
+      }
+    } catch (e) {
+      // Silently fail — local data still available
+    }
+  }
 }

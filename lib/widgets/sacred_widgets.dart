@@ -560,7 +560,7 @@ class SacredFeatureCard extends StatelessWidget {
             Text(
               title.toUpperCase(),
               textAlign: TextAlign.center,
-              style: SacredTextStyles.sectionLabel(fontSize: 7.5).copyWith(
+              style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(
                 color: color.withOpacity(0.7),
                 letterSpacing: 1.5,
               ),

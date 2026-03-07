@@ -408,15 +408,6 @@ class _DataImporterState extends ConsumerState<DataImporter> {
 
       await box.put('bulk_import_done_v2', true);
       debugPrint('Bulk Sync Complete! 🎉');
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Audio library synchronized successfully! 🎉'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
     } catch (e) {
       debugPrint('Bulk Sync Failed: $e');
       _syncStartedThisSession = false;

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/audio_provider.dart';
 import '../../models/audio_track.dart';
@@ -60,7 +60,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
 
   @override
   void dispose() {
-    _ytController?.dispose();
+    _ytController?.close();
     _discController.dispose();
     super.dispose();
   }
@@ -107,9 +107,15 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
     }
 
     if (isYouTube && _ytController == null) {
-      _ytController = YoutubePlayerController(
-        initialVideoId: activeTrack.streamUrl ?? '',
-        flags: const YoutubePlayerFlags(autoPlay: true, mute: false),
+      _ytController = YoutubePlayerController.fromVideoId(
+        videoId: activeTrack.streamUrl ?? '',
+        autoPlay: true,
+        params: const YoutubePlayerParams(
+          showFullscreenButton: false,
+          showControls: true,
+          mute: false,
+          playsInline: true,
+        ),
       );
     }
 
@@ -131,7 +137,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                       onPressed: () => context.pop(),
                     ),
                     const Spacer(),
-                    Text('NOW PLAYING', style: SacredTextStyles.sectionLabel(fontSize: 9)),
+                    Text('NOW PLAYING', style: SacredTextStyles.sectionLabel(fontSize: 11)),
                     const Spacer(),
                     IconButton(
                       icon: Icon(Icons.share_rounded, size: 18, color: SacredColors.parchment.withOpacity(0.4)),
@@ -154,8 +160,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                           borderRadius: BorderRadius.circular(16),
                           child: YoutubePlayer(
                             controller: _ytController!,
-                            showVideoProgressIndicator: true,
-                            onReady: () => ref.read(audioPlayerControllerProvider).stop(),
+                            aspectRatio: 16 / 9,
                           ),
                         )
                       else

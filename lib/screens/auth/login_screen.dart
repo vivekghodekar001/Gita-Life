@@ -80,17 +80,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     // ── Logo ──
                     Center(
                       child: Container(
-                        width: 72,
-                        height: 72,
+                        width: 80,
+                        height: 80,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF8B6914).withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.2)),
+                          color: const Color(0xFF8B6914).withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.15)),
                           boxShadow: [
                             BoxShadow(color: const Color(0xFF8B6914).withOpacity(0.08), blurRadius: 16),
                           ],
                         ),
-                        child: Icon(Icons.auto_stories, size: 34, color: const Color(0xFF4A2C0A).withOpacity(0.5)),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(19),
+                          child: Image.asset(
+                            'assets/app_logo.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(Icons.auto_stories, size: 34, color: const Color(0xFF4A2C0A).withOpacity(0.5)),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -280,59 +289,65 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 }
 
 // ── Google Logo Painter ──────────────────────────────────────────────────────
-// Proper 4-colour Google G logo.
-// In Flutter drawArc: 0° = 3 o'clock (right), angles go clockwise.
-// Gap (mouth) centred at 0° (right side), 54° wide: 333° → 27°
-//   Green  : 27°  →  90°  ( 63° — lower-right quadrant)
-//   Yellow : 90°  → 165°  ( 75° — bottom)
-//   Red    : 165° → 333°  (168° — left + upper arc)
-//   Blue   : crossbar only (fills gap + right-side cap; no thin arc needed)
+// Official 4-path Google G logo using SVG path data (Blue, Green, Yellow, Red).
 class _GoogleLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final double cx = size.width / 2;
-    final double cy = size.height / 2;
-    // Ring dimensions — stroke ~24% of size for a bold G at small sizes
-    final double r  = size.width * 0.36;
-    final double sw = size.width * 0.22;
-    final rect = Rect.fromCircle(center: Offset(cx, cy), radius: r);
+    final double sx = size.width / 18;
+    final double sy = size.height / 18;
+    canvas.scale(sx, sy);
 
-    const double deg = 0.017453292519943; // π/180
+    // Blue path
+    final bluePath = Path()
+      ..moveTo(17.64, 9.205)
+      ..cubicTo(17.64, 8.566, 17.583, 7.953, 17.476, 7.364)
+      ..lineTo(9, 7.364)
+      ..lineTo(9, 10.845)
+      ..lineTo(13.844, 10.845)
+      ..cubicTo(13.382, 12.234, 12.468, 13.392, 11.048, 14.101)
+      ..lineTo(11.048, 16.360)
+      ..lineTo(13.956, 16.360)
+      ..cubicTo(15.658, 14.793, 16.640, 12.485, 16.640, 9.205)
+      ..close();
+    canvas.drawPath(bluePath, Paint()..color = const Color(0xFF4285F4));
 
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = sw
-      ..strokeCap = StrokeCap.butt;
+    // Green path
+    final greenPath = Path()
+      ..moveTo(9, 18)
+      ..cubicTo(11.430, 18, 13.467, 17.194, 14.956, 15.820)
+      ..lineTo(12.048, 13.561)
+      ..cubicTo(11.242, 14.101, 10.211, 14.421, 9, 14.421)
+      ..cubicTo(6.656, 14.421, 4.672, 12.837, 3.964, 10.710)
+      ..lineTo(0.957, 10.710)
+      ..lineTo(0.957, 13.042)
+      ..cubicTo(2.439, 15.983, 5.482, 18, 9, 18)
+      ..close();
+    canvas.drawPath(greenPath, Paint()..color = const Color(0xFF34A853));
 
-    // Green  27° → 90°  (63°)
-    paint.color = const Color(0xFF34A853);
-    canvas.drawArc(rect, 27 * deg, 63 * deg, false, paint);
+    // Yellow path
+    final yellowPath = Path()
+      ..moveTo(3.964, 10.710)
+      ..cubicTo(3.783, 10.170, 3.682, 9.593, 3.682, 9)
+      ..cubicTo(3.682, 8.407, 3.783, 7.830, 3.964, 7.290)
+      ..lineTo(3.964, 4.958)
+      ..lineTo(0.957, 4.958)
+      ..cubicTo(0.348, 6.173, 0, 7.548, 0, 9)
+      ..cubicTo(0, 10.452, 0.348, 11.827, 0.957, 13.042)
+      ..lineTo(3.964, 10.710)
+      ..close();
+    canvas.drawPath(yellowPath, Paint()..color = const Color(0xFFFBBC05));
 
-    // Yellow  90° → 165°  (75°)
-    paint.color = const Color(0xFFFBBC05);
-    canvas.drawArc(rect, 90 * deg, 75 * deg, false, paint);
-
-    // Red  165° → 333°  (168°)
-    paint.color = const Color(0xFFEA4335);
-    canvas.drawArc(rect, 165 * deg, 168 * deg, false, paint);
-
-    // Blue crossbar — covers the gap and the centre-to-right extension.
-    // Height = stroke width; left edge = cx; right edge = outer circle edge.
-    final double barH  = sw * 0.82;          // slightly narrower than stroke for clean look
-    final double barX  = cx;                 // starts at circle centre
-    final double barW  = r + sw * 0.50;      // extends to outer ring edge
-    canvas.drawRect(
-      Rect.fromLTWH(barX, cy - barH / 2, barW, barH),
-      Paint()
-        ..color = const Color(0xFF4285F4)
-        ..style = PaintingStyle.fill,
-    );
-
-    // Blue short arc cap (upper-right, fills the gap top)
-    // 333° → 360°+27° — just draw the full short arc in two calls
-    paint.color = const Color(0xFF4285F4);
-    canvas.drawArc(rect, 333 * deg, 27 * deg, false, paint); // 333→360
-    canvas.drawArc(rect, 0 * deg,   27 * deg, false, paint); // 0→27
+    // Red path
+    final redPath = Path()
+      ..moveTo(9, 3.580)
+      ..cubicTo(10.321, 3.580, 11.508, 4.034, 12.440, 4.925)
+      ..lineTo(15.022, 2.345)
+      ..cubicTo(13.463, 0.891, 11.426, 0, 9, 0)
+      ..cubicTo(5.482, 0, 2.439, 2.017, 0.957, 4.958)
+      ..lineTo(3.964, 7.290)
+      ..cubicTo(4.672, 5.163, 6.656, 3.580, 9, 3.580)
+      ..close();
+    canvas.drawPath(redPath, Paint()..color = const Color(0xFFEA4335));
   }
 
   @override

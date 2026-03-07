@@ -97,13 +97,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       color: Color(0xFFC85010), size: 48),
                   const SizedBox(height: 12),
                   Text('Error loading stats',
-                      style: GoogleFonts.cinzel(fontSize: 11, color: _inkMid)),
+                      style: GoogleFonts.cinzel(fontSize: 14, fontWeight: FontWeight.w600, color: _inkMid)),
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () => ref.refresh(adminStatsProvider),
                     child: Text('RETRY',
                         style: GoogleFonts.cinzel(
-                            fontSize: 9, letterSpacing: 2, color: _inkFaint)),
+                            fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 2, color: _inkFaint)),
                   ),
                 ],
               ),
@@ -171,7 +171,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         const Spacer(),
         Text('ADMIN PANEL',
             style: GoogleFonts.cinzel(
-                fontSize: 11, letterSpacing: 4.5, color: _inkMid)),
+                fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 4.5, color: _inkMid)),
         const Spacer(),
         // Invisible spacer to keep title perfectly centred
         const SizedBox(width: 36, height: 36),
@@ -216,7 +216,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 item.label.toUpperCase(),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.cinzel(
-                    fontSize: 8,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 2.5,
                     color: _inkFaint,
                     height: 1.5),
@@ -234,7 +235,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       children: [
         Text(title.toUpperCase(),
             style: GoogleFonts.cinzel(
-                fontSize: 9, letterSpacing: 3.5, color: _inkFaint)),
+                fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 3.5, color: _inkFaint)),
         const SizedBox(width: 14),
         Expanded(
           child: Container(
@@ -362,11 +363,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       ),
                       title: Text(item['text'] as String,
                           style: GoogleFonts.cormorantGaramond(
-                              fontSize: 13, color: _inkDark.withOpacity(0.7))),
+                              fontSize: 15, fontWeight: FontWeight.w600, color: _inkDark.withOpacity(0.7))),
                       trailing: timeStr.isNotEmpty
                           ? Text(timeStr,
                               style: GoogleFonts.jost(
-                                  fontSize: 10, color: _inkFaint))
+                                  fontSize: 12, fontWeight: FontWeight.w500, color: _inkFaint))
                           : null,
                     ),
                   ],
@@ -379,7 +380,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Text('SHOW MORE',
                         style: GoogleFonts.cinzel(
-                            fontSize: 8, letterSpacing: 2.5, color: _inkFaint)),
+                            fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 2.5, color: _inkFaint)),
                   ),
                 ),
               if (_showAllActivity && activities.length > 4)
@@ -389,7 +390,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Text('SHOW LESS',
                         style: GoogleFonts.cinzel(
-                            fontSize: 8, letterSpacing: 2.5, color: _inkFaint)),
+                            fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 2.5, color: _inkFaint)),
                   ),
                 ),
             ],
@@ -686,7 +687,8 @@ class _ActionCardState extends State<_ActionCard> {
                     Text(
                       widget.action.label.toUpperCase(),
                       style: GoogleFonts.cinzel(
-                        fontSize: 9,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: 2,
                         color: _labelColor[c],
                       ),
@@ -846,8 +848,8 @@ class _GlassBottomBar extends StatelessWidget {
                       Text(
                         item.label.toUpperCase(),
                         style: GoogleFonts.cinzel(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 1.2,
                           color: isActive
                               ? const Color(0xFF7A5008)

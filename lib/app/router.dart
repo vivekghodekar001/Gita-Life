@@ -53,6 +53,19 @@ class RouterNotifier extends ChangeNotifier {
   }
 }
 
+/// Smooth fade transition page for all routes
+Page<void> _fadePage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 250),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(opacity: animation, child: child);
+    },
+  );
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = RouterNotifier(ref);
 
@@ -104,79 +117,79 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
-      GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
+      GoRoute(path: '/splash', pageBuilder: (context, state) => _fadePage(state, const SplashScreen())),
+      GoRoute(path: '/onboarding', pageBuilder: (context, state) => _fadePage(state, const OnboardingScreen())),
 
       // Auth routes
-      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
-      GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
-      GoRoute(path: '/pending', builder: (context, state) => const PendingScreen()),
-      GoRoute(path: '/suspended', builder: (context, state) => const SuspendedScreen()),
+      GoRoute(path: '/login', pageBuilder: (context, state) => _fadePage(state, const LoginScreen())),
+      GoRoute(path: '/register', pageBuilder: (context, state) => _fadePage(state, const RegisterScreen())),
+      GoRoute(path: '/forgot-password', pageBuilder: (context, state) => _fadePage(state, const ForgotPasswordScreen())),
+      GoRoute(path: '/pending', pageBuilder: (context, state) => _fadePage(state, const PendingScreen())),
+      GoRoute(path: '/suspended', pageBuilder: (context, state) => _fadePage(state, const SuspendedScreen())),
 
       // Home
-      GoRoute(path: '/home', builder: (context, state) => const DashboardScreen()),
+      GoRoute(path: '/home', pageBuilder: (context, state) => _fadePage(state, const DashboardScreen())),
 
       // Gita routes
-      GoRoute(path: '/gita', builder: (context, state) => const GitaChapterListScreen()),
+      GoRoute(path: '/gita', pageBuilder: (context, state) => _fadePage(state, const GitaChapterListScreen())),
       GoRoute(
         path: '/gita/chapter/:chapterId',
-        builder: (context, state) => VerseListScreen(chapterId: state.pathParameters['chapterId']!),
+        pageBuilder: (context, state) => _fadePage(state, VerseListScreen(chapterId: state.pathParameters['chapterId']!)),
       ),
       GoRoute(
         path: '/gita/chapter/:chapterId/verse/:verseId',
-        builder: (context, state) => VerseDetailScreen(
+        pageBuilder: (context, state) => _fadePage(state, VerseDetailScreen(
           chapterId: state.pathParameters['chapterId']!,
           verseId: state.pathParameters['verseId']!,
-        ),
+        )),
       ),
-      GoRoute(path: '/gita/search', builder: (context, state) => const GitaSearchScreen()),
-      GoRoute(path: '/gita/bookmarks', builder: (context, state) => const BookmarksScreen()),
+      GoRoute(path: '/gita/search', pageBuilder: (context, state) => _fadePage(state, const GitaSearchScreen())),
+      GoRoute(path: '/gita/bookmarks', pageBuilder: (context, state) => _fadePage(state, const BookmarksScreen())),
 
       // Japa routes
-      GoRoute(path: '/japa', builder: (context, state) => const JapaCounterScreen()),
-      GoRoute(path: '/japa/history', builder: (context, state) => const JapaHistoryScreen()),
+      GoRoute(path: '/japa', pageBuilder: (context, state) => _fadePage(state, const JapaCounterScreen())),
+      GoRoute(path: '/japa/history', pageBuilder: (context, state) => _fadePage(state, const JapaHistoryScreen())),
 
       // Audio routes
-      GoRoute(path: '/audio', builder: (context, state) => const AudioLibraryScreen()),
+      GoRoute(path: '/audio', pageBuilder: (context, state) => _fadePage(state, const AudioLibraryScreen())),
       GoRoute(
         path: '/audio/player/:trackId',
-        builder: (context, state) => AudioPlayerScreen(trackId: state.pathParameters['trackId']!),
+        pageBuilder: (context, state) => _fadePage(state, AudioPlayerScreen(trackId: state.pathParameters['trackId']!)),
       ),
-      GoRoute(path: '/audio/downloads', builder: (context, state) => const DownloadsScreen()),
+      GoRoute(path: '/audio/downloads', pageBuilder: (context, state) => _fadePage(state, const DownloadsScreen())),
 
       // Lecture routes
-      GoRoute(path: '/lectures', builder: (context, state) => const LectureListScreen()),
+      GoRoute(path: '/lectures', pageBuilder: (context, state) => _fadePage(state, const LectureListScreen())),
       GoRoute(
         path: '/lectures/player/:lectureId',
-        builder: (context, state) => LecturePlayerScreen(
+        pageBuilder: (context, state) => _fadePage(state, LecturePlayerScreen(
           lectureId: state.pathParameters['lectureId']!,
           lecture: state.extra as LectureModel?,
-        ),
+        )),
       ),
 
       // Profile routes
-      GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
-      GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+      GoRoute(path: '/profile', pageBuilder: (context, state) => _fadePage(state, const ProfileScreen())),
+      GoRoute(path: '/settings', pageBuilder: (context, state) => _fadePage(state, const SettingsScreen())),
 
       // Attendance routes
-      GoRoute(path: '/attendance/history', builder: (context, state) => const AttendanceHistoryScreen()),
+      GoRoute(path: '/attendance/history', pageBuilder: (context, state) => _fadePage(state, const AttendanceHistoryScreen())),
       GoRoute(
         path: '/admin/attendance/mark/:sessionId',
-        builder: (context, state) => MarkAttendanceScreen(sessionId: state.pathParameters['sessionId']!),
+        pageBuilder: (context, state) => _fadePage(state, MarkAttendanceScreen(sessionId: state.pathParameters['sessionId']!)),
       ),
 
       // Admin routes
-      GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
-      GoRoute(path: '/admin/lectures', builder: (context, state) => const ManageLecturesScreen()),
-      GoRoute(path: '/admin/audio', builder: (context, state) => const ManageAudioScreen()),
-      GoRoute(path: '/admin/students', builder: (context, state) => const ManageStudentsScreen()),
-      GoRoute(path: '/admin/notifications', builder: (context, state) => const SendNotificationScreen()),
-      GoRoute(path: '/admin/attendance', builder: (context, state) => const ManageAttendanceScreen()),
-      GoRoute(path: '/admin/assignments', builder: (context, state) => const ManageAssignmentsScreen()),
+      GoRoute(path: '/admin', pageBuilder: (context, state) => _fadePage(state, const AdminDashboardScreen())),
+      GoRoute(path: '/admin/lectures', pageBuilder: (context, state) => _fadePage(state, const ManageLecturesScreen())),
+      GoRoute(path: '/admin/audio', pageBuilder: (context, state) => _fadePage(state, const ManageAudioScreen())),
+      GoRoute(path: '/admin/students', pageBuilder: (context, state) => _fadePage(state, const ManageStudentsScreen())),
+      GoRoute(path: '/admin/notifications', pageBuilder: (context, state) => _fadePage(state, const SendNotificationScreen())),
+      GoRoute(path: '/admin/attendance', pageBuilder: (context, state) => _fadePage(state, const ManageAttendanceScreen())),
+      GoRoute(path: '/admin/assignments', pageBuilder: (context, state) => _fadePage(state, const ManageAssignmentsScreen())),
 
       // Assignments (student)
-      GoRoute(path: '/assignments', builder: (context, state) => const AssignmentsScreen()),
+      GoRoute(path: '/assignments', pageBuilder: (context, state) => _fadePage(state, const AssignmentsScreen())),
     ],
   );
 });

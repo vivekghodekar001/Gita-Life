@@ -104,7 +104,7 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
                           Text(
                             'CHAPTER ${widget.chapterNumber}',
                             style: GoogleFonts.jost(
-                              fontSize: 9,
+                              fontSize: 11,
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF8B6914).withOpacity(0.5),
                               letterSpacing: 3,
@@ -171,7 +171,7 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
                           ? 'LOADING...'
                           : 'VERSE ${_currentIndex + 1} OF ${widget.versesCount}',
                       style: GoogleFonts.jost(
-                        fontSize: 9,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF8B6914).withOpacity(0.45),
                         letterSpacing: 3,
@@ -290,7 +290,7 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
                       Text(
                         'SWIPE TO NAVIGATE',
                         style: GoogleFonts.jost(
-                          fontSize: 9,
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF8B6914).withOpacity(0.25),
                           letterSpacing: 3,
@@ -443,7 +443,7 @@ class _GitaSwipeCard extends StatelessWidget {
                 language == 'en' ? 'TRANSLATION' : 'अनुवाद',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.jost(
-                  fontSize: 9,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF8B6914).withOpacity(0.35),
                   letterSpacing: 3,

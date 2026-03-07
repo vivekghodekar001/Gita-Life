@@ -1,9 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:vibration/vibration.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,7 +17,6 @@ class JapaCounterScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final japaAsync = ref.watch(todayJapaLogProvider);
-    final vibrationEnabled = ref.watch(japaVibrationProvider);
     final soundEnabled = ref.watch(japaSoundProvider);
 
     return Scaffold(
@@ -41,14 +38,6 @@ class JapaCounterScreen extends ConsumerWidget {
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () async {
-                // Haptic feedback — skip Vibration on web
-                if (vibrationEnabled && !kIsWeb) {
-                  try {
-                    if (await Vibration.hasVibrator() == true) {
-                      Vibration.vibrate(duration: 40);
-                    }
-                  } catch (_) {}
-                }
                 // Sound feedback
                 if (soundEnabled) {
                   HapticFeedback.lightImpact();
@@ -150,7 +139,7 @@ class JapaCounterScreen extends ConsumerWidget {
                               ),
                               Text(
                                 'BEADS',
-                                style: SacredTextStyles.sectionLabel(fontSize: 7).copyWith(
+                                style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(
                                   color: SacredColors.parchment.withOpacity(0.2),
                                   letterSpacing: 4,
                                 ),
@@ -166,7 +155,7 @@ class JapaCounterScreen extends ConsumerWidget {
                     // "Tap anywhere" hint
                     Text(
                       'TAP ANYWHERE TO COUNT',
-                      style: SacredTextStyles.sectionLabel(fontSize: 8).copyWith(
+                      style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(
                         letterSpacing: 5,
                         color: SacredColors.parchment.withOpacity(0.15),
                       ),
@@ -174,7 +163,7 @@ class JapaCounterScreen extends ConsumerWidget {
 
                     const SizedBox(height: 20),
 
-                    // Settings toggles
+                    // Settings toggle — sound only
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 40),
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
@@ -182,21 +171,16 @@ class JapaCounterScreen extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.vibration_rounded, size: 16, color: SacredColors.parchment.withOpacity(vibrationEnabled ? 0.6 : 0.2)),
-                          const SizedBox(width: 4),
-                          SizedBox(
-                            height: 24,
-                            child: Switch(
-                              value: vibrationEnabled,
-                              activeColor: SacredColors.parchment,
-                              activeTrackColor: SacredColors.parchment.withOpacity(0.2),
-                              inactiveThumbColor: SacredColors.parchment.withOpacity(0.3),
-                              inactiveTrackColor: SacredColors.parchment.withOpacity(0.06),
-                              onChanged: (_) => ref.read(japaVibrationProvider.notifier).toggle(),
+                          Icon(Icons.volume_up_rounded, size: 16, color: SacredColors.parchment.withOpacity(soundEnabled ? 0.6 : 0.2)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Sound',
+                            style: GoogleFonts.jost(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: SacredColors.parchment.withOpacity(soundEnabled ? 0.6 : 0.3),
                             ),
                           ),
-                          const SizedBox(width: 24),
-                          Icon(Icons.volume_up_rounded, size: 16, color: SacredColors.parchment.withOpacity(soundEnabled ? 0.6 : 0.2)),
                           const SizedBox(width: 4),
                           SizedBox(
                             height: 24,
@@ -270,7 +254,7 @@ class _MalaBeadBar extends StatelessWidget {
                   child: Text(
                     '${i + 1}',
                     style: GoogleFonts.jost(
-                      fontSize: 9,
+                      fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: SacredColors.parchment.withOpacity(0.55),
                     ),

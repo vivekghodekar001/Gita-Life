@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/lecture_provider.dart';
 import '../../models/lecture_model.dart';
@@ -209,7 +209,7 @@ class _AddEditLectureFormState extends ConsumerState<_AddEditLectureForm> {
       final lectureId = isEditing ? widget.lecture!.lectureId : DateTime.now().millisecondsSinceEpoch.toString();
       
       final inputId = _youtubeIdController.text.trim();
-      final cleanId = YoutubePlayer.convertUrlToId(inputId) ?? inputId;
+      final cleanId = YoutubePlayerController.convertUrlToId(inputId) ?? inputId;
       
       // Improved Thumbnail URL generation
       final thumbnailUrl = 'https://i.ytimg.com/vi/$cleanId/hqdefault.jpg';

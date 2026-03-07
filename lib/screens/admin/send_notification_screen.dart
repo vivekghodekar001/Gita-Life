@@ -162,7 +162,7 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
                                         ),
                                       ),
                                       if (createdAt != null)
-                                        Text(DateFormat.yMMMd().format(createdAt), style: GoogleFonts.jost(fontSize: 9, fontWeight: FontWeight.w300, color: SacredColors.parchment.withOpacity(0.2))),
+                                        Text(DateFormat.yMMMd().format(createdAt), style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, color: SacredColors.parchment.withOpacity(0.2))),
                                     ],
                                   ),
                                 );

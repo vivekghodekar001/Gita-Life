@@ -58,56 +58,56 @@ class SacredColors {
 class SacredTextStyles {
   SacredTextStyles._();
 
-  static TextStyle greeting({double fontSize = 13}) => GoogleFonts.cormorantGaramond(
+  static TextStyle greeting({double fontSize = 15}) => GoogleFonts.cormorantGaramond(
         fontStyle: FontStyle.italic,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         color: SacredColors.ash,
         letterSpacing: 0.5,
       );
 
-  static TextStyle userName({double fontSize = 25}) => GoogleFonts.cormorantSc(
-        fontWeight: FontWeight.w500,
+  static TextStyle userName({double fontSize = 28}) => GoogleFonts.cormorantSc(
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         color: SacredColors.parchmentLight,
         letterSpacing: 1.5,
       );
 
-  static TextStyle sectionLabel({double fontSize = 10}) => GoogleFonts.jost(
-        fontWeight: FontWeight.w500,
+  static TextStyle sectionLabel({double fontSize = 12}) => GoogleFonts.jost(
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         letterSpacing: 3.5,
         color: SacredColors.parchment.withOpacity(0.58),
       );
 
-  static TextStyle infoKey({double fontSize = 10}) => GoogleFonts.jost(
-        fontWeight: FontWeight.w500,
+  static TextStyle infoKey({double fontSize = 12}) => GoogleFonts.jost(
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         letterSpacing: 2,
         color: SacredColors.parchment.withOpacity(0.55),
       );
 
-  static TextStyle infoValue({double fontSize = 15}) => GoogleFonts.cormorantGaramond(
-        fontWeight: FontWeight.w600,
+  static TextStyle infoValue({double fontSize = 17}) => GoogleFonts.cormorantGaramond(
+        fontWeight: FontWeight.w700,
         fontSize: fontSize,
         color: SacredColors.parchmentLight.withOpacity(0.90),
       );
 
-  static TextStyle navLabel({double fontSize = 10}) => GoogleFonts.jost(
-        fontWeight: FontWeight.w500,
+  static TextStyle navLabel({double fontSize = 12}) => GoogleFonts.jost(
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         letterSpacing: 1,
         color: SacredColors.parchment.withOpacity(0.62),
       );
 
-  static TextStyle navLabelActive({double fontSize = 10}) => GoogleFonts.jost(
+  static TextStyle navLabelActive({double fontSize = 12}) => GoogleFonts.jost(
         fontWeight: FontWeight.w700,
         fontSize: fontSize,
         letterSpacing: 1,
         color: SacredColors.parchment.withOpacity(0.95),
       );
 
-  static TextStyle bookTitle({double fontSize = 12.5}) => GoogleFonts.cormorantSc(
+  static TextStyle bookTitle({double fontSize = 14}) => GoogleFonts.cormorantSc(
         fontWeight: FontWeight.w700,
         fontSize: fontSize,
         color: const Color(0xFFD4AF37),
@@ -120,7 +120,7 @@ class SacredTextStyles {
         ],
       );
 
-  static TextStyle bookSubtitle({double fontSize = 11}) => GoogleFonts.cormorantGaramond(
+  static TextStyle bookSubtitle({double fontSize = 13}) => GoogleFonts.cormorantGaramond(
         fontStyle: FontStyle.italic,
         fontWeight: FontWeight.w700,
         fontSize: fontSize,
@@ -129,58 +129,58 @@ class SacredTextStyles {
         shadows: const [Shadow(color: Color(0xFFD4AF37), blurRadius: 6)],
       );
 
-  static TextStyle verseRef({double fontSize = 11}) => GoogleFonts.jost(
-        fontWeight: FontWeight.w500,
+  static TextStyle verseRef({double fontSize = 13}) => GoogleFonts.jost(
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         letterSpacing: 4,
         color: SacredColors.parchment.withOpacity(0.60),
       );
 
-  static TextStyle verseDevanagari({double fontSize = 17}) => GoogleFonts.cormorantGaramond(
+  static TextStyle verseDevanagari({double fontSize = 19}) => GoogleFonts.cormorantGaramond(
         fontStyle: FontStyle.italic,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         fontSize: fontSize,
         color: SacredColors.parchment.withOpacity(0.88),
         letterSpacing: 0.3,
         height: 1.9,
       );
 
-  static TextStyle verseTranslation({double fontSize = 15}) => GoogleFonts.cormorantGaramond(
+  static TextStyle verseTranslation({double fontSize = 17}) => GoogleFonts.cormorantGaramond(
         fontStyle: FontStyle.italic,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         color: SacredColors.parchmentLight.withOpacity(0.82),
         height: 1.8,
       );
 
-  static TextStyle profileName({double fontSize = 20}) => GoogleFonts.cormorantSc(
-        fontWeight: FontWeight.w400,
+  static TextStyle profileName({double fontSize = 22}) => GoogleFonts.cormorantSc(
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         color: SacredColors.parchmentLight.withOpacity(0.88),
         letterSpacing: 2.5,
       );
 
-  static TextStyle shloka({double fontSize = 14}) => GoogleFonts.cormorantGaramond(
+  static TextStyle shloka({double fontSize = 16}) => GoogleFonts.cormorantGaramond(
         fontStyle: FontStyle.italic,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         fontSize: fontSize,
         color: SacredColors.parchment.withOpacity(0.75),
         letterSpacing: 0.3,
       );
 
-  static TextStyle chip({double fontSize = 13}) => GoogleFonts.cormorantGaramond(
-        fontWeight: FontWeight.w600,
+  static TextStyle chip({double fontSize = 15}) => GoogleFonts.cormorantGaramond(
+        fontWeight: FontWeight.w700,
         fontSize: fontSize,
         color: SacredColors.parchment.withOpacity(0.80),
       );
 
-  static TextStyle ringPercent({double fontSize = 15}) => GoogleFonts.cormorantSc(
-        fontWeight: FontWeight.w500,
+  static TextStyle ringPercent({double fontSize = 17}) => GoogleFonts.cormorantSc(
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
       );
 
-  static TextStyle progressLabel({double fontSize = 10}) => GoogleFonts.jost(
-        fontWeight: FontWeight.w500,
+  static TextStyle progressLabel({double fontSize = 12}) => GoogleFonts.jost(
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         letterSpacing: 1.5,
         color: SacredColors.parchment.withOpacity(0.62),

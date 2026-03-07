@@ -88,7 +88,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   void _onPageChanged(int index) {
     setState(() => _currentPage = index);
-    _fadeCtrl.forward(from: 0);
   }
 
   Future<void> _completeOnboarding() async {
@@ -110,8 +109,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       backgroundColor: SacredColors.ink,
       body: SacredBackground(
         child: SafeArea(
-          child: Column(
-            children: [
+          child: FadeTransition(
+            opacity: _fadeAnim,
+            child: Column(
+              children: [
               // ── Skip row ─────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
@@ -157,11 +158,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   controller: _pageController,
                   itemCount: _kPages.length,
                   onPageChanged: _onPageChanged,
+                  physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
-                    return FadeTransition(
-                      opacity: index == _currentPage ? _fadeAnim : const AlwaysStoppedAnimation(1.0),
-                      child: _OnboardingPage(data: _kPages[index]),
-                    );
+                    return _OnboardingPage(data: _kPages[index]);
                   },
                 ),
               ),
@@ -254,6 +253,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),
@@ -299,7 +299,7 @@ class _OnboardingPage extends StatelessWidget {
             child: Text(
               data.badge,
               style: GoogleFonts.jost(
-                fontSize: 9,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFFF5E8D0),
                 letterSpacing: 2.5,
@@ -414,7 +414,7 @@ class _VerseCard extends StatelessWidget {
             children: [
               _OrnamentLine(),
               const SizedBox(width: 8),
-              Text('✦', style: TextStyle(fontSize: 9, color: const Color(0xFF8B6914).withOpacity(0.5))),
+              Text('✦', style: TextStyle(fontSize: 11, color: const Color(0xFF8B6914).withOpacity(0.5))),
               const SizedBox(width: 8),
               _OrnamentLine(),
             ],
@@ -425,7 +425,7 @@ class _VerseCard extends StatelessWidget {
           Text(
             verseRef,
             style: GoogleFonts.jost(
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: 2,
               color: const Color(0xFF8B6914).withOpacity(0.55),

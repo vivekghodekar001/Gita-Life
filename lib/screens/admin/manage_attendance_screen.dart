@@ -263,7 +263,7 @@ class _SessionCard extends ConsumerWidget {
                 ),
                 child: Text(
                   isLocked ? 'LOCKED' : 'OPEN',
-                  style: GoogleFonts.jost(fontSize: 9, fontWeight: FontWeight.w500, letterSpacing: 0.8, color: (isLocked ? SacredColors.parchment : SacredColors.ember).withOpacity(0.5)),
+                  style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 0.8, color: (isLocked ? SacredColors.parchment : SacredColors.ember).withOpacity(0.5)),
                 ),
               ),
             ],
@@ -337,7 +337,7 @@ class _SessionCard extends ConsumerWidget {
           children: [
             Icon(icon, size: 13, color: color.withOpacity(0.4)),
             const SizedBox(width: 4),
-            Text(label, style: GoogleFonts.jost(fontSize: 9, fontWeight: FontWeight.w500, letterSpacing: 0.5, color: color.withOpacity(0.5))),
+            Text(label, style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 0.5, color: color.withOpacity(0.5))),
           ],
         ),
       ),

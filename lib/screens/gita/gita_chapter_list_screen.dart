@@ -148,7 +148,7 @@ class _LangPill extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: SacredTextStyles.sectionLabel(fontSize: 9).copyWith(
+          style: SacredTextStyles.sectionLabel(fontSize: 11).copyWith(
             color: isActive ? const Color(0xFFF5E8D0) : SacredColors.parchment.withOpacity(0.4),
             letterSpacing: 1.5,
           ),

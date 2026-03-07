@@ -115,31 +115,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
               ),
 
-              // ── Book fills remaining space ──
+              // ── Book fills remaining space (responsive) ──
               Expanded(
                 child: Center(
                   child: RepaintBoundary(
-                    child: AncientBookWidget(
-                      width: 270,
-                      height: 365,
-                      onTap: () => context.push('/gita'),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final maxW = constraints.maxWidth * 0.72;
+                        final maxH = constraints.maxHeight * 0.88;
+                        final bookW = maxW.clamp(220.0, 340.0);
+                        final bookH = (bookW * 1.35).clamp(300.0, maxH);
+                        return AncientBookWidget(
+                          width: bookW,
+                          height: bookH,
+                          onTap: () => context.push('/gita'),
+                        );
+                      },
                     ),
                   ),
                 ),
               ),
 
               // ── Pill Bottom Bar ──
-              _GlassBottomBar(
-                currentIndex: _navIndex,
-                onTap: (index) {
-                  setState(() => _navIndex = index);
-                  switch (index) {
-                    case 0: context.push('/japa'); break;
-                    case 1: context.push('/lectures'); break;
-                    case 2: context.push('/audio'); break;
-                    case 3: context.push('/assignments'); break;
-                  }
-                },
+              RepaintBoundary(
+                child: _GlassBottomBar(
+                  currentIndex: _navIndex,
+                  onTap: (index) {
+                    setState(() => _navIndex = index);
+                    switch (index) {
+                      case 0: context.push('/japa'); break;
+                      case 1: context.push('/lectures'); break;
+                      case 2: context.push('/audio'); break;
+                      case 3: context.push('/assignments'); break;
+                    }
+                  },
+                ),
               ),
             ],
           ),
@@ -180,13 +190,11 @@ class _GlassBottomBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(30),
           border: Border.all(color: const Color(0x80B48C28), width: 1.5),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.22), blurRadius: 28, offset: const Offset(0, 8)),
-            BoxShadow(color: const Color(0xFFD4AF37).withOpacity(0.18), blurRadius: 10, spreadRadius: 1),
-            const BoxShadow(color: Color(0x55FFE678), blurRadius: 1, offset: Offset(0, -1)),
+            BoxShadow(color: Colors.black.withOpacity(0.18), blurRadius: 20, offset: const Offset(0, 6)),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(_items.length * 2 - 1, (idx) {
@@ -194,7 +202,7 @@ class _GlassBottomBar extends StatelessWidget {
                 // Vertical gold divider
                 return Container(
                   width: 1,
-                  height: 26,
+                  height: 28,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -214,10 +222,8 @@ class _GlassBottomBar extends StatelessWidget {
               return GestureDetector(
                 onTap: () => onTap(i),
                 behavior: HitTestBehavior.opaque,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: const Cubic(0.34, 1.56, 0.64, 1),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: isActive
                       ? BoxDecoration(
                           gradient: const LinearGradient(
@@ -227,61 +233,28 @@ class _GlassBottomBar extends StatelessWidget {
                           ),
                           borderRadius: BorderRadius.circular(22),
                           border: Border.all(color: const Color(0x66B48C28), width: 1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFA07814).withOpacity(0.22),
-                              blurRadius: 12,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
                         )
                       : null,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Stack(
-                        alignment: Alignment.center,
-                        clipBehavior: Clip.none,
-                        children: [
-                          Icon(
-                            item.icon,
-                            size: 19,
-                            color: isActive
-                                ? const Color(0xFF8B5E0A)
-                                : const Color(0xFF64461A).withOpacity(0.42),
-                          ),
-                          if (isActive)
-                            Positioned(
-                              bottom: -5,
-                              child: Container(
-                                width: 3,
-                                height: 3,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFD4AF37), Color(0xFFF0C040)],
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFFD4AF37).withOpacity(0.8),
-                                      blurRadius: 6,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
+                      Icon(
+                        item.icon,
+                        size: 22,
+                        color: isActive
+                            ? const Color(0xFF8B5E0A)
+                            : const Color(0xFF64461A).withOpacity(0.50),
                       ),
                       const SizedBox(height: 5),
                       Text(
                         item.label.toUpperCase(),
                         style: GoogleFonts.cinzel(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 10,
+                          fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                           letterSpacing: 1.2,
                           color: isActive
                               ? const Color(0xFF7A5008)
-                              : const Color(0xFF64461A).withOpacity(0.45),
+                              : const Color(0xFF64461A).withOpacity(0.55),
                         ),
                       ),
                     ],

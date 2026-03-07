@@ -216,7 +216,7 @@ class VerseDetailScreen extends ConsumerWidget {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'TRANSLATION',
-                              style: SacredTextStyles.sectionLabel(fontSize: 8),
+                              style: SacredTextStyles.sectionLabel(fontSize: 10),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -234,7 +234,7 @@ class VerseDetailScreen extends ConsumerWidget {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 'PURPORT',
-                                style: SacredTextStyles.sectionLabel(fontSize: 8),
+                                style: SacredTextStyles.sectionLabel(fontSize: 10),
                               ),
                             ),
                             const SizedBox(height: 12),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../providers/japa_provider.dart';
 import '../../models/japa_log.dart';
 import '../../app/sacred_theme.dart';
@@ -10,11 +11,30 @@ import '../../widgets/sacred_widgets.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/error_retry.dart';
 
-class JapaHistoryScreen extends ConsumerWidget {
+class JapaHistoryScreen extends ConsumerStatefulWidget {
   const JapaHistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<JapaHistoryScreen> createState() => _JapaHistoryScreenState();
+}
+
+class _JapaHistoryScreenState extends ConsumerState<JapaHistoryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Sync japa history from Firestore on screen open
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await ref.read(japaServiceProvider).syncFromFirestore(user.uid);
+        ref.invalidate(weekHistoryProvider);
+        ref.invalidate(monthHistoryProvider);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final weekAsync = ref.watch(weekHistoryProvider);
     final monthAsync = ref.watch(monthHistoryProvider);
 
@@ -151,7 +171,7 @@ class JapaHistoryScreen extends ConsumerWidget {
                                         getTitlesWidget: (value, meta) {
                                           return Text(
                                             '${value.toInt()}',
-                                            style: GoogleFonts.jost(fontSize: 9, color: const Color(0xFF8B6914).withOpacity(0.35)),
+                                            style: GoogleFonts.jost(fontSize: 11, color: const Color(0xFF8B6914).withOpacity(0.35)),
                                           );
                                         },
                                       ),
@@ -274,7 +294,7 @@ class JapaHistoryScreen extends ConsumerWidget {
                                               child: Text(
                                                 '${log.totalMalas}',
                                                 style: GoogleFonts.jost(
-                                                  fontSize: 9,
+                                                  fontSize: 11,
                                                   color: hasData
                                                       ? const Color(0xFF4A2C0A).withOpacity(0.5)
                                                       : const Color(0xFF8B6914).withOpacity(0.2),

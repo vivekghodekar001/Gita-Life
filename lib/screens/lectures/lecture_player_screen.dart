@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../models/lecture_model.dart';
 import '../../providers/lecture_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -20,7 +19,6 @@ class LecturePlayerScreen extends ConsumerStatefulWidget {
 class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
   YoutubePlayerController? _controller;
   LectureModel? _lecture;
-  bool _isPlayerReady = false;
   bool _isLoading = true;
 
   @override
@@ -55,30 +53,23 @@ class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
 
   void _initPlayer(String videoId) {
     // Extract just the ID if a full URL was entered
-    final cleanId = YoutubePlayer.convertUrlToId(videoId) ?? videoId;
-    _controller = YoutubePlayerController(
-      initialVideoId: cleanId,
-      flags: const YoutubePlayerFlags(
-        autoPlay: true,
+    final cleanId = YoutubePlayerController.convertUrlToId(videoId) ?? videoId;
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: cleanId,
+      autoPlay: true,
+      params: const YoutubePlayerParams(
+        showFullscreenButton: true,
+        showControls: true,
         mute: false,
+        playsInline: true,
       ),
-    )..addListener(() {
-        if (_isPlayerReady && mounted && !(_controller?.value.isFullScreen ?? false)) {
-          setState(() {});
-        }
-      });
-  }
-
-  @override
-  void deactivate() {
-    _controller?.pause();
-    super.deactivate();
+    );
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    _controller?.close();
     super.dispose();
   }
 
@@ -100,37 +91,9 @@ class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
 
     final lecture = _lecture!;
 
-    return YoutubePlayerBuilder(
-      onEnterFullScreen: () {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight,
-        ]);
-      },
-      onExitFullScreen: () {
-        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      },
-      player: YoutubePlayer(
-        controller: _controller!,
-        showVideoProgressIndicator: true,
-        progressIndicatorColor: const Color(0xFF1565C0),
-        topActions: <Widget>[
-          const SizedBox(width: 8.0),
-          Expanded(
-            child: Text(
-              _controller!.metadata.title.isNotEmpty
-                  ? _controller!.metadata.title
-                  : lecture.title,
-              style: const TextStyle(color: Colors.white, fontSize: 18.0),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-          ),
-        ],
-        onReady: () {
-          setState(() => _isPlayerReady = true);
-        },
-      ),
+    return YoutubePlayerScaffold(
+      controller: _controller!,
+      aspectRatio: 16 / 9,
       builder: (context, player) {
         return Scaffold(
           backgroundColor: SacredColors.ink,

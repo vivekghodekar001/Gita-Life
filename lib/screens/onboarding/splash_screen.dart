@@ -102,7 +102,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(23),
                       child: Image.asset(
-                        'assets/splash.png',
+                        'assets/app_logo.png',
+                        width: 96,
+                        height: 96,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.auto_stories,

@@ -205,7 +205,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     // ── GOLD RULE ──
                     const SliverToBoxAdapter(child: SacredDivider()),
                     // ── SADHAKA INFO ──
-                    const SliverToBoxAdapter(child: SacredSectionLabel(text: 'Sādhaka Info')),
+                    const SliverToBoxAdapter(child: SacredSectionLabel(text: 'Personal Info')),
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -229,14 +229,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             if (!_isEditing)
                               GlassInfoRow(
                                 icon: Icons.location_on_outlined,
-                                label: 'Kshetra (Address)',
+                                label: 'Address',
                                 value: (user.address?.isNotEmpty == true) ? user.address! : 'Not set',
                               ),
                             if (_isEditing)
                               _buildSacredTextField(_addressController, 'Address', Icons.location_on_outlined),
                             GlassInfoRow(
                               icon: Icons.spa_outlined,
-                              label: 'Birth Tithi',
+                              label: 'Date of Birth',
                               value: _selectedDob != null
                                   ? DateFormat('d MMMM yyyy').format(_selectedDob!)
                                   : (user.dateOfBirth != null
@@ -277,7 +277,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       ? _buildSacredTextField(_branchController, 'College Branch', Icons.school_outlined)
                                       : GlassInfoRow(
                                           icon: Icons.school_outlined,
-                                          label: 'Vidyashala',
+                                          label: 'College',
                                           value: (user.collegeBranch?.isNotEmpty == true) ? user.collegeBranch! : 'Not set',
                                         ),
                                 ),
@@ -287,7 +287,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       ? _buildSacredTextField(_yearController, 'Year', Icons.layers_outlined)
                                       : GlassInfoRow(
                                           icon: Icons.layers_outlined,
-                                          label: 'Varsha',
+                                          label: 'Year',
                                           value: (user.year?.isNotEmpty == true) ? user.year! : 'Not set',
                                         ),
                                 ),
@@ -423,7 +423,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             const SizedBox(height: 4),
                             Text(
                               'EXCELLENCE IN ACTION IS YOGA · BG 2.50',
-                              style: SacredTextStyles.infoKey(fontSize: 7).copyWith(
+                              style: SacredTextStyles.infoKey(fontSize: 10).copyWith(
                                 letterSpacing: 2,
                                 color: SacredColors.parchment.withOpacity(0.22),
                               ),
@@ -458,7 +458,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'SIGN OUT',
-                                  style: SacredTextStyles.sectionLabel(fontSize: 9).copyWith(
+                                  style: SacredTextStyles.sectionLabel(fontSize: 11).copyWith(
                                     color: const Color(0xFFC45050).withOpacity(0.6),
                                     letterSpacing: 2,
                                   ),
@@ -666,7 +666,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(width: 4),
               Text(
                 'Tap attendance to view details',
-                style: SacredTextStyles.infoKey(fontSize: 7).copyWith(
+                style: SacredTextStyles.infoKey(fontSize: 10).copyWith(
                   color: SacredColors.parchment.withOpacity(0.2),
                   letterSpacing: 1,
                 ),
@@ -848,8 +848,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Container(width: 3, height: 3, decoration: BoxDecoration(shape: BoxShape.circle, color: SacredColors.parchment.withOpacity(0.4))),
                     const SizedBox(width: 7),
                     Text(
-                      'SĀDHAKA',
-                      style: SacredTextStyles.sectionLabel(fontSize: 9).copyWith(
+                      'DEVOTEE',
+                      style: SacredTextStyles.sectionLabel(fontSize: 11).copyWith(
                         color: SacredColors.parchment.withOpacity(0.4),
                         letterSpacing: 3,
                       ),
@@ -881,7 +881,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         },
         decoration: InputDecoration(
           labelText: label.toUpperCase(),
-          labelStyle: SacredTextStyles.infoKey(fontSize: 9).copyWith(letterSpacing: 1.5),
+          labelStyle: SacredTextStyles.infoKey(fontSize: 11).copyWith(letterSpacing: 1.5),
           prefixIcon: Container(
             margin: const EdgeInsets.all(8),
             width: 34, height: 34,

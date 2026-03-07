@@ -205,7 +205,7 @@ class ManageStudentsScreen extends ConsumerWidget {
             ),
             child: Text(
               user.status.toUpperCase(),
-              style: GoogleFonts.jost(fontSize: 8, fontWeight: FontWeight.w300, letterSpacing: 1, color: statusColor.withOpacity(0.8)),
+              style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 1, color: statusColor.withOpacity(0.8)),
             ),
           ),
           children: [
@@ -294,7 +294,7 @@ class ManageStudentsScreen extends ConsumerWidget {
           width: 70,
           child: Text(
             label.toUpperCase(),
-            style: GoogleFonts.jost(fontSize: 9, fontWeight: FontWeight.w200, letterSpacing: 1.5, color: SacredColors.parchment.withOpacity(0.25)),
+            style: GoogleFonts.jost(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 1.5, color: SacredColors.parchment.withOpacity(0.25)),
           ),
         ),
         Expanded(
