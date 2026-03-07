@@ -5,6 +5,7 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../models/lecture_model.dart';
 import '../../providers/lecture_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../app/sacred_theme.dart';
 
 class LecturePlayerScreen extends ConsumerStatefulWidget {
@@ -121,6 +122,27 @@ class _LecturePlayerScreenState extends ConsumerState<LecturePlayerScreen> {
                     Text(
                       lecture.title,
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('Open in YouTube App'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF1565C0),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () async {
+                        final url = Uri.parse('https://youtu.be/${lecture.youtubeVideoId}');
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                        } else {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Could not open YouTube')),
+                            );
+                          }
+                        }
+                      },
                     ),
                     const SizedBox(height: 16),
                   ],
