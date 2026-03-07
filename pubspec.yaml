@@ -35,6 +35,8 @@ dependencies:
   cached_network_image: ^3.3.1
   # Video
   youtube_player_iframe: ^5.1.7
+  video_player: ^2.8.2
+  chewie: ^1.7.5
   url_launcher: ^6.2.4
   # Utils
   connectivity_plus: ^5.0.2

@@ -6,6 +6,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/audio_provider.dart';
 import '../../models/audio_track.dart';
@@ -24,7 +26,11 @@ class AudioPlayerScreen extends ConsumerStatefulWidget {
 class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
     with SingleTickerProviderStateMixin {
   YoutubePlayerController? _ytController;
+  VideoPlayerController? _videoController;
+  ChewieController? _chewieController;
   late AnimationController _discController;
+  bool _isYouTubeVideo = false;
+  bool _isDirectVideo = false;
 
   // Cached recommendations — only shuffled once per track
   List<AudioTrackModel> _recommendations = [];
@@ -61,6 +67,8 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
   @override
   void dispose() {
     _ytController?.close();
+    _chewieController?.dispose();
+    _videoController?.dispose();
     _discController.dispose();
     super.dispose();
   }
@@ -106,19 +114,62 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) => _refreshRecommendations());
     }
 
-    if (isYouTube && _ytController == null) {
-      _ytController = YoutubePlayerController.fromVideoId(
-        videoId: activeTrack.streamUrl ?? '',
-        autoPlay: true,
-        params: const YoutubePlayerParams(
-          showFullscreenButton: false,
-          showControls: true,
-          mute: false,
-          playsInline: false,
-          enableJavaScript: true,
-          strictRelatedVideos: false,
-        ),
-      );
+    // Initialize video player if needed
+    final streamUrl = activeTrack.streamUrl ?? '';
+    final isYouTubeUrl = streamUrl.contains('youtube.com') || 
+                         streamUrl.contains('youtu.be') || 
+                         (!streamUrl.startsWith('http') && activeTrack.sourceType == 'youtube');
+    
+    if (isYouTube) {
+      if (isYouTubeUrl && _ytController == null) {
+        _isYouTubeVideo = true;
+        _isDirectVideo = false;
+        _ytController = YoutubePlayerController.fromVideoId(
+          videoId: streamUrl,
+          autoPlay: true,
+          params: const YoutubePlayerParams(
+            showFullscreenButton: false,
+            showControls: true,
+            mute: false,
+            playsInline: false,
+            enableJavaScript: true,
+            strictRelatedVideos: false,
+          ),
+        );
+      } else if (!isYouTubeUrl && _videoController == null && _chewieController == null) {
+        // Direct video URL
+        _isYouTubeVideo = false;
+        _isDirectVideo = true;
+        
+        String videoUrlToPlay = streamUrl;
+        // Convert Google Drive share links to direct download links
+        if (streamUrl.contains('drive.google.com')) {
+          final fileIdMatch = RegExp(r'/d/([a-zA-Z0-9_-]+)').firstMatch(streamUrl);
+          if (fileIdMatch != null) {
+            final fileId = fileIdMatch.group(1);
+            videoUrlToPlay = 'https://drive.google.com/uc?export=download&id=$fileId';
+          }
+        }
+        
+        _videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrlToPlay));
+        _videoController!.initialize().then((_) {
+          if (mounted) {
+            _chewieController = ChewieController(
+              videoPlayerController: _videoController!,
+              autoPlay: true,
+              looping: false,
+              aspectRatio: 16 / 9,
+              materialProgressColors: ChewieProgressColors(
+                playedColor: const Color(0xFF1565C0),
+                handleColor: const Color(0xFF1565C0),
+                backgroundColor: Colors.grey.shade300,
+                bufferedColor: Colors.grey.shade400,
+              ),
+            );
+            setState(() {});
+          }
+        });
+      }
     }
 
 
@@ -156,13 +207,29 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                     children: [
                       const SizedBox(height: 24),
 
-                      // Rotating Disc or YouTube player
-                      if (isYouTube && _ytController != null)
+                      // Rotating Disc or Video player
+                      if (isYouTube && _isYouTubeVideo && _ytController != null)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(16),
                           child: YoutubePlayer(
                             controller: _ytController!,
                             aspectRatio: 16 / 9,
+                          ),
+                        )
+                      else if (isYouTube && _isDirectVideo && _chewieController != null)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Chewie(controller: _chewieController!),
+                        )
+                      else if (isYouTube && _isDirectVideo)
+                        Container(
+                          height: 220,
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(color: Color(0xFF1565C0)),
                           ),
                         )
                       else
