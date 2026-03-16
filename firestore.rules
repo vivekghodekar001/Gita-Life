@@ -6,9 +6,16 @@ service cloud.firestore {
       return request.auth != null;
     }
     
+    function getRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
     function isAdmin() {
-      return isAuthenticated() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return isAuthenticated() && getRole() == 'admin';
+    }
+    
+    function isCounselor() {
+      return isAuthenticated() && getRole() == 'counselor';
     }
     
     function isOwner(userId) {
@@ -21,14 +28,35 @@ service cloud.firestore {
     }
 
     // Users collection
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+    match /users/{uid} {
+      allow read: if isAuthenticated() &&
+        (request.auth.uid == uid ||
+         getRole() == 'admin' ||
+         (getRole() == 'counselor' &&
+          get(/databases/$(database)/documents/users/$(uid)).data.counselorUid
+          == request.auth.uid));
+      allow create: if isAuthenticated() && isOwner(uid);
+      allow write: if isAuthenticated() && getRole() == 'admin';
+      allow update: if isAuthenticated() && request.auth.uid == uid
+        && !request.resource.data.diff(resource.data).affectedKeys()
+           .hasAny(['role','counselorUid','assignedDevotees']);
       allow delete: if false;
     }
 
-    // Attendance Sessions
+    // Preaching Sessions
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && getRole() == 'admin';
+    }
+
+    // Preaching Attendance
+    match /attendance/{recordId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() &&
+        (getRole() == 'admin' || getRole() == 'counselor');
+    }
+
+    // Legacy Attendance Sessions (admin attendance management)
     match /attendance_sessions/{sessionId} {
       allow read: if isActiveUser();
       allow create: if isAdmin();
@@ -36,7 +64,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Attendance Records
+    // Legacy Attendance Records (admin attendance management)
     match /attendance_records/{recordId} {
       allow read: if isActiveUser();
       allow create: if isAdmin();

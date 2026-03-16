@@ -57,6 +57,44 @@ final recentActivityProvider =
   return results.take(10).toList();
 });
 
+// Provider: list of counselors with their assigned devotee count
+final counselorsProvider =
+    StreamProvider<List<Map<String, dynamic>>>((ref) {
+  final status = ref.watch(firebaseInitStatusProvider);
+  if (status != FirebaseInitStatus.initialized || Firebase.apps.isEmpty) {
+    return const Stream.empty();
+  }
+  final firestore = FirebaseFirestore.instanceFor(app: Firebase.app());
+  return firestore
+      .collection('users')
+      .where('role', isEqualTo: 'counselor')
+      .snapshots()
+      .asyncMap((snap) async {
+    final counselors = <Map<String, dynamic>>[];
+    for (final doc in snap.docs) {
+      final data = doc.data();
+      int devoteeCount = 0;
+      try {
+        final devoteesSnap = await firestore
+            .collection('users')
+            .where('counselorUid', isEqualTo: doc.id)
+            .get();
+        devoteeCount = devoteesSnap.docs.length;
+      } catch (_) {
+        // Silently use default count of 0 if the query fails.
+      }
+      counselors.add({
+        'uid': doc.id,
+        'name': data['name'] as String? ??
+            data['fullName'] as String? ??
+            'Unknown',
+        'devoteeCount': devoteeCount,
+      });
+    }
+    return counselors;
+  });
+});
+
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  Admin Dashboard Screen
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -131,7 +169,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   _buildActionGrid(context),
                   const SizedBox(height: 32),
 
-                  // â”€â”€ Recent Activity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // ── Counselor Management ─────────────────────────────────
+                  _buildSectionHeader('Counselors'),
+                  const SizedBox(height: 16),
+                  _buildCounselorSection(context, ref),
+                  const SizedBox(height: 32),
+
+                  // ── Recent Activity ─────────────────────────────────────
                   _buildSectionHeader('Recent Activity'),
                   const SizedBox(height: 12),
                   _buildRecentActivity(ref),
@@ -295,6 +339,153 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   // â”€â”€ Recent Activity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  // ── Counselor Management Section ──────────────────────────────────────────
+  Widget _buildCounselorSection(BuildContext context, WidgetRef ref) {
+    final counselorsAsync = ref.watch(counselorsProvider);
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0x33F0E8D0),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0x59D4A017)), // gold border
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12)],
+      ),
+      child: Column(
+        children: [
+          // Header row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 10, 10),
+            child: Row(
+              children: [
+                counselorsAsync.when(
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (list) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0x33D4A017),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0x59D4A017)),
+                    ),
+                    child: Text(
+                      '${list.length} active',
+                      style: GoogleFonts.cinzel(
+                          fontSize: 10, fontWeight: FontWeight.w600,
+                          color: const Color(0xFF8B6914)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text('Counselor Management',
+                    style: GoogleFonts.cinzel(
+                        fontSize: 13, fontWeight: FontWeight.w600,
+                        color: const Color(0xFF7A5008))),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => context.push('/admin/counselors'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD4A017),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.add, size: 14, color: Colors.white),
+                        const SizedBox(width: 4),
+                        Text('Assign +',
+                            style: GoogleFonts.jost(
+                                fontSize: 12, fontWeight: FontWeight.w600,
+                                color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Counselor list
+          counselorsAsync.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(child: CircularProgressIndicator(color: Color(0xFF8B6914), strokeWidth: 1.5)),
+            ),
+            error: (_, __) => Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text('Failed to load counselors',
+                  style: GoogleFonts.jost(fontSize: 12, color: const Color(0x80B48C28))),
+            ),
+            data: (counselors) {
+              if (counselors.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Center(
+                    child: Text('No counselors assigned yet.',
+                        style: GoogleFonts.cormorantGaramond(
+                            fontSize: 13, color: const Color(0x80B48C28))),
+                  ),
+                );
+              }
+              return Column(
+                children: counselors.map((c) {
+                  final name = c['name'] as String? ?? 'Unknown';
+                  final count = c['devoteeCount'] as int? ?? 0;
+                  final initials = name.trim().split(' ').take(2)
+                      .map((p) => p.isNotEmpty ? p[0].toUpperCase() : '')
+                      .join();
+                  return Column(
+                    children: [
+                      Divider(color: const Color(0x1AB48C28), height: 1, indent: 16, endIndent: 16),
+                      ListTile(
+                        dense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        leading: Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0x33D4A017),
+                            border: Border.all(color: const Color(0x59D4A017)),
+                          ),
+                          child: Center(
+                            child: Text(initials,
+                                style: GoogleFonts.cinzel(
+                                    fontSize: 12, fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF8B6914))),
+                          ),
+                        ),
+                        title: Text(name,
+                            style: GoogleFonts.cormorantGaramond(
+                                fontSize: 15, fontWeight: FontWeight.w600,
+                                color: const Color(0xFF7A5008))),
+                        subtitle: Text('$count devotees assigned',
+                            style: GoogleFonts.jost(
+                                fontSize: 11, color: const Color(0x80B48C28))),
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0x26D4A017),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0x40D4A017)),
+                          ),
+                          child: Text('Counselor',
+                              style: GoogleFonts.cinzel(
+                                  fontSize: 9, fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF8B6914))),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRecentActivity(WidgetRef ref) {
     final activityAsync = ref.watch(recentActivityProvider);
     return Container(
