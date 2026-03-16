@@ -794,6 +794,7 @@ class _StatusPills extends StatelessWidget {
       // Fire-and-forget: score update failure does not block attendance marking.
       // The score will self-correct on the next successful update.
     }
+  }
 
   @override
   Widget build(BuildContext context) {
