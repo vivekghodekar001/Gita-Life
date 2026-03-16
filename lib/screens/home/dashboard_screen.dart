@@ -22,6 +22,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     final userProfile = ref.watch(userProfileProvider).valueOrNull;
     final isAdmin = userProfile?.role == 'admin';
+    final isCounselor = userProfile?.role == 'counselor';
     final firstName = (userProfile?.fullName.isNotEmpty == true)
         ? userProfile!.fullName.split(' ').first
         : 'Devotee';
@@ -65,6 +66,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 border: Border.all(color: SacredColors.ember.withOpacity(0.2)),
                               ),
                               child: Icon(Icons.admin_panel_settings, size: 18, color: SacredColors.ember.withOpacity(0.7)),
+                            ),
+                          ),
+                        // Counselor megaphone button
+                        if (isCounselor)
+                          GestureDetector(
+                            onTap: () => context.push('/preaching'),
+                            child: Container(
+                              width: 40, height: 40,
+                              margin: const EdgeInsets.only(right: 10),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF1A1A2E).withOpacity(0.08),
+                                border: Border.all(color: const Color(0xFF1A1A2E).withOpacity(0.2)),
+                              ),
+                              child: const Icon(Icons.campaign_outlined, size: 20, color: Color(0xFF1A1A2E)),
                             ),
                           ),
                         // Profile avatar

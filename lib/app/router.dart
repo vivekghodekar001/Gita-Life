@@ -27,8 +27,6 @@ import '../screens/lectures/lecture_list_screen.dart';
 import '../screens/lectures/lecture_player_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/settings/settings_screen.dart';
-import '../screens/attendance/attendance_history_screen.dart';
-import '../screens/attendance/mark_attendance_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/admin/manage_lectures_screen.dart';
 import '../screens/admin/manage_audio_screen.dart';
@@ -36,6 +34,8 @@ import '../screens/admin/manage_students_screen.dart';
 import '../screens/admin/send_notification_screen.dart';
 import '../screens/admin/manage_attendance_screen.dart';
 import '../screens/admin/manage_assignments_screen.dart';
+import '../screens/preaching/preaching_screen.dart';
+import '../screens/admin/assign_counselor_screen.dart';
 import '../screens/assignments/assignments_screen.dart';
 
 class RouterNotifier extends ChangeNotifier {
@@ -105,11 +105,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
           if (profile.status == 'active' && 
               (isAuthRoute || state.matchedLocation == '/pending' || state.matchedLocation == '/suspended')) {
+            // Route admin directly to admin panel, others to home
+            if (profile.role == 'admin') return '/admin';
             return '/home';
           }
           
           // RoleGuard logic: Prevent non-admins from accessing /admin routes
           if (state.matchedLocation.startsWith('/admin') && profile.role != 'admin') {
+            return '/home';
+          }
+          // Guard: /preaching is only for counselors and admins
+          if (state.matchedLocation == '/preaching' &&
+              profile.role != 'counselor' &&
+              profile.role != 'admin') {
             return '/home';
           }
         }
@@ -172,12 +180,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/profile', pageBuilder: (context, state) => _fadePage(state, const ProfileScreen())),
       GoRoute(path: '/settings', pageBuilder: (context, state) => _fadePage(state, const SettingsScreen())),
 
-      // Attendance routes
-      GoRoute(path: '/attendance/history', pageBuilder: (context, state) => _fadePage(state, const AttendanceHistoryScreen())),
-      GoRoute(
-        path: '/admin/attendance/mark/:sessionId',
-        pageBuilder: (context, state) => _fadePage(state, MarkAttendanceScreen(sessionId: state.pathParameters['sessionId']!)),
-      ),
+      // Preaching route (counselor & admin only — guarded in redirect)
+      GoRoute(path: '/preaching', pageBuilder: (context, state) => _fadePage(state, const PreachingScreen())),
 
       // Admin routes
       GoRoute(path: '/admin', pageBuilder: (context, state) => _fadePage(state, const AdminDashboardScreen())),
@@ -187,6 +191,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/admin/notifications', pageBuilder: (context, state) => _fadePage(state, const SendNotificationScreen())),
       GoRoute(path: '/admin/attendance', pageBuilder: (context, state) => _fadePage(state, const ManageAttendanceScreen())),
       GoRoute(path: '/admin/assignments', pageBuilder: (context, state) => _fadePage(state, const ManageAssignmentsScreen())),
+      GoRoute(path: '/admin/counselors', pageBuilder: (context, state) => _fadePage(state, const AssignCounselorScreen())),
 
       // Assignments (student)
       GoRoute(path: '/assignments', pageBuilder: (context, state) => _fadePage(state, const AssignmentsScreen())),
