@@ -105,8 +105,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
           if (profile.status == 'active' && 
               (isAuthRoute || state.matchedLocation == '/pending' || state.matchedLocation == '/suspended')) {
-            // Route admin directly to admin panel, others to home
-            if (profile.role == 'admin') return '/admin';
+            // All users (including admins) go to the main dashboard
+            // Admins can access the admin panel via the admin button on the dashboard
             return '/home';
           }
           

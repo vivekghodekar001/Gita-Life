@@ -231,9 +231,33 @@ class AuthService {
 
   Future<String> uploadProfilePhoto(String uid, Uint8List bytes) async {
     _ensureFirebase();
+    debugPrint('📷 [AUTH] uploadProfilePhoto: starting upload for $uid (${bytes.length} bytes)');
     final refStorage = FirebaseStorage.instanceFor(app: Firebase.app()).ref().child('profile_photos/$uid.jpg');
     final metadata = SettableMetadata(contentType: 'image/jpeg');
-    await refStorage.putData(bytes, metadata);
-    return await refStorage.getDownloadURL();
+    
+    try {
+      UploadTask uploadTask;
+      if (kIsWeb) {
+        // On web, putBlob works more reliably than putData
+        final blob = Blob([bytes], 'image/jpeg');
+        uploadTask = refStorage.putBlob(blob, metadata);
+      } else {
+        uploadTask = refStorage.putData(bytes, metadata);
+      }
+      
+      // Wait with a timeout to avoid infinite hangs
+      await uploadTask.timeout(
+        const Duration(seconds: 60),
+        onTimeout: () => throw Exception('Upload timed out after 60 seconds'),
+      );
+      
+      debugPrint('📷 [AUTH] uploadProfilePhoto: upload task complete');
+      final url = await refStorage.getDownloadURL();
+      debugPrint('📷 [AUTH] uploadProfilePhoto: download URL = $url');
+      return url;
+    } catch (e, stack) {
+      debugPrint('📷 [AUTH] uploadProfilePhoto ERROR: $e\n$stack');
+      rethrow;
+    }
   }
 }

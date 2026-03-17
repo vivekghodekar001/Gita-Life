@@ -96,19 +96,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     
     try {
       final bytes = await pickedFile.readAsBytes();
+      debugPrint('📷 [PROFILE] Picked image: ${bytes.length} bytes');
       final authService = ref.read(authServiceProvider);
       final url = await authService.uploadProfilePhoto(uid, bytes);
+      debugPrint('📷 [PROFILE] Upload complete, URL: $url');
       
       await authService.updateProfile(uid, {
         'profilePhotoUrl': url,
       });
+      debugPrint('📷 [PROFILE] Firestore updated with photo URL');
       
       ref.invalidate(userProfileProvider);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile photo updated')));
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('📷 [PROFILE] Upload error: $e\n$stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
@@ -787,8 +791,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 fit: BoxFit.cover,
                                 width: 66,
                                 height: 66,
-                                cacheWidth: 200,
-                                cacheHeight: 200,
                                 loadingBuilder: (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Center(
@@ -797,7 +799,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     ),
                                   );
                                 },
-                                errorBuilder: (_, __, ___) => Text(initials, style: GoogleFonts.cormorantSc(fontSize: 22, color: SacredColors.parchment.withOpacity(0.65), letterSpacing: 3)),
+                                errorBuilder: (_, error, ___) {
+                                  debugPrint('Profile photo load error: $error');
+                                  return Text(initials, style: GoogleFonts.cormorantSc(fontSize: 22, color: SacredColors.parchment.withOpacity(0.65), letterSpacing: 3));
+                                },
                               )
                             else
                               Text(initials, style: GoogleFonts.cormorantSc(fontSize: 22, color: SacredColors.parchment.withOpacity(0.65), letterSpacing: 3)),
