@@ -236,14 +236,7 @@ class AuthService {
     final metadata = SettableMetadata(contentType: 'image/jpeg');
     
     try {
-      UploadTask uploadTask;
-      if (kIsWeb) {
-        // On web, putBlob works more reliably than putData
-        final blob = Blob([bytes], 'image/jpeg');
-        uploadTask = refStorage.putBlob(blob, metadata);
-      } else {
-        uploadTask = refStorage.putData(bytes, metadata);
-      }
+      final uploadTask = refStorage.putData(bytes, metadata);
       
       // Wait with a timeout to avoid infinite hangs
       await uploadTask.timeout(
