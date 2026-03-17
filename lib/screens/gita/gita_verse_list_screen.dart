@@ -4,20 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import '../../app/sacred_theme.dart';
 import '../../providers/gita_provider.dart';
-import '../../services/gita_api_service.dart';
+import '../../services/gita_service.dart';
+import '../../models/gita_verse.dart';
 import '../../widgets/sacred_widgets.dart';
 
 class GitaVerseListScreen extends ConsumerStatefulWidget {
   final int chapterNumber;
-  final String chapterNameEn;
-  final String chapterNameHi;
+  final String chapterName;
   final int versesCount;
 
   const GitaVerseListScreen({
     super.key,
     required this.chapterNumber,
-    required this.chapterNameEn,
-    required this.chapterNameHi,
+    required this.chapterName,
     required this.versesCount,
   });
 
@@ -26,7 +25,7 @@ class GitaVerseListScreen extends ConsumerStatefulWidget {
 }
 
 class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
-  final List<Map<String, dynamic>> _verses = [];
+  final List<GitaVerse> _verses = [];
   bool _loading = true;
   String? _error;
   int _currentIndex = 0;
@@ -47,10 +46,9 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
 
   Future<void> _loadAllVerses() async {
     try {
-      final api = ref.read(gitaApiServiceProvider);
-      final futures = <Future<Map<String, dynamic>>>[];
+      final futures = <Future<GitaVerse>>[];
       for (int i = 1; i <= widget.versesCount; i++) {
-        futures.add(api.getVerse(widget.chapterNumber, i));
+        futures.add(GitaService.getVerse(widget.chapterNumber, i));
       }
       final results = await Future.wait(futures);
       if (mounted) {
@@ -71,7 +69,7 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final language = ref.watch(gitaLanguageProvider);
+    final translator = ref.watch(translatorProvider);
 
     return Scaffold(
       backgroundColor: SacredColors.ink,
@@ -112,7 +110,7 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            language == 'en' ? widget.chapterNameEn : widget.chapterNameHi,
+                            widget.chapterName,
                             style: GoogleFonts.cormorantGaramond(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -124,28 +122,10 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
                         ],
                       ),
                     ),
-                    // Language switcher
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF8B6914).withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.15)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _LangPill(
-                            text: 'EN',
-                            isActive: language == 'en',
-                            onTap: () => ref.read(gitaLanguageProvider.notifier).setLanguage('en'),
-                          ),
-                          _LangPill(
-                            text: 'हि',
-                            isActive: language == 'hi',
-                            onTap: () => ref.read(gitaLanguageProvider.notifier).setLanguage('hi'),
-                          ),
-                        ],
-                      ),
+                    // Translator switcher
+                    _TranslatorDropdown(
+                      value: translator,
+                      onChanged: (val) => ref.read(translatorProvider.notifier).state = val,
                     ),
                   ],
                 ),
@@ -229,6 +209,20 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
                                     color: const Color(0xFF4A2C0A),
                                   ),
                                 ),
+                                const SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                                  child: Text(
+                                    _error!.contains('SocketException') || _error!.contains('Failed host lookup')
+                                        ? 'No internet connection'
+                                        : _error!,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.jost(
+                                      fontSize: 12,
+                                      color: const Color(0xFF8B6914).withOpacity(0.4),
+                                    ),
+                                  ),
+                                ),
                                 const SizedBox(height: 16),
                                 GestureDetector(
                                   onTap: () {
@@ -270,10 +264,8 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
                             },
                             cardBuilder: (context, index, horizontalOffsetPercentage, verticalOffsetPercentage) {
                               return _GitaSwipeCard(
-                                verseData: _verses[index],
-                                chapterNumber: widget.chapterNumber,
-                                verseNumber: index + 1,
-                                language: language,
+                                verse: _verses[index],
+                                translator: translator,
                               );
                             },
                           ),
@@ -308,34 +300,98 @@ class _GitaVerseListScreenState extends ConsumerState<GitaVerseListScreen> {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  Translator Dropdown
+// ═══════════════════════════════════════════════════════════════
+
+class _TranslatorDropdown extends StatelessWidget {
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  const _TranslatorDropdown({required this.value, required this.onChanged});
+
+  static const _options = {
+    'sivananda': 'Sivananda EN',
+    'purohit': 'Purohit EN',
+    'hindi': 'Hindi',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF8B6914).withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.15)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isDense: true,
+          icon: Icon(Icons.arrow_drop_down, size: 18, color: const Color(0xFF8B6914).withOpacity(0.5)),
+          dropdownColor: const Color(0xFFF5EDDA),
+          style: GoogleFonts.jost(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF3A2010),
+          ),
+          items: _options.entries.map((e) {
+            return DropdownMenuItem(value: e.key, child: Text(e.value));
+          }).toList(),
+          onChanged: (val) {
+            if (val != null) onChanged(val);
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  Swipe Card — Parchment styled verse card
 // ═══════════════════════════════════════════════════════════════
 
 class _GitaSwipeCard extends StatelessWidget {
-  final Map<String, dynamic> verseData;
-  final int chapterNumber;
-  final int verseNumber;
-  final String language;
+  final GitaVerse verse;
+  final String translator;
 
   const _GitaSwipeCard({
-    required this.verseData,
-    required this.chapterNumber,
-    required this.verseNumber,
-    required this.language,
+    required this.verse,
+    required this.translator,
   });
+
+  String get _translation {
+    switch (translator) {
+      case 'purohit':
+        return verse.purohitTranslation.isNotEmpty
+            ? verse.purohitTranslation
+            : 'Translation not available';
+      case 'hindi':
+        return verse.hindiTranslation.isNotEmpty
+            ? verse.hindiTranslation
+            : 'Translation not available';
+      case 'sivananda':
+      default:
+        return verse.sivanandaTranslation.isNotEmpty
+            ? verse.sivanandaTranslation
+            : 'Translation not available';
+    }
+  }
+
+  String get _translationLabel {
+    switch (translator) {
+      case 'purohit':
+        return 'TRANSLATION (PUROHIT)';
+      case 'hindi':
+        return 'अनुवाद';
+      case 'sivananda':
+      default:
+        return 'TRANSLATION (SIVANANDA)';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final slok = verseData['slok'] ?? '';
-    final transliteration = verseData['transliteration'] ?? '';
-
-    String translation = 'Translation not available';
-    if (language == 'en') {
-      translation = verseData['tej']?['et'] ?? translation;
-    } else if (language == 'hi') {
-      translation = verseData['tej']?['ht'] ?? verseData['siva']?['ht'] ?? translation;
-    }
-
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -375,7 +431,7 @@ class _GitaSwipeCard extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      '$chapterNumber.$verseNumber',
+                      '${verse.chapter}.${verse.verse}',
                       style: GoogleFonts.cormorantSc(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -392,7 +448,7 @@ class _GitaSwipeCard extends StatelessWidget {
 
               // Sanskrit shlok
               Text(
-                slok,
+                verse.slok,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.getFont(
                   'Tiro Devanagari Sanskrit',
@@ -417,9 +473,9 @@ class _GitaSwipeCard extends StatelessWidget {
               const SizedBox(height: 14),
 
               // Transliteration
-              if (transliteration.isNotEmpty)
+              if (verse.transliteration.isNotEmpty)
                 Text(
-                  transliteration,
+                  verse.transliteration,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.jost(
                     fontStyle: FontStyle.italic,
@@ -428,7 +484,7 @@ class _GitaSwipeCard extends StatelessWidget {
                     height: 1.6,
                   ),
                 ),
-              if (transliteration.isNotEmpty) const SizedBox(height: 14),
+              if (verse.transliteration.isNotEmpty) const SizedBox(height: 14),
 
               // Second divider
               Container(
@@ -440,7 +496,7 @@ class _GitaSwipeCard extends StatelessWidget {
 
               // Translation label
               Text(
-                language == 'en' ? 'TRANSLATION' : 'अनुवाद',
+                _translationLabel,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.jost(
                   fontSize: 11,
@@ -453,7 +509,7 @@ class _GitaSwipeCard extends StatelessWidget {
 
               // Translation text
               Text(
-                translation,
+                _translation,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.jost(
                   fontSize: 15,
@@ -461,49 +517,38 @@ class _GitaSwipeCard extends StatelessWidget {
                   height: 1.7,
                 ),
               ),
+
+              // Commentary (Sivananda only)
+              if (translator == 'sivananda' && verse.sivanandaCommentary.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Container(
+                  height: 1,
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  color: const Color(0xFF8B6914).withOpacity(0.1),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'COMMENTARY',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.jost(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF8B6914).withOpacity(0.35),
+                    letterSpacing: 3,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  verse.sivanandaCommentary,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.jost(
+                    fontSize: 13,
+                    color: const Color(0xFF4A2C0A).withOpacity(0.55),
+                    height: 1.7,
+                  ),
+                ),
+              ],
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  Language Pill
-// ═══════════════════════════════════════════════════════════════
-
-class _LangPill extends StatelessWidget {
-  final String text;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _LangPill({
-    required this.text,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: isActive
-              ? const LinearGradient(colors: [Color(0xFF8B4513), Color(0xFFC8722A)])
-              : null,
-        ),
-        child: Text(
-          text,
-          style: GoogleFonts.jost(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: isActive ? const Color(0xFFF5E8D0) : const Color(0xFF8B6914).withOpacity(0.4),
-            letterSpacing: 1.5,
           ),
         ),
       ),

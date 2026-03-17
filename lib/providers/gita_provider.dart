@@ -1,33 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/gita_service.dart';
-import '../services/gita_api_service.dart';
-import '../models/verse_model.dart';
+import '../models/gita_verse.dart';
 
-final gitaServiceProvider = Provider<GitaService>((ref) => GitaService());
-
-final chaptersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) {
-  return ref.watch(gitaServiceProvider).getChapters();
+// ── Chapters Provider ──
+final chaptersProvider = FutureProvider<List<GitaChapter>>((ref) async {
+  return GitaService.getAllChapters();
 });
 
-final versesByChapterProvider = FutureProvider.family<List<VerseModel>, int>((ref, chapterNumber) {
-  return ref.watch(gitaServiceProvider).getVersesByChapter(chapterNumber);
+// ── Selected Chapter ──
+final selectedChapterProvider = StateProvider<int>((ref) => 1);
+
+// ── Selected Verse ──
+final selectedVerseProvider = StateProvider<int>((ref) => 1);
+
+// ── Current Verse Provider (watches selected chapter + verse) ──
+final currentVerseProvider = FutureProvider<GitaVerse>((ref) async {
+  final chapter = ref.watch(selectedChapterProvider);
+  final verse = ref.watch(selectedVerseProvider);
+  return GitaService.getVerse(chapter, verse);
 });
 
-final gitaSearchProvider = FutureProvider.family<List<VerseModel>, String>((ref, query) {
-  if (query.isEmpty) return [];
-  return ref.watch(gitaServiceProvider).searchVerses(query);
-});
+// ── Translator Provider ──
+// Options: 'sivananda', 'purohit', 'hindi'
+final translatorProvider = StateProvider<String>((ref) => 'sivananda');
 
-final bookmarkedVersesProvider = FutureProvider<List<VerseModel>>((ref) {
-  return ref.watch(gitaServiceProvider).getBookmarkedVerses();
-});
-
-// ------------------------------------------------------------------
-// NEW: VEDICSCRIPTURES.GITHUB.IO API INTEGRATION
-// ------------------------------------------------------------------
-
-// 1. Language Toggle State Management (en or hi)
+// ── Language Toggle (for chapter list EN/Hindi display) ──
 class GitaLanguageNotifier extends StateNotifier<String> {
   GitaLanguageNotifier() : super('en') {
     _loadLang();
@@ -43,7 +41,7 @@ class GitaLanguageNotifier extends StateNotifier<String> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('gita_lang', lang);
   }
-  
+
   void toggle() {
     setLanguage(state == 'en' ? 'hi' : 'en');
   }
@@ -52,20 +50,3 @@ class GitaLanguageNotifier extends StateNotifier<String> {
 final gitaLanguageProvider = StateNotifierProvider<GitaLanguageNotifier, String>((ref) {
   return GitaLanguageNotifier();
 });
-
-// 2. Data Providers using GitaApiService
-final gitaApiChaptersProvider = FutureProvider<List<dynamic>>((ref) async {
-  final api = ref.watch(gitaApiServiceProvider);
-  return await api.getChapters();
-});
-
-final gitaApiVerseProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, chapterVerseKey) async {
-  // key format: "chapterNumber_verseNumber" e.g. "1_1"
-  final parts = chapterVerseKey.split('_');
-  final chapter = int.parse(parts[0]);
-  final verse = int.parse(parts[1]);
-  
-  final api = ref.watch(gitaApiServiceProvider);
-  return await api.getVerse(chapter, verse);
-});
-

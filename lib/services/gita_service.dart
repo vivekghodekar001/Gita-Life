@@ -1,117 +1,78 @@
-import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path_provider/path_provider.dart';
-import '../models/verse_model.dart';
+import 'package:http/http.dart' as http;
+import '../models/gita_verse.dart';
 
 class GitaService {
-  Database? _db;
+  static const String _baseUrl = 'https://vedicscriptures.github.io';
 
-  Future<Database> get db async {
-    if (_db != null) return _db!;
-    await initGitaDb();
-    return _db!;
-  }
+  static final Map<String, dynamic> _cache = {};
 
-  Future<void> initGitaDb() async {
-    if (kIsWeb) {
-      throw Exception("Offline SQLite database is not supported on Web. Please run on Android, iOS, or Windows to test the Gita Reader.");
+  static Future<GitaVerse> getVerse(int chapter, int verse) async {
+    final cacheKey = 'verse_${chapter}_$verse';
+    if (_cache.containsKey(cacheKey)) {
+      return _cache[cacheKey] as GitaVerse;
     }
-    final docDir = await getApplicationDocumentsDirectory();
-    final dbPath = join(docDir.path, 'gita.db');
-    
-    // Copy if it doesn't exist
-    if (!await File(dbPath).exists()) {
-      try {
-        await Directory(dirname(dbPath)).create(recursive: true);
-        ByteData data = await rootBundle.load('assets/db/gita.db');
-        List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-        await File(dbPath).writeAsBytes(bytes, flush: true);
-      } catch (e) {
-        print("Error copying database: $e");
+
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/slok/$chapter/$verse'));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final gitaVerse = GitaVerse.fromJson(json);
+        _cache[cacheKey] = gitaVerse;
+        return gitaVerse;
+      } else {
+        throw Exception('Failed to load verse $chapter:$verse (${response.statusCode})');
       }
-    }
-    
-    _db = await openDatabase(dbPath);
-  }
-
-  Future<List<Map<String, dynamic>>> getChapters() async {
-    final d = await db;
-    // We group by chapter to get verse counts. 
-    // Usually they are 1 to 18 sequentially.
-    final result = await d.rawQuery('''
-      SELECT chapter_number, COUNT(*) as verse_count
-      FROM verses 
-      GROUP BY chapter_number
-      ORDER BY chapter_number ASC
-    ''');
-    return result;
-  }
-
-  Future<List<VerseModel>> getVersesByChapter(int chapterNumber) async {
-    final d = await db;
-    final result = await d.query(
-      'verses',
-      where: 'chapter_number = ?',
-      whereArgs: [chapterNumber],
-      orderBy: 'verse_number ASC',
-    );
-    return result.map((m) => VerseModel.fromMap(m)).toList();
-  }
-
-  Future<VerseModel?> getVerse(int chapterNumber, int verseNumber) async {
-    final d = await db;
-    final result = await d.query(
-      'verses',
-      where: 'chapter_number = ? AND verse_number = ?',
-      whereArgs: [chapterNumber, verseNumber],
-      limit: 1,
-    );
-    if (result.isNotEmpty) {
-      return VerseModel.fromMap(result.first);
-    }
-    return null;
-  }
-
-  Future<List<VerseModel>> searchVerses(String query) async {
-    final d = await db;
-    final result = await d.rawQuery('''
-      SELECT verses.* 
-      FROM verses_fts 
-      JOIN verses ON verses.id = verses_fts.rowid
-      WHERE verses_fts MATCH ?
-      ORDER BY rank
-      LIMIT 50
-    ''', [query]);
-    
-    return result.map((m) => VerseModel.fromMap(m)).toList();
-  }
-
-  Future<void> toggleBookmark(int verseId) async {
-    final d = await db;
-    // get current status
-    final current = await d.query('verses', columns: ['is_bookmarked'], where: 'id = ?', whereArgs: [verseId], limit: 1);
-    if (current.isNotEmpty) {
-      int status = current.first['is_bookmarked'] as int;
-      int newStatus = status == 1 ? 0 : 1;
-      await d.update(
-        'verses',
-        {'is_bookmarked': newStatus},
-        where: 'id = ?',
-        whereArgs: [verseId]
-      );
+    } catch (e) {
+      debugPrint('Error fetching verse $chapter:$verse: $e');
+      rethrow;
     }
   }
 
-  Future<List<VerseModel>> getBookmarkedVerses() async {
-    final d = await db;
-    final result = await d.query(
-      'verses',
-      where: 'is_bookmarked = 1',
-      orderBy: 'chapter_number ASC, verse_number ASC'
-    );
-    return result.map((m) => VerseModel.fromMap(m)).toList();
+  static Future<GitaChapter> getChapter(int chapter) async {
+    final cacheKey = 'chapter_$chapter';
+    if (_cache.containsKey(cacheKey)) {
+      return _cache[cacheKey] as GitaChapter;
+    }
+
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/chapter/$chapter'));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final gitaChapter = GitaChapter.fromJson(json);
+        _cache[cacheKey] = gitaChapter;
+        return gitaChapter;
+      } else {
+        throw Exception('Failed to load chapter $chapter (${response.statusCode})');
+      }
+    } catch (e) {
+      debugPrint('Error fetching chapter $chapter: $e');
+      rethrow;
+    }
+  }
+
+  static Future<List<GitaChapter>> getAllChapters() async {
+    const cacheKey = 'all_chapters';
+    if (_cache.containsKey(cacheKey)) {
+      return _cache[cacheKey] as List<GitaChapter>;
+    }
+
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/chapters'));
+      if (response.statusCode == 200) {
+        final jsonList = jsonDecode(response.body) as List<dynamic>;
+        final chapters = jsonList
+            .map((json) => GitaChapter.fromJson(json as Map<String, dynamic>))
+            .toList();
+        _cache[cacheKey] = chapters;
+        return chapters;
+      } else {
+        throw Exception('Failed to load chapters (${response.statusCode})');
+      }
+    } catch (e) {
+      debugPrint('Error fetching chapters: $e');
+      rethrow;
+    }
   }
 }

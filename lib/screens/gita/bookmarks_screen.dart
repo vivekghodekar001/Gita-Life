@@ -1,80 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../../providers/gita_provider.dart';
 import '../../app/sacred_theme.dart';
+import '../../widgets/sacred_widgets.dart';
 
-class BookmarksScreen extends ConsumerWidget {
+class BookmarksScreen extends StatelessWidget {
   const BookmarksScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bookmarksAsync = ref.watch(bookmarkedVersesProvider);
-
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: SacredColors.ink,
-      appBar: AppBar(
-        title: const Text('Bookmarked Verses'),
-      ),
-      body: bookmarksAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: \$err')),
-        data: (verses) {
-          if (verses.isEmpty) {
-            return const Center(
-              child: Text(
-                'No bookmarks yet.\nSwipe a verse to bookmark it!',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.black54),
+      body: SacredBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        width: 32, height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF8B6914).withOpacity(0.08),
+                          border: Border.all(color: const Color(0xFF8B6914).withOpacity(0.2)),
+                        ),
+                        child: Icon(Icons.arrow_back_ios_new, size: 12, color: SacredColors.parchment.withOpacity(0.6)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text('BOOKMARKS', style: SacredTextStyles.sectionLabel(fontSize: 10).copyWith(color: SacredColors.parchment.withOpacity(0.6), letterSpacing: 4)),
+                  ],
+                ),
               ),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: verses.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final verse = verses[index];
-              return Dismissible(
-                key: Key('bookmark_${verse.id}'),
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  color: Colors.red,
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 20),
-                  child: const Icon(Icons.delete, color: Colors.white),
-                ),
-                onDismissed: (direction) {
-                  ref.read(gitaServiceProvider).toggleBookmark(verse.id);
-                  // Since we are removing, invalidate cache
-                  ref.invalidate(bookmarkedVersesProvider);
-                  // Also invalidate chapter if recently visited
-                  ref.invalidate(versesByChapterProvider(verse.chapterNumber));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Bookmark removed'))
-                  );
-                },
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  title: Text(
-                    'Chapter ${verse.chapterNumber}, Verse ${verse.verseNumber}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1565C0)),
+              const Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Text(
+                      'Bookmarks are coming soon.\nBrowse chapters to read verses.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Color(0xFF8B6914)),
+                    ),
                   ),
-                  subtitle: Text(
-                    verse.textEnglish,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    context.push('/gita/chapter/${verse.chapterNumber}/verse/${verse.verseNumber}');
-                  },
                 ),
-              );
-            },
-          );
-        },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
