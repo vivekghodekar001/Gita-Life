@@ -13,7 +13,7 @@ final _devoteesForPromotionProvider =
     StreamProvider<List<Map<String, dynamic>>>((ref) {
   return FirebaseFirestore.instance
       .collection('users')
-      .where('role', isEqualTo: 'devotee')
+      .where('role', whereIn: ['student', 'devotee'])
       .snapshots()
       .map((snap) => snap.docs
           .map((d) => {'uid': d.id, ...d.data()})

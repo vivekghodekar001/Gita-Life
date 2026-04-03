@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../app/sacred_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/update_service.dart';
 import '../../widgets/sacred_widgets.dart';
 import '../../widgets/offline_banner.dart';
 
@@ -16,6 +17,14 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _navIndex = -1; // No active tab — dashboard is separate
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.checkForUpdate(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,8 +172,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return GestureDetector(
       onTap: () => context.push('/gita'),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        height: 480,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
@@ -177,68 +185,72 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Background chariot image
-              Image.asset(
-                'assets/images/b95e08551d7f75300abd54c93ee18263.jpg',
-                fit: BoxFit.cover,
-              ),
-              // Gradient overlay
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.3),
-                      Colors.black.withOpacity(0.85),
-                    ],
-                    stops: const [0.3, 0.6, 1.0],
+          child: AspectRatio(
+            aspectRatio: 9 / 16,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Background chariot image — align top so Krishna & Arjuna are visible
+                Image.asset(
+                  'assets/images/b95e08551d7f75300abd54c93ee18263.jpg',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                ),
+                // Gradient overlay
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.3),
+                        Colors.black.withOpacity(0.85),
+                      ],
+                      stops: const [0.4, 0.65, 1.0],
+                    ),
                   ),
                 ),
-              ),
-              // Text content at bottom
-              Positioned(
-                bottom: 28,
-                left: 24,
-                right: 24,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'BHAGAVAD GITA',
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFFD4A017),
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 3,
+                // Text content at bottom
+                Positioned(
+                  bottom: 28,
+                  left: 24,
+                  right: 24,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'BHAGAVAD GITA',
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFFD4A017),
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 3,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'As It Is',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.w300,
+                      const SizedBox(height: 4),
+                      Text(
+                        'As It Is',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 16,
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w300,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Open to read · swipe for verses',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.6),
-                        fontSize: 12,
+                      const SizedBox(height: 12),
+                      Text(
+                        'Open to read · swipe for verses',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 12,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
