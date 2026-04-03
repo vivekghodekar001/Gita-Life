@@ -81,6 +81,28 @@ final usersProvider = StreamProvider.family<List<UserModel>, String>((ref, statu
   });
 });
 
+final allUsersProvider = StreamProvider<List<UserModel>>((ref) {
+  final status = ref.watch(firebaseInitStatusProvider);
+  if (status != FirebaseInitStatus.initialized) return const Stream.empty();
+  
+  return FirebaseFirestore.instance.collection('users').snapshots().map((snapshot) {
+    return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+  });
+});
+
+final allCounselorsProvider = StreamProvider<List<UserModel>>((ref) {
+  final status = ref.watch(firebaseInitStatusProvider);
+  if (status != FirebaseInitStatus.initialized) return const Stream.empty();
+  
+  return FirebaseFirestore.instance
+      .collection('users')
+      .where('role', isEqualTo: 'counselor')
+      .snapshots()
+      .map((snapshot) {
+    return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+  });
+});
+
 final userActionsProvider = Provider((ref) => UserActions());
 
 class UserActions {

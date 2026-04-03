@@ -7,7 +7,8 @@ service cloud.firestore {
     }
     
     function getRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      let path = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(path) ? get(path).data.role : 'devotee';
     }
     
     function isAdmin() {
@@ -23,23 +24,26 @@ service cloud.firestore {
     }
     
     function isActiveUser() {
-      return isAuthenticated() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active';
+      let path = /databases/$(database)/documents/users/$(request.auth.uid);
+      return isAuthenticated() && exists(path) && get(path).data.status == 'active';
+    }
+
+    function getUserRole(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.role;
     }
 
     // Users collection
     match /users/{uid} {
-      allow read: if isAuthenticated() &&
-        (request.auth.uid == uid ||
-         getRole() == 'admin' ||
-         (getRole() == 'counselor' &&
-          get(/databases/$(database)/documents/users/$(uid)).data.counselorUid
-          == request.auth.uid));
+      allow read: if isAuthenticated() && (
+        request.auth.uid == uid || 
+        isAdmin() || 
+        (isCounselor() && (resource == null || resource.data.counselorUid == request.auth.uid))
+      );
       allow create: if isAuthenticated() && isOwner(uid);
-      allow write: if isAuthenticated() && getRole() == 'admin';
-      allow update: if isAuthenticated() && request.auth.uid == uid
-        && !request.resource.data.diff(resource.data).affectedKeys()
-           .hasAny(['role','counselorUid','assignedDevotees']);
+      allow write: if isAdmin();
+      allow update: if isAuthenticated() && (
+        isOwner(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'counselorUid', 'assignedDevotees'])
+      ) || isAdmin();
       allow delete: if false;
     }
 

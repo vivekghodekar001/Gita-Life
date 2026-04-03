@@ -13,6 +13,7 @@ class UserModel {
   final String fcmToken;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? counselorUid;
 
   // New Profile Fields
   final String? address;
@@ -35,6 +36,7 @@ class UserModel {
     required this.fcmToken,
     required this.createdAt,
     required this.updatedAt,
+    this.counselorUid,
     this.address,
     this.dateOfBirth,
     this.collegeBranch,
@@ -71,6 +73,7 @@ class UserModel {
       year: data['year'],
       interests: data['interests'] != null ? List<String>.from(data['interests']) : null,
       skills: data['skills'] != null ? List<String>.from(data['skills']) : null,
+      counselorUid: data['counselorUid'],
     );
   }
 
@@ -87,6 +90,7 @@ class UserModel {
       'fcmToken': fcmToken,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      if (counselorUid != null) 'counselorUid': counselorUid,
       if (address != null) 'address': address,
       if (dateOfBirth != null) 'dateOfBirth': Timestamp.fromDate(dateOfBirth!),
       if (collegeBranch != null) 'collegeBranch': collegeBranch,

@@ -22,13 +22,20 @@ final activeSessionProvider = StreamProvider<Session?>((ref) {
       .map((s) => s.docs.isEmpty ? null : Session.fromDoc(s.docs.first));
 });
 
+// Provider for selected counselor UID (used by admins to switch views in PreachingScreen)
+final selectedCounselorUidProvider = StateProvider<String?>((ref) => null);
+
 // Devotees assigned to current counselor, sorted by attendanceScore descending
 final myDevoteesProvider = StreamProvider<List<AppUser>>((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
-  if (uid == null) return const Stream.empty();
+  final authUser = FirebaseAuth.instance.currentUser;
+  if (authUser == null) return const Stream.empty();
+  
+  final selectedUid = ref.watch(selectedCounselorUidProvider);
+  final targetUid = selectedUid ?? authUser.uid;
+
   return FirebaseFirestore.instance
       .collection('users')
-      .where('counselorUid', isEqualTo: uid)
+      .where('counselorUid', isEqualTo: targetUid)
       .snapshots()
       .map((s) {
         final list = s.docs.map(AppUser.fromDoc).toList();
@@ -40,12 +47,12 @@ final myDevoteesProvider = StreamProvider<List<AppUser>>((ref) {
 // Attendance records for a specific session (keyed by devoteeId → status)
 final sessionAttendanceProvider =
     StreamProvider.family<Map<String, String>, String>((ref, sessionId) {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
-  if (uid == null) return const Stream.empty();
+  final authUser = FirebaseAuth.instance.currentUser;
+  if (authUser == null) return const Stream.empty();
+
   return FirebaseFirestore.instance
       .collection('attendance')
       .where('sessionId', isEqualTo: sessionId)
-      .where('markedBy', isEqualTo: uid)
       .snapshots()
       .map((s) => {
             for (final doc in s.docs)

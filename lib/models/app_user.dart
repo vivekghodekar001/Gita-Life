@@ -29,9 +29,9 @@ class AppUser {
     final data = doc.data() as Map<String, dynamic>;
     return AppUser(
       uid: doc.id,
-      name: data['name'] as String? ?? '',
-      mobile: data['mobile'] as String? ?? '',
-      role: data['role'] as String? ?? 'devotee',
+      name: data['fullName'] as String? ?? data['name'] as String? ?? '',
+      mobile: data['phoneNumber'] as String? ?? data['mobile'] as String? ?? '',
+      role: data['role'] as String? ?? 'student',
       year: data['year'] as String? ?? '',
       category: data['category'] as String? ?? 'Not Sincere',
       staying: data['staying'] as String? ?? 'Local Youth',

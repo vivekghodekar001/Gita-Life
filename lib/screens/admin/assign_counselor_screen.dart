@@ -3,27 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../app/sacred_theme.dart';
+import '../../providers/admin_provider.dart';
+import '../../models/user_model.dart';
 
 const _gold = Color(0xFFD4A017);
 const _navy = Color(0xFF1A1A2E);
 const _cream = Color(0xFFFFF8F0);
 
-// Provider: list of all devotees eligible for counselor promotion
-final _devoteesForPromotionProvider =
-    StreamProvider<List<Map<String, dynamic>>>((ref) {
-  return FirebaseFirestore.instance
-      .collection('users')
-      .where('role', whereIn: ['student', 'devotee'])
-      .snapshots()
-      .map((snap) => snap.docs
-          .map((d) => {'uid': d.id, ...d.data()})
-          .toList()
-        ..sort((a, b) =>
-            (a['name'] as String? ?? a['fullName'] as String? ?? '')
-                .compareTo(b['name'] as String? ??
-                    b['fullName'] as String? ??
-                    '')));
-});
+// No longer needing local stream provider, using admin_provider's allUsersProvider instead.
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  AssignCounselorScreen
@@ -79,7 +66,7 @@ class _AssignCounselorScreenState
 
   @override
   Widget build(BuildContext context) {
-    final devoteesAsync = ref.watch(_devoteesForPromotionProvider);
+    final usersAsync = ref.watch(allUsersProvider);
 
     return Scaffold(
       backgroundColor: SacredColors.ink,
@@ -133,7 +120,7 @@ class _AssignCounselorScreenState
 
             // ── Devotee List ──
             Expanded(
-              child: devoteesAsync.when(
+              child: usersAsync.when(
                 loading: () => Center(
                     child: CircularProgressIndicator(
                         color: SacredColors.parchment.withOpacity(0.4))),
@@ -143,7 +130,10 @@ class _AssignCounselorScreenState
                           fontSize: 13,
                           color: SacredColors.parchment.withOpacity(0.4))),
                 ),
-                data: (devotees) {
+                data: (allUsers) {
+                  final devotees = allUsers.where((u) => u.role != 'admin' && u.role != 'counselor').toList()
+                    ..sort((a, b) => a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase()));
+
                   if (devotees.isEmpty) {
                     return Center(
                       child: Text('No devotees found',
@@ -156,14 +146,12 @@ class _AssignCounselorScreenState
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     itemCount: devotees.length,
                     itemBuilder: (context, i) {
-                      final d = devotees[i];
-                      final uid = d['uid'] as String;
-                      final name = d['name'] as String? ??
-                          d['fullName'] as String? ??
-                          'Unknown';
-                      final year = d['year'] as String? ?? '';
-                      final counselorUid = d['counselorUid'] as String? ?? '';
+                      final devotee = devotees[i];
+                      final uid = devotee.uid;
+                      final name = devotee.fullName;
+                      final year = devotee.enrollmentDate != null ? devotee.enrollmentDate!.year.toString() : '';
                       final isSelected = uid == _selectedUid;
+                      final counselorUid = devotee.counselorUid ?? '';
 
                       return GestureDetector(
                         onTap: () => setState(() => _selectedUid = uid),

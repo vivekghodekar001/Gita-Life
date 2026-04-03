@@ -309,6 +309,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           '/admin/attendance'),
       _ActionDef('Notifications', _CardColor.neutral,
           Icons.notifications_none_rounded, '/admin/notifications'),
+      _ActionDef('Devotee\nAssign', _CardColor.lavender,
+          Icons.supervisor_account_rounded, '/admin/manage-devotee-assignments'),
     ];
 
     return GridView.builder(
@@ -398,6 +400,29 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             style: GoogleFonts.jost(
                                 fontSize: 12, fontWeight: FontWeight.w600,
                                 color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => context.push('/admin/manage-devotee-assignments'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFD4A017)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.settings_outlined, size: 14, color: Color(0xFFD4A017)),
+                        const SizedBox(width: 4),
+                        Text('Manage All',
+                            style: GoogleFonts.jost(
+                                fontSize: 11, fontWeight: FontWeight.w600,
+                                color: const Color(0xFFD4A017))),
                       ],
                     ),
                   ),
