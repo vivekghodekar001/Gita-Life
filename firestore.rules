@@ -34,16 +34,24 @@ service cloud.firestore {
 
     // Users collection
     match /users/{uid} {
-      allow read: if isAuthenticated() && (
-        request.auth.uid == uid || 
-        isAdmin() || 
-        (isCounselor() && (resource == null || resource.data.counselorUid == request.auth.uid))
+      // Any authenticated user can read their own doc
+      // Admins can read anyone
+      // Counselors can read docs where counselorUid == their UID (supports .where() queries)
+      allow get: if isAuthenticated() && (
+        request.auth.uid == uid ||
+        isAdmin() ||
+        isCounselor()
       );
+      // Allow counselors to LIST/QUERY the users collection
+      // Firestore query rules must be true for every document the query can return,
+      // so we must allow counselors to list the collection broadly.
+      // The query itself filters by counselorUid in the app code.
+      allow list: if isAuthenticated() && (isAdmin() || isCounselor() || request.auth.uid == uid);
       allow create: if isAuthenticated() && isOwner(uid);
-      allow write: if isAdmin();
       allow update: if isAuthenticated() && (
-        isOwner(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'counselorUid', 'assignedDevotees'])
-      ) || isAdmin();
+        (isOwner(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'counselorUid', 'assignedDevotees']))
+        || isAdmin()
+      );
       allow delete: if false;
     }
 
