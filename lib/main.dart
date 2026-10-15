@@ -344,9 +344,10 @@ class _DataImporterState extends ConsumerState<DataImporter> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen for auth changes to trigger sync
-    ref.listen(authStateProvider, (previous, next) {
-      if (next.value != null && !_syncStartedThisSession) {
+    // Shared catalog writes are restricted to approved administrators.
+    ref.listen(userProfileProvider, (previous, next) {
+      final profile = next.valueOrNull;
+      if (profile?.role == 'admin' && profile?.status == 'active' && !_syncStartedThisSession) {
         _startBulkSync();
       }
     });
@@ -371,6 +372,8 @@ class _DataImporterState extends ConsumerState<DataImporter> {
   }
 
   void _startBulkSync() async {
+    final profile = ref.read(userProfileProvider).valueOrNull;
+    if (profile?.role != 'admin' || profile?.status != 'active') return;
     final box = Hive.box('settings');
     if (box.get('bulk_import_done_v2', defaultValue: false)) return;
 

@@ -4,6 +4,13 @@ node_modules
 # Flutter/Dart build artifacts
 build/
 .dart_tool/
+.flutter-sdk/
+.flutter-plugins
+.flutter-plugins-dependencies
+android/local.properties
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 
 # Environment files
 .env

@@ -95,32 +95,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         final profile = userProfile.valueOrNull;
         
         // Wait for profile to load before making further redirect decisions
-        if (userProfile.isLoading) return null;
+        if (userProfile.isLoading || profile == null) {
+          return state.matchedLocation == '/pending' ? null : '/pending';
+        }
         
-        if (profile != null) {
-          if (profile.status == 'pending' && state.matchedLocation != '/pending') {
-            return '/pending';
-          }
-          if (profile.status == 'suspended' && state.matchedLocation != '/suspended') {
-            return '/suspended';
-          }
-          if (profile.status == 'active' && 
-              (isAuthRoute || state.matchedLocation == '/pending' || state.matchedLocation == '/suspended')) {
-            // All users (including admins) go to the main dashboard
-            // Admins can access the admin panel via the admin button on the dashboard
-            return '/home';
-          }
-          
-          // RoleGuard logic: Prevent non-admins from accessing /admin routes
-          if (state.matchedLocation.startsWith('/admin') && profile.role != 'admin') {
-            return '/home';
-          }
-          // Guard: /preaching is only for counselors and admins
-          if (state.matchedLocation == '/preaching' &&
-              profile.role != 'counselor' &&
-              profile.role != 'admin') {
-            return '/home';
-          }
+        if (profile.status == 'pending' && state.matchedLocation != '/pending') {
+          return '/pending';
+        }
+        if (profile.status == 'suspended' && state.matchedLocation != '/suspended') {
+          return '/suspended';
+        }
+        if (profile.status == 'active' &&
+            (isAuthRoute || state.matchedLocation == '/pending' || state.matchedLocation == '/suspended')) {
+          // Admins reach the admin panel through the main dashboard.
+          return '/home';
+        }
+        if (state.matchedLocation.startsWith('/admin') && profile.role != 'admin') {
+          return '/home';
+        }
+        if (state.matchedLocation == '/preaching' &&
+            profile.role != 'counselor' && profile.role != 'admin') {
+          return '/home';
         }
       }
       return null;

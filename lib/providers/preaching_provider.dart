@@ -3,13 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/app_user.dart';
 import '../models/session.dart';
+import 'auth_provider.dart';
 
-// Current logged-in user's role (read once from Firestore)
-final userRoleProvider = FutureProvider<String>((ref) async {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
-  if (uid == null) return 'devotee';
-  final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-  return doc.data()?['role'] as String? ?? 'devotee';
+// Follow the signed-in profile so roles cannot leak across account switches.
+final userRoleProvider = Provider<AsyncValue<String>>((ref) {
+  return ref.watch(userProfileProvider).whenData((profile) => profile?.role ?? 'student');
 });
 
 // Current active session (latest session by date)
@@ -27,11 +25,12 @@ final selectedCounselorUidProvider = StateProvider<String?>((ref) => null);
 
 // Devotees assigned to current counselor, sorted by attendanceScore descending
 final myDevoteesProvider = StreamProvider<List<AppUser>>((ref) {
-  final authUser = FirebaseAuth.instance.currentUser;
+  final authUser = ref.watch(authStateProvider).valueOrNull;
   if (authUser == null) return const Stream.empty();
   
   final selectedUid = ref.watch(selectedCounselorUidProvider);
-  final targetUid = selectedUid ?? authUser.uid;
+  final isAdmin = ref.watch(userProfileProvider).valueOrNull?.role == 'admin';
+  final targetUid = isAdmin ? selectedUid ?? authUser.uid : authUser.uid;
 
   return FirebaseFirestore.instance
       .collection('users')

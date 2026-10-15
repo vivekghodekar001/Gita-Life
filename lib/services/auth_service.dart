@@ -42,14 +42,19 @@ class AuthService {
         final Map<String, dynamic> firestoreData = {
           ...userData,
           'uid': credential.user!.uid,
+          'role': 'student',
+          'status': 'pending',
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         };
 
-        await _firestore
-            .collection('users')
-            .doc(credential.user!.uid)
-            .set(firestoreData);
+        try {
+          await _firestore.collection('users').doc(credential.user!.uid).set(firestoreData);
+        } catch (_) {
+          // Do not leave an authenticated account with no usable profile.
+          await credential.user!.delete();
+          rethrow;
+        }
       }
       return credential;
     } catch (e, stack) {

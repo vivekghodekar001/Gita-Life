@@ -1,13 +1,18 @@
-#!/bin/bash
-# Exit on error
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "Downloading Flutter SDK..."
-git clone https://github.com/flutter/flutter.git -b stable
-export PATH="$PATH:`pwd`/flutter/bin"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$PROJECT_ROOT"
+FLUTTER_VERSION="${FLUTTER_VERSION:-3.41.2}"
+SDK_DIR="$PROJECT_ROOT/.flutter-sdk"
 
-echo "Running Flutter Pub Get..."
+if [[ ! -x "$SDK_DIR/bin/flutter" ]]; then
+  git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$SDK_DIR"
+fi
+export PATH="$SDK_DIR/bin:$PATH"
+flutter config --no-analytics
 flutter pub get
 
-echo "Building Flutter Web App..."
-flutter build web --release
+if [[ "${1:-}" != "--dependencies-only" ]]; then
+  flutter build web --release
+fi

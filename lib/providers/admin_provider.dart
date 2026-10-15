@@ -7,6 +7,7 @@ import 'package:csv/csv.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
 
 final adminStatsProvider = StreamProvider<Map<String, dynamic>>((ref) async* {
   final status = ref.watch(firebaseInitStatusProvider);
@@ -39,7 +40,7 @@ final adminStatsProvider = StreamProvider<Map<String, dynamic>>((ref) async* {
       // japa logs are stored at /japa_logs/{uid}/logs/{docId} — use collectionGroup
       final japaSnap = await firestore
           .collectionGroup('logs')
-          .where('date', isGreaterThanOrEqualTo: startOfDay)
+          .where('date', isEqualTo: DateFormat('yyyy-MM-dd').format(startOfDay))
           .get();
       activeToday = japaSnap.docs.map((d) => d.reference.parent.parent?.id).toSet().length;
     } catch (_) {}

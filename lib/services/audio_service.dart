@@ -43,7 +43,7 @@ class AudioService {
 
   Future<String> buildStreamUrl(AudioTrackModel track) async {
     if (track.sourceType == 'google_drive' && track.driveFileId != null) {
-      return 'https://drive.google.com/uc?export=download&id=\${track.driveFileId}';
+      return Uri.https('drive.google.com', '/uc', {'export': 'download', 'id': track.driveFileId!}).toString();
     } else if (track.sourceType == 'firebase_storage' && track.storageRef != null) {
       return await _storage.ref(track.storageRef).getDownloadURL();
     } else if (track.sourceType == 'youtube') {
@@ -51,7 +51,7 @@ class AudioService {
     } else if (track.streamUrl != null) {
       return track.streamUrl!;
     }
-    throw Exception('Unknown source type or missing ID for track: \${track.title}');
+    throw Exception('Unknown source type or missing ID for track: ${track.title}');
   }
 
   Future<void> downloadTrack(AudioTrackModel track, Function(double) onProgress) async {

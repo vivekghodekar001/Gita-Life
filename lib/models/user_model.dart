@@ -133,6 +133,7 @@ class UserModel {
       fcmToken: fcmToken ?? this.fcmToken,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      counselorUid: counselorUid,
       address: address ?? this.address,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       collegeBranch: collegeBranch ?? this.collegeBranch,

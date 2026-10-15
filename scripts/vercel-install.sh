@@ -1,4 +1,4 @@
-#!/bin/bash
-set -e
-cd "$(dirname "$0")/admin-dashboard"
-npm install
+#!/usr/bin/env bash
+set -euo pipefail
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec bash "$PROJECT_ROOT/vercel-build.sh" --dependencies-only
